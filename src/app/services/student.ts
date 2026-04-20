@@ -6,7 +6,8 @@ import { catchError, of } from 'rxjs';
   providedIn: 'root',
 })
 export class Student {
-  readonly apiUrl = 'http://localhost:5094/api/voucher/student';
+  readonly apiUrl = 'https://glossary.sarawakskills.edu.my/gateway/fvs/student';
+  // readonly apiUrl = 'http://localhost:5094/api/voucher/student';
 
   private http = inject(HttpClient);
 

@@ -8,7 +8,8 @@ import { catchError, Observable, of } from 'rxjs';
 export class Float {
   private http = inject(HttpClient);
 
-  readonly apiUrl = 'http://localhost:5094/api/voucher/floating';
+  // readonly apiUrl = 'http://localhost:5094/api/voucher/floating';
+  readonly apiUrl = 'https://glossary.sarawakskills.edu.my/gateway/fvs/floating';
 
   getPaginatedFloatList(pageNumber: number, pageSize: number, search: string): Observable<any> {
     const params = new HttpParams()
