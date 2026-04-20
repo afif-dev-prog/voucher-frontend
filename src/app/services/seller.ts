@@ -8,7 +8,8 @@ import { SellerModel } from '../model/seller';
 })
 export class Seller {
   private http = inject(HttpClient);
-  readonly apiUrl = 'http://localhost:5094/api/voucher/seller';
+  readonly apiUrl = 'https://glossary.sarawakskills.edu.my/gateway/fvs/seller';
+  // readonly apiUrl = 'http://localhost:5094/api/voucher/seller';
 
   scantoPay(studentId: string, seller: number, amount: number) {
     const headers = { 'content-type': 'application/json' };
