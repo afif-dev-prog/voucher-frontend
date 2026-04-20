@@ -19,7 +19,8 @@ export class Auth {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  readonly apiUrl = 'http://localhost:5094/api/auth';
+  readonly apiUrl = 'https://glossary.sarawakskills.edu.my/gateway/fvs/auth';
+  // readonly apiUrl = 'http://localhost:5094/api/auth';
 
   // ── Login ──────────────────────────────
   login(username: string, password: string): Observable<any> {
