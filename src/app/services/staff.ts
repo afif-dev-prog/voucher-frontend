@@ -7,7 +7,8 @@ import { AddStudent, StudentModel, SubmitStudent } from '../model/student';
   providedIn: 'root',
 })
 export class Staff {
-  readonly apiUrl = 'http://localhost:5094/api/voucher';
+  readonly apiUrl = 'https://glossary.sarawakskills.edu.my/gateway/fvs';
+  // readonly apiUrl = 'http://localhost:5094/api/voucher';
 
   private http = inject(HttpClient);
 

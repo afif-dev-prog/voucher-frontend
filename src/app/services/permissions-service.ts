@@ -7,7 +7,8 @@ import { catchError, Observable, of } from 'rxjs';
 })
 export class PermissionsService {
   private http = inject(HttpClient);
-  readonly apiUrl = 'http://localhost:5094/api/permissions';
+  readonly apiUrl = 'https://glossary.sarawakskills.edu.my/gateway/fvs/permissions';
+  // readonly apiUrl = 'http://localhost:5094/api/permissions';
 
   getAllPermissions(): Observable<any> {
     return this.http
