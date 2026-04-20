@@ -1,0 +1,40 @@
+.unauth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  font-family: 'Segoe UI', sans-serif;
+}
+.unauth-card {
+  text-align: center;
+  padding: 48px 36px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+.unauth-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+h2 {
+  color: #111827;
+  margin: 0 0 8px;
+}
+p {
+  color: #6b7280;
+  margin: 0 0 24px;
+}
+button {
+  padding: 10px 24px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+button:hover {
+  background: #1d4ed8;
+}

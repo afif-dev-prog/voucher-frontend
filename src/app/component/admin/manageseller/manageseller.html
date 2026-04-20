@@ -1,0 +1,724 @@
+<div class="seller-list-wrapper">
+  <!-- Header -->
+  <div class="list-header">
+    <div class="header-left">
+      <h2 class="list-title">Seller List</h2>
+      @if (!isLoading) {
+        <span class="total-badge">{{ totalCount }} sellers</span>
+      }
+    </div>
+    <div class="header-right">
+      <div class="search-wrapper">
+        <svg
+          class="search-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414zm-5.242 1.15a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"
+          />
+        </svg>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search by name or username..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearchInput()"
+        />
+        @if (searchQuery) {
+          <button class="clear-btn" (click)="onClearSearch()">✕</button>
+        }
+      </div>
+      <button class="btn-add" (click)="openAddModal()">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="15"
+          height="15"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
+          />
+        </svg>
+        Add Seller
+      </button>
+    </div>
+  </div>
+
+  <!-- ✅ FIX 1: Skeleton with correct columns -->
+  @if (isLoading) {
+    <div class="table-container">
+      <table class="seller-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Name</th>
+            <th>Balance</th>
+            <th>Last Updated</th>
+            <th class="th-action">Actions</th>
+          </tr>
+        </thead>
+        <!-- ✅ FIX 2: Use proper tbody instead of div wrapper -->
+        <tbody>
+          @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track i) {
+            <tr>
+              <td><div class="skeleton-block" style="width: 24px"></div></td>
+              <td><div class="skeleton-block" style="width: 100px"></div></td>
+              <td><div class="skeleton-block" style="width: 140px"></div></td>
+              <td><div class="skeleton-block" style="width: 80px"></div></td>
+              <td><div class="skeleton-block" style="width: 130px"></div></td>
+              <td><div class="skeleton-block" style="width: 90px"></div></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (!isLoading && errorMessage) {
+    <div class="empty-state">⚠️ {{ errorMessage }}</div>
+  }
+
+  <!-- Empty -->
+  @if (!isLoading && !errorMessage && sellers.length === 0) {
+    <div class="empty-state">
+      @if (searchQuery) {
+        <p>
+          No results for <strong>"{{ searchQuery }}"</strong>
+        </p>
+        <button class="btn-clear-search" (click)="onClearSearch()">Clear Search</button>
+      } @else {
+        <p>🏪 No sellers registered yet.</p>
+      }
+    </div>
+  }
+
+  <!-- ✅ FIX 3: Real table with correct columns and fields -->
+  @if (!isLoading && sellers.length > 0) {
+    <div class="table-container">
+      <table class="seller-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Name</th>
+            <th>Balance</th>
+            <th>Last Updated</th>
+            <th class="th-action">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (seller of sellers; track seller.id; let i = $index) {
+            <tr class="table-row">
+              <td class="row-num">{{ getRowNumber(i) }}</td>
+              <td class="row-id">{{ seller.username }}</td>
+              <td class="row-name">{{ seller.s_name }}</td>
+              <td class="row-balance">RM {{ seller.balance | number: '1.2-2' }}</td>
+              <td class="row-date">
+                {{ seller.date_update * 1000 | date: 'dd MMM yyyy, hh:mm a' }}
+              </td>
+              <td class="row-actions">
+                <button
+                  class="btn-icon btn-view"
+                  (click)="openTxModal(seller)"
+                  title="Transactions"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                    <path
+                      d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"
+                    />
+                  </svg>
+                </button>
+                <button class="btn-icon btn-edit" (click)="openEditModal(seller)" title="Edit">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  class="btn-icon btn-delete"
+                  (click)="openDeleteModal(seller)"
+                  title="Delete"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"
+                    />
+                    <path
+                      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"
+                    />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      @if (totalPages > 1) {
+        <div class="pagination-wrapper">
+          <span class="page-info">
+            Showing {{ getRowNumber(0) }}–{{ getRowNumber(sellers.length - 1) }} of {{ totalCount }}
+          </span>
+          <div class="pagination-controls">
+            <button class="page-btn nav-btn" (click)="previousPage()" [disabled]="!hasPrevious">
+              ‹ Prev
+            </button>
+            @if (pageNumbers[0] > 1) {
+              <button class="page-btn" (click)="goToPage(1)">1</button>
+              @if (pageNumbers[0] > 2) {
+                <span class="ellipsis">…</span>
+              }
+            }
+            @for (page of pageNumbers; track page) {
+              <button
+                class="page-btn"
+                [class.active]="page === currentPage"
+                (click)="goToPage(page)"
+              >
+                {{ page }}
+              </button>
+            }
+            @if (pageNumbers[pageNumbers.length - 1] < totalPages) {
+              @if (pageNumbers[pageNumbers.length - 1] < totalPages - 1) {
+                <span class="ellipsis">…</span>
+              }
+              <button class="page-btn" (click)="goToPage(totalPages)">{{ totalPages }}</button>
+            }
+            <button class="page-btn nav-btn" (click)="nextPage()" [disabled]="!hasNext">
+              Next ›
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- ── ADD MODAL ── -->
+@if (showAddModal) {
+  <div class="modal-backdrop" (click)="onAddBackdrop($event)">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Add New Seller</h3>
+          <p class="modal-subtitle">Fill in all required fields *</p>
+        </div>
+        <button class="modal-close" (click)="closeAddModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        @if (addErrorMessage) {
+          <div class="alert alert-error">⚠️ {{ addErrorMessage }}</div>
+        }
+        <div class="form-section">
+          <div class="section-label">Seller Information</div>
+          <div class="form-group">
+            <label class="form-label">Name <span class="required">*</span></label>
+            <input
+              class="form-input"
+              type="text"
+              placeholder="e.g. Ahmad's Cafe"
+              [(ngModel)]="newSeller.s_name"
+              (input)="addErrorMessage = ''"
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="email"
+                placeholder="e.g. shop@email.com"
+                [(ngModel)]="newSeller.s_email"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. digitalKarma"
+                [(ngModel)]="newSeller.username"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeAddModal()" [disabled]="isSubmitting">
+          Cancel
+        </button>
+        <button class="btn-submit" (click)="submitAddSeller()" [disabled]="isSubmitting">
+          @if (isSubmitting) {
+            <span class="spinner"></span> Saving...
+          } @else {
+            Save Seller
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── EDIT MODAL ── -->
+@if (showEditModal) {
+  <div class="modal-backdrop" (click)="onEditBackdrop($event)">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Edit Seller</h3>
+          <p class="modal-subtitle">{{ editSellerForm.username }}</p>
+        </div>
+        <button class="modal-close" (click)="closeEditModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        @if (editErrorMessage) {
+          <div class="alert alert-error">⚠️ {{ editErrorMessage }}</div>
+        }
+        <div class="form-section">
+          <div class="section-label">Seller Information</div>
+          <div class="form-group">
+            <label class="form-label">Name <span class="required">*</span></label>
+            <input
+              class="form-input"
+              type="text"
+              [(ngModel)]="editSellerForm.s_name"
+              (input)="editErrorMessage = ''"
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="email"
+                [(ngModel)]="editSellerForm.s_email"
+                (input)="editErrorMessage = ''"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. digitalKarma"
+                [(ngModel)]="editSellerForm.username"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeEditModal()" [disabled]="isUpdating">
+          Cancel
+        </button>
+        <button class="btn-submit" (click)="submitEditSeller()" [disabled]="isUpdating">
+          @if (isUpdating) {
+            <span class="spinner"></span> Updating...
+          } @else {
+            Save Changes
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── DELETE MODAL ── -->
+@if (showDeleteModal) {
+  <div class="modal-backdrop" (click)="onDeleteBackdrop($event)">
+    <div class="modal-box modal-box-sm">
+      <div class="modal-header">
+        <h3 class="modal-title">Delete Seller</h3>
+        <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="delete-icon-wrapper">
+          <div class="delete-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="28"
+              height="28"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"
+              />
+            </svg>
+          </div>
+        </div>
+        <p class="delete-title">Are you sure?</p>
+        <p class="delete-message">
+          You are about to delete <strong>{{ sellerToDelete?.name }}</strong
+          >. This action cannot be undone.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeDeleteModal()" [disabled]="isDeleting">
+          Cancel
+        </button>
+        <button class="btn-danger" (click)="confirmDelete()" [disabled]="isDeleting">
+          @if (isDeleting) {
+            <span class="spinner spinner-red"></span> Deleting...
+          } @else {
+            Yes, Delete
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── TRANSACTION MODAL ── -->
+@if (showTxModal) {
+  <div class="modal-backdrop" (click)="onTxBackdrop($event)">
+    <div class="modal-box modal-box-lg">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Transaction Statement</h3>
+          <p class="modal-subtitle">
+            {{ selectedSeller?.s_name }} · @{{ selectedSeller?.username }}
+          </p>
+        </div>
+        <button class="modal-close" (click)="closeTxModal()">✕</button>
+      </div>
+
+      <!-- Statement Toolbar -->
+      <div class="stmt-toolbar">
+        <!-- Date Filters -->
+        <div class="stmt-filters">
+          <div class="date-group">
+            <label class="date-label">From</label>
+            <input class="date-input" type="date" [(ngModel)]="txStartDate" />
+          </div>
+          <span class="date-sep">→</span>
+          <div class="date-group">
+            <label class="date-label">Until</label>
+            <input class="date-input" type="date" [(ngModel)]="txEndDate" />
+          </div>
+          <button class="btn-filter-apply" (click)="applyDateFilter()" [disabled]="isLoadingTx">
+            Apply
+          </button>
+          @if (txStartDate || txEndDate) {
+            <button class="btn-filter-clear" (click)="clearDateFilter()">Clear</button>
+          }
+        </div>
+
+        <!-- Export Buttons -->
+        <div class="stmt-exports">
+          <button
+            class="btn-export btn-csv"
+            (click)="exportCsv()"
+            [disabled]="isExporting || transactions.length === 0"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="13"
+              height="13"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1L14 5.5zM8.5 6.5a.5.5 0 0 0-1 0V10H6.707l.647-.646a.5.5 0 0 0-.708-.708l-1.5 1.5a.5.5 0 0 0 0 .708l1.5 1.5a.5.5 0 0 0 .708-.708L6.707 11H7.5a1 1 0 0 0 1-1z"
+              />
+            </svg>
+            Export CSV
+          </button>
+          <button
+            class="btn-export btn-pdf"
+            (click)="previewPdf()"
+            [disabled]="isExporting || transactions.length === 0"
+          >
+            @if (isExporting) {
+              <span class="spinner spinner-white"></span> Generating...
+            } @else {
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="13"
+                height="13"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1L14 5.5zM4.5 6a.5.5 0 0 0-.5.5v.5h-.5A1.5 1.5 0 0 0 2 8.5v3A1.5 1.5 0 0 0 3.5 13H4v.5a.5.5 0 0 0 1 0V13h1v.5a.5.5 0 0 0 1 0V13h.5A1.5 1.5 0 0 0 9 11.5v-3A1.5 1.5 0 0 0 7.5 7H7v-.5a.5.5 0 0 0-.5-.5z"
+                />
+              </svg>
+              Preview PDF
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- Period tag -->
+      @if (txStartDate || txEndDate) {
+        <div class="stmt-period-tag">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="11"
+            height="11"
+            fill="currentColor"
+            viewBox="0 0 16 16"
+          >
+            <path
+              d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"
+            />
+            <path
+              d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"
+            />
+          </svg>
+          Filtered:
+          <strong>{{ txStartDate || '...' }}</strong> to
+          <strong>{{ txEndDate || 'today' }}</strong> — {{ txTotalCount }} records found
+        </div>
+      }
+
+      <div class="modal-body modal-body-tx">
+        <!-- Skeleton -->
+        @if (isLoadingTx) {
+          <table class="tx-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Student ID</th>
+                <th>Debit</th>
+                <th>Credit</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (i of [1, 2, 3, 4, 5]; track i) {
+                <tr>
+                  <td><div class="skeleton-block" style="width: 24px"></div></td>
+                  <td><div class="skeleton-block" style="width: 130px"></div></td>
+                  <td><div class="skeleton-block" style="width: 100px"></div></td>
+                  <td><div class="skeleton-block" style="width: 70px"></div></td>
+                  <td><div class="skeleton-block" style="width: 70px"></div></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        <!-- Empty -->
+        @if (!isLoadingTx && transactions.length === 0) {
+          <div class="tx-empty">
+            <div class="tx-empty-icon">🧾</div>
+            <p>
+              No transactions found{{
+                txStartDate || txEndDate ? ' for the selected period.' : '.'
+              }}
+            </p>
+          </div>
+        }
+
+        <!-- Transactions -->
+        @if (!isLoadingTx && transactions.length > 0) {
+          <div class="tx-summary">
+            Showing <strong>{{ transactions.length }}</strong> of
+            <strong>{{ txTotalCount }}</strong> transactions
+          </div>
+
+          <div class="tx-table-wrapper">
+            <table class="tx-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Date & Time</th>
+                  <th>Student ID</th>
+                  <!-- <th>Debit</th>
+                  <th>Credit</th> -->
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (tx of transactions; track tx.h_id; let i = $index) {
+                  <tr class="tx-row">
+                    <td class="tx-num">{{ i + 1 }}</td>
+                    <td class="tx-date">{{ tx.pay_date * 1000 | date: 'dd MMM yyyy, hh:mm a' }}</td>
+                    <td class="tx-id">{{ tx.student_id || '—' }}</td>
+                    <!-- <td>
+                      @if (tx.credit > 0) {
+                        <span class="amount-debit">- RM {{ tx.credit | number: '1.2-2' }}</span>
+                      } @else {
+                        —
+                      }
+                    </td> -->
+                    <td>
+                      @if (tx.credit > 0 && tx.remark == 'SELLER_PAYMENT_RECEIVED') {
+                        <span class="amount-credit">+ RM {{ tx.credit | number: '1.2-2' }}</span>
+                      }
+
+                      @if (tx.debit > 0) {
+                        <span class="amount-credit">+ RM {{ tx.debit | number: '1.2-2' }}</span>
+                      }
+                    </td>
+                    <!-- <td>
+                      @if (tx.debit > 0) {
+                        <span class="amount-credit">+ RM {{ tx.debit | number: '1.2-2' }}</span>
+                      } @else {
+                        —
+                      }
+                    </td> -->
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (txHasNext) {
+            <div class="tx-load-more">
+              <button class="btn-load-more" (click)="loadMoreTx()" [disabled]="isLoadingMoreTx">
+                @if (isLoadingMoreTx) {
+                  <span class="spinner"></span> Loading...
+                } @else {
+                  See More
+                  <span class="tx-remaining"
+                    >({{ txTotalCount - transactions.length }} remaining)</span
+                  >
+                }
+              </button>
+            </div>
+          }
+
+          @if (!txHasNext) {
+            <div class="tx-end">— End of records —</div>
+          }
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeTxModal()">Close</button>
+      </div>
+    </div>
+  </div>
+}
+<!-- ── PDF PREVIEW MODAL ── -->
+@if (showPdfPreview) {
+  <div class="modal-backdrop pdf-preview-backdrop" (click)="closePdfPreview()">
+    <div class="pdf-preview-box" (click)="$event.stopPropagation()">
+      <!-- Preview Header -->
+      <div class="pdf-preview-header">
+        <div class="pdf-preview-title-group">
+          <div class="pdf-preview-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1L14 5.5z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 class="pdf-preview-title">Statement Preview</h3>
+            <p class="pdf-preview-subtitle">
+              {{ selectedSeller?.s_name }} ·
+              @if (txStartDate || txEndDate) {
+                {{ txStartDate || '...' }} → {{ txEndDate || 'today' }}
+              } @else {
+                All Transactions
+              }
+            </p>
+          </div>
+        </div>
+
+        <div class="pdf-preview-actions">
+          <button class="btn-preview-download" (click)="downloadPdf()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+              />
+              <path
+                d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
+              />
+            </svg>
+            Download PDF
+          </button>
+          <button class="pdf-close-btn" (click)="closePdfPreview()" title="Close preview">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- PDF iframe -->
+      <div class="pdf-preview-body">
+        <iframe [src]="pdfPreviewUrl" class="pdf-iframe" type="application/pdf" title="PDF Preview">
+        </iframe>
+      </div>
+
+      <!-- Preview Footer -->
+      <div class="pdf-preview-footer">
+        <span class="pdf-preview-note"> 📄 Review the statement above before downloading. </span>
+        <div class="pdf-footer-btns">
+          <button class="btn-cancel" (click)="closePdfPreview()">Cancel</button>
+          <button class="btn-preview-download" (click)="downloadPdf()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="13"
+              height="13"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+              />
+              <path
+                d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
+              />
+            </svg>
+            Download PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

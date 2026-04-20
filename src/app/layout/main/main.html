@@ -1,0 +1,29 @@
+<div class="layout">
+  @if (showMenubar) {
+    <!-- Only show the main card layout when NOT on login -->
+    <div class="screen-container">
+      <div class="screen-content-side">{{ title }}</div>
+      <div class="screen-content">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  } @else {
+    <!-- Login page — full screen, no card wrapper -->
+    <div class="screen-container-login">
+      <div class="screen-content-login">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  }
+</div>
+
+@if (showMenubar) {
+  <app-menubar></app-menubar>
+}
+
+<!-- Global loading overlay
+@if (isNavigating) {
+  <div class="global-loader">
+    <div class="loader-spinner"></div>
+  </div>
+} -->

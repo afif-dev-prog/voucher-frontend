@@ -1,0 +1,205 @@
+<div class="tx-wrapper">
+  <!-- Header -->
+  <div class="tx-header">
+    <div class="header-left">
+      <h2 class="tx-title">Voucher Redeemed</h2>
+      @if (!isLoading) {
+        <span class="total-badge">{{ totalCount }} records</span>
+      }
+    </div>
+
+    <!-- Search -->
+    <div class="search-wrapper">
+      <svg
+        class="search-icon"
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        fill="currentColor"
+        viewBox="0 0 16 16"
+      >
+        <path
+          d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414zm-5.242 1.15a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"
+        />
+      </svg>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Search by student ID or remark..."
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+      />
+      @if (searchQuery) {
+        <button class="clear-btn" (click)="onClearSearch()">✕</button>
+      }
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  @if (!isLoading && transactions.length > 0) {
+    <div class="summary-cards">
+      <div class="summary-card card-credit">
+        <span class="summary-label">Total Credit (this page)</span>
+        <span class="summary-value">RM {{ totalCredit | number: '1.2-2' }}</span>
+      </div>
+      <div class="summary-card card-debit">
+        <span class="summary-label">Total Debit (this page)</span>
+        <span class="summary-value">RM {{ totalDebit | number: '1.2-2' }}</span>
+      </div>
+      <div class="summary-card card-total">
+        <span class="summary-label">Total Records</span>
+        <span class="summary-value">{{ totalCount }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- Skeleton -->
+  @if (isLoading) {
+    <div class="table-container">
+      <table class="tx-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Student ID</th>
+            <th>Remark</th>
+            <th>Debit</th>
+            <th>Credit</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track i) {
+            <tr>
+              <td><div class="skeleton-block" style="width: 24px"></div></td>
+              <td><div class="skeleton-block" style="width: 110px"></div></td>
+              <td><div class="skeleton-block" style="width: 100px"></div></td>
+              <td><div class="skeleton-block" style="width: 160px"></div></td>
+              <td><div class="skeleton-block" style="width: 70px"></div></td>
+              <td><div class="skeleton-block" style="width: 70px"></div></td>
+              <td><div class="skeleton-block" style="width: 70px"></div></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (!isLoading && errorMessage) {
+    <div class="empty-state">⚠️ {{ errorMessage }}</div>
+  }
+
+  <!-- Empty -->
+  @if (!isLoading && !errorMessage && transactions?.length === 0) {
+    <div class="empty-state">
+      @if (searchQuery) {
+        <p>
+          No results for <strong>"{{ searchQuery }}"</strong>
+        </p>
+        <button class="btn-clear" (click)="onClearSearch()">Clear Search</button>
+      } @else {
+        <p>🧾 No transactions found.</p>
+      }
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!isLoading && transactions.length > 0) {
+    <div class="table-container">
+      <table class="tx-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Student ID</th>
+            <th>Remark</th>
+            <th>Amount</th>
+            <!-- <th>Credit</th> -->
+          </tr>
+        </thead>
+        <tbody>
+          @for (tx of transactions; track tx.h_id; let i = $index) {
+            <tr class="tx-row">
+              <td class="row-num">{{ getRowNumber(i) }}</td>
+              <td class="row-date">
+                {{ tx.pay_date * 1000 | date: 'dd MMM yyyy, hh:mm a' }}
+              </td>
+              <td class="row-id">{{ tx.student_id || '—' }}</td>
+              <td class="row-remark">{{ tx.remark || '—' }}</td>
+              <td class="row-debit">
+                @if (tx.debit > 0) {
+                  <span class="amount-credit">+ RM {{ tx.debit | number: '1.2-2' }}</span>
+                } @else {
+                  —
+                }
+              </td>
+              <!-- <td class="row-credit">
+                @if (tx.credit > 0) {
+                  <span class="amount-credit">+ RM {{ tx.credit | number: '1.2-2' }}</span>
+                } @else {
+                  —
+                }
+              </td> -->
+            </tr>
+          }
+
+          <!-- @for (tx of transactions; track tx.h_id; let i = $index) {
+            <tr class="tx-row">
+              <td class="row-num">{{ getRowNumber(i) }}</td>
+              <td class="row-date">{{ tx.pay_date * 1000 | date: 'dd MMM yyyy, hh:mm a' }}</td>
+              <td class="row-id">{{ tx.student_id || '—' }}</td>
+              <td class="row-remark">{{ tx.remark || '—' }}</td>
+              <td class="row-credit">
+                <span class="amount-credit">+ RM {{ getSellerIncome(tx) | number: '1.2-2' }}</span>
+              </td>
+            </tr>
+          } -->
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      @if (totalPages > 1) {
+        <div class="pagination-wrapper">
+          <span class="page-info">
+            Showing {{ getRowNumber(0) }}–{{ getRowNumber(transactions.length - 1) }} of
+            {{ totalCount }}
+          </span>
+          <div class="pagination-controls">
+            <button class="page-btn nav-btn" (click)="previousPage()" [disabled]="!hasPrevious">
+              ‹ Prev
+            </button>
+
+            @if (pageNumbers[0] > 1) {
+              <button class="page-btn" (click)="goToPage(1)">1</button>
+              @if (pageNumbers[0] > 2) {
+                <span class="ellipsis">…</span>
+              }
+            }
+
+            @for (page of pageNumbers; track page) {
+              <button
+                class="page-btn"
+                [class.active]="page === currentPage"
+                (click)="goToPage(page)"
+              >
+                {{ page }}
+              </button>
+            }
+
+            @if (pageNumbers[pageNumbers.length - 1] < totalPages) {
+              @if (pageNumbers[pageNumbers.length - 1] < totalPages - 1) {
+                <span class="ellipsis">…</span>
+              }
+              <button class="page-btn" (click)="goToPage(totalPages)">{{ totalPages }}</button>
+            }
+
+            <button class="page-btn nav-btn" (click)="nextPage()" [disabled]="!hasNext">
+              Next ›
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

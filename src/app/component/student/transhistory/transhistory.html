@@ -1,0 +1,121 @@
+<div class="history-wrapper scrollbar">
+  <!-- Header -->
+  <div class="history-header">
+    <h2 class="history-title">Transaction History</h2>
+    @if (pagination) {
+      <span class="history-count">
+        Showing {{ transactions.length }} of {{ pagination.totalCount }} transactions
+      </span>
+    }
+  </div>
+
+  <!-- Loading Skeleton (initial load) -->
+  @if (isLoading) {
+    <div class="skeleton-wrapper">
+      @for (item of [1, 2, 3, 4, 5]; track $index) {
+        <div class="skeleton-row">
+          <div class="skeleton-block short"></div>
+          <div class="skeleton-block long"></div>
+          <div class="skeleton-block medium"></div>
+          <div class="skeleton-block short"></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (!isLoading && errorMessage) {
+    <div class="error-state">
+      <div class="error-icon">⚠️</div>
+      <p>{{ errorMessage }}</p>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!isLoading && !errorMessage && transactions?.length === null) {
+    <div class="empty-state">
+      <div class="empty-icon">🧾</div>
+      <p>No transactions found.</p>
+    </div>
+  }
+
+  <!-- Transaction Table -->
+  @if (!isLoading && transactions.length > 0) {
+    <div class="table-container">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- @for (tx of transactions; track $index) {
+            <tr class="table-row">
+              <td class="row-index">{{ $index + 1 }}</td>
+              <td class="row-date">{{ tx.pay_date * 1000 | date: 'HH:mm:ss a, dd/MM/yyyy' }}</td>
+              <td class="row-desc">{{ tx.remark || '—' }}</td>
+              @if (tx.credit != 0) {
+                <td class="row-amount credit">
+                  <span class="badge text-bg-success">+ RM {{ tx.credit }}</span>
+                </td>
+              }
+              @if (tx.debit != 0) {
+                <td class="row-amount debit">
+                  <span class="badge text-bg-warning">- RM {{ tx.debit }}</span>
+                </td>
+              }
+            </tr>
+          } -->
+          @for (tx of transactions; track $index) {
+            <tr class="table-row">
+              <td class="row-index">{{ $index + 1 }}</td>
+              <td class="row-date">{{ tx.pay_date * 1000 | date: 'dd/MM/yyyy, HH:mm' }}</td>
+              <td class="row-desc">{{ tx.remark || '—' }}</td>
+              <td class="row-amount">
+                @if (getAmount(tx).type === 'credit') {
+                  <span class="badge text-bg-success"
+                    >+ RM {{ getAmount(tx).value | number: '1.2-2' }}</span
+                  >
+                } @else {
+                  <span class="badge text-bg-warning"
+                    >- RM {{ getAmount(tx).value | number: '1.2-2' }}</span
+                  >
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- See More Button -->
+      @if (pagination?.hasNext) {
+        <div class="load-more-wrapper">
+          <button class="btn-load-more" (click)="loadMore()" [disabled]="isLoadingMore">
+            @if (!isLoadingMore) {
+              <span>
+                See More
+                <span class="remaining-count">
+                  ({{ pagination!.totalCount - transactions.length }} remaining)
+                </span>
+              </span>
+            }
+
+            @if (isLoadingMore) {
+              <span class="loading-dots"> Loading<span>.</span><span>.</span><span>.</span> </span>
+            }
+          </button>
+        </div>
+      }
+
+      <!-- End of Records -->
+      @if (!pagination?.hasNext && transactions.length > 0) {
+        <div class="end-of-records">
+          <span>— You've reached the end —</span>
+        </div>
+      }
+    </div>
+  }
+</div>

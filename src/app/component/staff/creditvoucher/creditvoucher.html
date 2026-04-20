@@ -1,0 +1,690 @@
+<div class="cv-wrapper">
+  <!-- Page Header -->
+  <div class="cv-page-header">
+    <div>
+      <h2 class="cv-page-title">Credit Voucher</h2>
+      <p class="cv-page-sub">Park credits to float table individually or in bulk via CSV</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="cv-tabs">
+    <button
+      class="cv-tab"
+      [class.active]="activeTab === 'individual'"
+      (click)="switchTab('individual')"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="15"
+        height="15"
+        fill="currentColor"
+        viewBox="0 0 16 16"
+      >
+        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+      </svg>
+      Individual Credit
+    </button>
+    <button class="cv-tab" [class.active]="activeTab === 'bulk'" (click)="switchTab('bulk')">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="15"
+        height="15"
+        fill="currentColor"
+        viewBox="0 0 16 16"
+      >
+        <path
+          d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1L14 5.5zM8 6.5a.5.5 0 0 0-1 0V10H5.5a.5.5 0 0 0 0 1H7v1.5a.5.5 0 0 0 1 0V11h1.5a.5.5 0 0 0 0-1H8z"
+        />
+      </svg>
+      Bulk CSV Credit
+    </button>
+  </div>
+
+  <!-- ══ INDIVIDUAL TAB ══ -->
+  @if (activeTab === 'individual') {
+    <div class="cv-content">
+      <!-- Progress Panel (shown during/after submission) -->
+      @if (showProgress) {
+        <div class="progress-panel">
+          <div class="progress-panel-header">
+            <div class="progress-panel-title-group">
+              <h3 class="progress-title">
+                @if (isUploading) {
+                  Parking to Float...
+                } @else {
+                  Parked to Float
+                }
+              </h3>
+              <p class="progress-sub">
+                {{ progressDone }} succeeded · {{ progressFailed }} failed ·
+                {{ progressItems.length }} total
+              </p>
+            </div>
+            @if (uploadComplete) {
+              <button class="btn-reset" (click)="resetIndividual()">Start New Batch</button>
+            }
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="progress-bar-track">
+            <div
+              class="progress-bar-fill"
+              [style.width.%]="progressPercent"
+              [class.complete]="uploadComplete"
+            ></div>
+          </div>
+          <div class="progress-bar-label">{{ progressPercent }}%</div>
+
+          <!-- Progress Items -->
+          <div class="progress-list">
+            @for (item of progressItems; track item.index) {
+              <div class="progress-item" [class]="'pi-' + item.status">
+                <div class="pi-indicator">
+                  @if (item.status === 'pending') {
+                    <span class="pi-dot"></span>
+                  }
+                  @if (item.status === 'processing') {
+                    <span class="spinner spinner-sm"></span>
+                  }
+                  @if (item.status === 'success') {
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"
+                      />
+                    </svg>
+                  }
+                  @if (item.status === 'failed') {
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
+                      />
+                    </svg>
+                  }
+                </div>
+                <span class="pi-id">{{ item.student_id }}</span>
+                <span class="pi-msg">{{ item.message || item.status }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (!showProgress) {
+        <div class="cv-two-col">
+          <!-- LEFT: Search & Select -->
+          <div class="cv-card">
+            <div class="cv-card-header">
+              <h3 class="cv-card-title">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414zm-5.242 1.15a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"
+                  />
+                </svg>
+                Search Students
+              </h3>
+            </div>
+            <div class="cv-card-body">
+              <div class="search-wrapper-cv">
+                <input
+                  class="search-input-cv"
+                  type="text"
+                  placeholder="Search by name or student ID..."
+                  [(ngModel)]="searchQuery"
+                  (input)="onSearchInput()"
+                />
+                @if (isSearching) {
+                  <span class="search-spinner"></span>
+                }
+              </div>
+
+              <!-- Results -->
+              @if (isSearching) {
+                <div class="search-hint">Searching...</div>
+              } @else if (hasSearched && searchResults.length === 0) {
+                <div class="search-hint">No students found.</div>
+              } @else if (searchResults.length > 0) {
+                <div class="search-results-header">
+                  <span class="results-count">{{ searchResults.length }} results</span>
+                  <button class="btn-select-all-text" (click)="toggleSelectAllSearch()">
+                    {{ allSearchSelected ? 'Deselect All' : 'Select All' }}
+                  </button>
+                </div>
+                <div class="search-results-list">
+                  @for (student of searchResults; track student.student_id) {
+                    <div
+                      class="student-result-row"
+                      [class.selected]="student.selected"
+                      (click)="toggleStudent(student)"
+                    >
+                      <div class="student-checkbox" [class.checked]="student.selected">
+                        @if (student.selected) {
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="11"
+                            height="11"
+                            fill="currentColor"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"
+                            />
+                          </svg>
+                        }
+                      </div>
+                      <div class="student-info">
+                        <span class="student-name">{{ student.student_name }}</span>
+                        <span class="student-id-tag">{{ student.student_id }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="search-empty-state">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="32"
+                    height="32"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                    class="empty-icon"
+                  >
+                    <path
+                      d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414zm-5.242 1.15a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"
+                    />
+                  </svg>
+                  <p>Type to search students</p>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- RIGHT: Selected + Credit Form -->
+          <div class="cv-right-col">
+            <!-- Selected Students -->
+            <div class="cv-card">
+              <div class="cv-card-header">
+                <h3 class="cv-card-title">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M7 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 6 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 6 9c-3.519 0-6 1.967-6 4v1z"
+                    />
+                    <path d="M5.5 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+                  </svg>
+                  Selected
+                  @if (selectedStudents.length > 0) {
+                    <span class="selected-count-badge">{{ selectedStudents.length }}</span>
+                  }
+                </h3>
+                @if (selectedStudents.length > 0) {
+                  <button class="btn-clear-all" (click)="clearAllSelected()">Clear All</button>
+                }
+              </div>
+              <div class="cv-card-body">
+                @if (selectedStudents.length === 0) {
+                  <div class="search-hint">No students selected yet.</div>
+                } @else {
+                  <div class="selected-list">
+                    @for (student of selectedStudents; track student.student_id) {
+                      <div class="selected-chip">
+                        <div class="chip-info">
+                          <span class="chip-name">{{ student.student_name }}</span>
+                          <span class="chip-id">{{ student.student_id }}</span>
+                        </div>
+                        <button class="chip-remove" (click)="removeSelected(student)">✕</button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Credit Details Form -->
+            <div class="cv-card">
+              <div class="cv-card-header">
+                <h3 class="cv-card-title">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2.5 1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"
+                    />
+                  </svg>
+                  Credit Details
+                </h3>
+              </div>
+              <div class="cv-card-body">
+                @if (individualError) {
+                  <div class="alert alert-error">⚠️ {{ individualError }}</div>
+                }
+                <div class="form-group">
+                  <label class="form-label">Amount (RM) <span class="required">*</span></label>
+                  <div class="amount-input-wrapper">
+                    <span class="amount-prefix">RM</span>
+                    <input
+                      class="form-input amount-input"
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      placeholder="0.00"
+                      [(ngModel)]="creditAmount"
+                      (input)="individualError = ''"
+                    />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label"
+                    >Month / Credit Period <span class="required">*</span></label
+                  >
+                  <input
+                    class="form-input"
+                    type="month"
+                    [(ngModel)]="creditMonthCredit"
+                    (input)="individualError = ''"
+                  />
+                </div>
+
+                <button
+                  class="btn-submit-credit"
+                  (click)="openIndividualConfirm()"
+                  [disabled]="isSubmittingIndividual || selectedStudents.length === 0"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="15"
+                    height="15"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
+                    />
+                  </svg>
+                  Park
+                  {{
+                    selectedStudents.length > 0
+                      ? selectedStudents.length +
+                        ' Student' +
+                        (selectedStudents.length > 1 ? 's' : '')
+                      : 'Students'
+                  }}
+                  to Float
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ══ BULK TAB ══ -->
+  @if (activeTab === 'bulk') {
+    <div class="cv-content">
+      <!-- Progress Panel -->
+      @if (showProgress) {
+        <div class="progress-panel">
+          <div class="progress-panel-header">
+            <div class="progress-panel-title-group">
+              <h3 class="progress-title">
+                @if (isUploading) {
+                  Parking to Float Table...
+                } @else {
+                  Float Parking Complete
+                }
+              </h3>
+              <p class="progress-sub">
+                {{ progressDone }} succeeded · {{ progressFailed }} failed ·
+                {{ progressItems.length }} total
+              </p>
+            </div>
+            @if (uploadComplete) {
+              <button class="btn-reset" (click)="resetCsv()">Upload New File</button>
+            }
+          </div>
+
+          <div class="progress-bar-track">
+            @if (resprogress.success) {
+              <div
+                class="progress-bar-fill"
+                [style.width.%]="progressPercent"
+                [class.complete]="uploadComplete"
+              ></div>
+            } @else {
+              <div
+                class="progress-bar-fill"
+                [style.width.%]="progressPercent"
+                [class.incomplete]="uploadComplete"
+              ></div>
+            }
+          </div>
+          <div class="progress-bar-label">{{ progressPercent }}%</div>
+
+          <div class="progress-list">
+            @for (item of progressItems; track item.index) {
+              <div class="progress-item" [class]="'pi-' + item.status">
+                <div class="pi-indicator">
+                  @if (item.status === 'pending') {
+                    <span class="pi-dot"></span>
+                  }
+                  @if (item.status === 'processing') {
+                    <span class="spinner spinner-sm"></span>
+                  }
+                  @if (item.status === 'success') {
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"
+                      />
+                    </svg>
+                  }
+                  @if (item.status === 'failed') {
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
+                      />
+                    </svg>
+                  }
+                </div>
+                <span class="pi-id">{{ item.student_id }}</span>
+                <span class="pi-msg">{{ item.message || item.status }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (!showProgress) {
+        <!-- Template Download Banner -->
+        <div class="template-banner">
+          <div class="template-banner-left">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1L14 5.5zM8 6.5a.5.5 0 0 0-1 0V10H5.5a.5.5 0 0 0 0 1H7v1.5a.5.5 0 0 0 1 0V11h1.5a.5.5 0 0 0 0-1H8z"
+              />
+            </svg>
+            <div>
+              <p class="template-title">Download CSV Template</p>
+              <p class="template-sub">
+                Required columns: <code>student_id, amount, month_credit</code>
+              </p>
+            </div>
+          </div>
+          <button class="btn-template-dl" (click)="downloadCsvTemplate()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="13"
+              height="13"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+              />
+              <path
+                d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
+              />
+            </svg>
+            Download Template
+          </button>
+        </div>
+
+        <!-- Drop Zone -->
+        @if (!csvParsed) {
+          <div
+            class="drop-zone"
+            [class.dragging]="isDragging"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave()"
+            (drop)="onDrop($event)"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="40"
+              height="40"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+              class="drop-icon"
+            >
+              <path
+                d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+              />
+              <path
+                d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"
+              />
+            </svg>
+            <p class="drop-title">Drag & drop your CSV file here</p>
+            <p class="drop-sub">or</p>
+            <label class="btn-browse">
+              Browse File
+              <input
+                type="file"
+                accept=".csv"
+                class="hidden-file-input"
+                (change)="onFileSelect($event)"
+              />
+            </label>
+            @if (csvError) {
+              <div class="alert alert-error" style="margin-top: 12px">⚠️ {{ csvError }}</div>
+            }
+          </div>
+        }
+
+        <!-- CSV Preview Table -->
+        @if (csvParsed) {
+          <div class="csv-preview-wrapper">
+            <!-- Preview Header -->
+            <div class="csv-preview-header">
+              <div>
+                <h3 class="csv-preview-title">File Preview</h3>
+                <p class="csv-preview-sub">
+                  {{ csvFile?.name }} ·
+                  <span class="badge-valid">{{ csvValidRows.length }} valid</span>
+                  @if (csvInvalidRows.length > 0) {
+                    · <span class="badge-invalid">{{ csvInvalidRows.length }} invalid</span>
+                  }
+                </p>
+              </div>
+              <button class="btn-reset-csv" (click)="resetCsv()">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="13"
+                  height="13"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"
+                  />
+                  <path
+                    fill-rule="evenodd"
+                    d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"
+                  />
+                </svg>
+                Change File
+              </button>
+            </div>
+
+            <!-- Warning for invalid rows -->
+            @if (csvInvalidRows.length > 0) {
+              <div class="csv-warning-bar">
+                ⚠️ <strong>{{ csvInvalidRows.length }} rows</strong> have errors and will be skipped
+                during upload. Only <strong>{{ csvValidRows.length }} valid rows</strong> will be
+                processed.
+              </div>
+            }
+
+            <!-- Table -->
+            <div class="csv-table-container">
+              <table class="csv-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Student ID</th>
+                    <th>Amount</th>
+                    <th>Month Credit</th>
+                    <th>Updated By</th>
+                    <!-- ✅ added -->
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of csvRows; track $index; let i = $index) {
+                    <tr [class.row-invalid]="!row._valid">
+                      <td class="row-num">{{ i + 1 }}</td>
+                      <td class="row-mono">{{ row.student_id || '—' }}</td>
+                      <td>
+                        @if (row.amount) {
+                          <span [class.amount-valid]="row._valid">
+                            RM {{ +row.amount | number: '1.2-2' }}
+                          </span>
+                        } @else {
+                          <span class="text-error">—</span>
+                        }
+                      </td>
+                      <td class="row-mono">{{ row.month_credit || '—' }}</td>
+                      <td class="text-muted">{{ row.user_update || '—' }}</td>
+                      <!-- ✅ added -->
+                      <td>
+                        @if (row._valid) {
+                          <span class="badge-valid-sm">✓ Valid</span>
+                        } @else {
+                          <span class="badge-invalid-sm" [title]="row._errors.join(', ')">
+                            ✕ {{ row._errors[0] }}
+                          </span>
+                        }
+                      </td>
+                      <td>
+                        <button class="btn-remove-row" (click)="removeCsvRow(i)" title="Remove row">
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Submit Bar -->
+            <div class="csv-submit-bar">
+              <p class="submit-bar-info">
+                Ready to park <strong>{{ csvValidRows.length }}</strong> records to float table
+              </p>
+              <button
+                class="btn-submit-credit"
+                [disabled]="csvValidRows.length === 0"
+                (click)="submitBulk()"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="15"
+                  height="15"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
+                  />
+                </svg>
+                Process {{ csvValidRows.length }} to Float table
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  }
+</div>
+
+<!-- Individual Confirm Modal -->
+@if (showIndividualConfirm) {
+  <div class="modal-backdrop" (click)="closeIndividualConfirm()">
+    <div class="modal-box modal-box-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Confirm Credit</h3>
+        <button class="modal-close" (click)="closeIndividualConfirm()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-summary">
+          <div class="confirm-row">
+            <span class="confirm-label">Students</span>
+            <span class="confirm-value">{{ selectedStudents.length }}</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Amount Each</span>
+            <span class="confirm-value amount-highlight"
+              >RM {{ creditAmount | number: '1.2-2' }}</span
+            >
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Total</span>
+            <span class="confirm-value amount-highlight">
+              RM {{ (creditAmount || 0) * selectedStudents.length | number: '1.2-2' }}
+            </span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Period</span>
+            <span class="confirm-value">{{ creditMonthCredit }}</span>
+          </div>
+        </div>
+        <div class="confirm-students">
+          @for (s of selectedStudents; track s.student_id) {
+            <span class="confirm-chip">{{ s.student_name }}</span>
+          }
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeIndividualConfirm()">Cancel</button>
+        <button class="btn-submit-credit" (click)="submitIndividual()">
+          Confirm & Park to Float
+        </button>
+      </div>
+    </div>
+  </div>
+}

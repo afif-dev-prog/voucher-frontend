@@ -1,0 +1,397 @@
+.sidebar-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+}
+
+.sidebar {
+  width: 65px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: none;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin-left: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.icon-container > svg {
+  color: white !important;
+}
+
+.topbar {
+  width: 100%;
+  margin: 0;
+  padding: 10px 40px 0px 40px;
+  position: fixed;
+  top: 0;
+  transform: none;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin-left: 2px;
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
+  justify-content: center;
+  padding: 20px 0;
+  height: 500px;
+  box-sizing: border-box;
+  background: #2a999b;
+  background: linear-gradient(
+    2deg,
+    rgba(42, 153, 155, 1) 0%,
+    rgba(87, 199, 133, 1) 50%,
+    rgba(83, 237, 191, 1) 100%
+  );
+  border-radius: 20px;
+  margin: 100px 0px;
+}
+
+.topbar-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-grow: 1;
+  justify-content: end;
+  padding: 20px 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+.sidebar a {
+  display: block;
+  color: #4b4b5a;
+  padding: 0;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: bold;
+  margin-top: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.notification-button {
+  background: none;
+  border: none;
+  display: block;
+  color: #4b4b5a;
+  padding: 0;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: bold;
+  margin-top: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.notification-button:hover {
+  color: #9ba7d9;
+}
+
+a.sidebar-title {
+  font-size: 10px !important;
+  color: #ffffff !important;
+}
+
+.brand img {
+  max-height: 40px;
+  width: auto;
+  vertical-align: middle;
+}
+
+.sidebar p {
+  display: block;
+  color: #4b4b5a;
+  padding: 0;
+  margin-left: 10px;
+  text-decoration: none;
+  font-weight: bold;
+  line-height: 1;
+  margin-top: 10px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.list-bar,
+.history-bar,
+.qr-bar,
+.scan-bar,
+.notification-bar,
+.profile-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 15px;
+  cursor: pointer;
+  max-width: 60px;
+}
+
+.list-bar img,
+.history-bar img,
+.qr-bar img,
+.scan-bar img,
+.notification-bar img,
+.profile-bar img {
+  max-height: 20px;
+  width: auto;
+  vertical-align: middle;
+}
+
+.sidebar-content a:hover {
+  color: #9ba7d9;
+}
+
+.active-link a {
+  color: #604ae3;
+}
+
+.active-link .icon-container {
+  background-color: rgba(155, 167, 217, 0.4);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+/* Topbar username */
+.topbar-username {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #374151;
+  margin-right: 8px;
+}
+
+/* ── Tablet (max 1024px) ── */
+@media screen and (max-width: 1024px) and (min-width: 701px) {
+  .sidebar {
+    width: 65px;
+    margin-left: 6px;
+  }
+
+  .sidebar-content {
+    margin: 80px 0;
+    padding: 16px 0;
+  }
+
+  .list-bar,
+  .history-bar,
+  .qr-bar,
+  .scan-bar,
+  .notification-bar,
+  .profile-bar {
+    margin-top: 12px;
+  }
+
+  .topbar {
+    padding: 8px 20px 0;
+  }
+}
+
+/* ── Mobile (max 700px) ── */
+@media screen and (max-width: 700px) {
+  .sidebar-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Sidebar becomes bottom nav bar */
+  .sidebar {
+    width: 100%;
+    height: auto;
+    min-height: 70px;
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    transform: none;
+    overflow: visible;
+    box-sizing: border-box;
+    z-index: 200;
+  }
+
+  /* Sidebar content becomes horizontal row */
+  .sidebar-content {
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 6px 8px;
+    margin: 0;
+    height: auto;
+    min-height: 70px;
+    border-radius: 0;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 0;
+  }
+
+  /* Each menu item fills equal space */
+  .list-bar,
+  .history-bar,
+  .qr-bar,
+  .scan-bar,
+  .notification-bar,
+  .profile-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 4px 6px;
+    flex: 1;
+    max-width: none;
+    cursor: pointer;
+  }
+
+  /* Smaller icons on mobile */
+  .list-bar svg,
+  .history-bar svg,
+  .qr-bar svg,
+  .scan-bar svg,
+  .notification-bar svg,
+  .profile-bar svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Label text on mobile */
+  a.sidebar-title {
+    font-size: 9px !important;
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+
+  /* Active state on mobile */
+  .active-link .icon-container {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  /* Topbar on mobile — fixed at top */
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 0 16px;
+    margin: 0;
+    background: #fff;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    z-index: 200;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    overflow: visible;
+    box-sizing: border-box;
+  }
+
+  .topbar-content {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  /* Truncate long username on mobile */
+  .topbar-username {
+    font-size: 0.78rem;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 6px;
+  }
+
+  /* Smaller buttons in topbar */
+  .topbar .btn {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+
+  /* Icon container default on mobile */
+  .icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Make sure active highlight works on mobile */
+  .active-link .icon-container {
+    background-color: rgba(155, 167, 217, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ── Extra small (max 400px) ── */
+@media screen and (max-width: 400px) {
+  .sidebar-content {
+    padding: 4px 2px;
+    min-height: 64px;
+  }
+
+  .list-bar,
+  .history-bar,
+  .qr-bar,
+  .scan-bar,
+  .notification-bar,
+  .profile-bar {
+    padding: 2px 2px;
+  }
+
+  .list-bar svg,
+  .history-bar svg,
+  .qr-bar svg,
+  .scan-bar svg,
+  .notification-bar svg,
+  .profile-bar svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  a.sidebar-title {
+    font-size: 8px !important;
+    margin-top: 2px;
+  }
+
+  .topbar {
+    height: 48px;
+    padding: 0 10px;
+  }
+
+  .topbar-username {
+    max-width: 80px;
+    font-size: 0.7rem;
+  }
+
+  .active-link .icon-container {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+}

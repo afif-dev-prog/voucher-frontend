@@ -1,0 +1,96 @@
+import { Routes } from '@angular/router';
+import { authGuard } from './services/auth.guard';
+import { Login } from './component/auth/login/login';
+
+export const routes: Routes = [
+  // ── Public ────────────────────────────
+  { path: 'login', component: Login },
+  {
+    path: 'unauthorized',
+    loadComponent: () =>
+      import('./component/auth/unauthorized/unauthorized').then((m) => m.Unauthorized),
+  },
+
+  // ── Student ───────────────────────────
+  {
+    path: 'balance',
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT'] },
+    loadComponent: () =>
+      import('./component/student/viewbalance/viewbalance').then((m) => m.Viewbalance),
+  },
+  {
+    path: 'history',
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT'] },
+    loadComponent: () =>
+      import('./component/student/transhistory/transhistory').then((m) => m.Transhistory),
+  },
+
+  // ── Seller ────────────────────────────
+  {
+    path: 'scantopay',
+    canActivate: [authGuard],
+    data: { roles: ['SELLER'] },
+    loadComponent: () => import('./component/seller/scantopay/scantopay').then((m) => m.Scantopay),
+  },
+  {
+    path: 'sellerhistory',
+    canActivate: [authGuard],
+    data: { roles: ['SELLER'] },
+    loadComponent: () =>
+      import('./component/seller/transhistory/transhistory').then((m) => m.Transhistory),
+  },
+  {
+    path: 'claimvoucher',
+    canActivate: [authGuard],
+    data: { roles: ['SELLER'] },
+    loadComponent: () =>
+      import('./component/seller/claimvoucher/claimvoucher').then((m) => m.Claimvoucher),
+  },
+
+  // ── Finance / Staff ───────────────────
+  {
+    path: 'creditvoucher',
+    canActivate: [authGuard],
+    data: { roles: ['FINANCE', 'SUPERADMIN'] },
+    loadComponent: () =>
+      import('./component/staff/creditvoucher/creditvoucher').then((m) => m.Creditvoucher),
+  },
+  {
+    path: 'floatmoneylist',
+    canActivate: [authGuard],
+    data: { roles: ['FINANCE', 'SUPERADMIN'] },
+    loadComponent: () =>
+      import('./component/staff/floatmoneylist/floatmoneylist').then((m) => m.Floatmoneylist),
+  },
+  {
+    path: 'managestudent',
+    canActivate: [authGuard],
+    data: { roles: ['FINANCE', 'SUPERADMIN'] },
+    loadComponent: () =>
+      import('./component/staff/managestudent/managestudent').then((m) => m.Managestudent),
+  },
+
+  // ── Admin / Superadmin ────────────────
+  {
+    path: 'manageseller',
+    canActivate: [authGuard],
+    data: { roles: ['SUPERADMIN'] },
+    loadComponent: () =>
+      import('./component/admin/manageseller/manageseller').then((m) => m.Manageseller),
+  },
+
+  // Admin - Permissions management
+  {
+    path: 'permissions',
+    canActivate: [authGuard],
+    data: { roles: ['SUPERADMIN'] },
+    loadComponent: () =>
+      import('./component/auth/permissions/permissions').then((m) => m.Permissions),
+  },
+
+  // ── Fallback ──────────────────────────
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: '**', redirectTo: '/login' },
+];

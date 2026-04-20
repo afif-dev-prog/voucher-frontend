@@ -1,0 +1,398 @@
+<div class="claim-wrapper">
+  <!-- Page Header -->
+  <div class="claim-page-header">
+    <div class="claim-header-left">
+      <div class="claim-header-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.11-2.278-.037-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783"
+          />
+        </svg>
+      </div>
+      <div>
+        <h2 class="claim-page-title">Weekly Claim Report</h2>
+        <p class="claim-page-sub">Generate your transaction claim for finance submission</p>
+      </div>
+    </div>
+    <!-- Seller badge -->
+    <div class="seller-badge">
+      <div class="seller-badge-avatar">{{ seller.name.charAt(0) }}</div>
+      <div>
+        <p class="seller-badge-name">{{ seller.name }}</p>
+        <!-- <p class="seller-badge-user">@{{ seller.username }}</p> -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Main layout -->
+  <div class="claim-layout">
+    <!-- LEFT: Config panel -->
+    <div class="config-panel">
+      <!-- Date Range Card -->
+      <div class="config-card">
+        <div class="config-card-header">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            fill="currentColor"
+            viewBox="0 0 16 16"
+          >
+            <path
+              d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"
+            />
+          </svg>
+          Claim Period
+        </div>
+        <div class="config-card-body">
+          @if (dateError) {
+            <div class="alert alert-error">⚠️ {{ dateError }}</div>
+          }
+          <div class="date-field">
+            <label class="date-label">Start Date</label>
+            <input
+              class="date-input-full"
+              type="date"
+              [(ngModel)]="startDate"
+              (change)="dateError = ''; hasFetched = false"
+            />
+          </div>
+          <div class="date-field">
+            <label class="date-label">End Date</label>
+            <input
+              class="date-input-full"
+              type="date"
+              [(ngModel)]="endDate"
+              (change)="dateError = ''; hasFetched = false"
+            />
+          </div>
+
+          <!-- Quick week shortcuts -->
+          <div class="quick-weeks">
+            <p class="quick-weeks-label">Quick Select</p>
+            <div class="quick-week-btns">
+              <button class="btn-week" (click)="setWeek(0)">This Week</button>
+              <button class="btn-week" (click)="setWeek(-1)">Last Week</button>
+              <button class="btn-week" (click)="setWeek(-2)">2 Weeks Ago</button>
+            </div>
+          </div>
+
+          <button class="btn-fetch" (click)="fetchTransactions()" [disabled]="isLoading">
+            @if (isLoading) {
+              <span class="spinner spinner-white"></span> Loading...
+            } @else {
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"
+                />
+                <path
+                  fill-rule="evenodd"
+                  d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"
+                />
+              </svg>
+              Load Transactions
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary Card (shown after fetch) -->
+      @if (hasFetched) {
+        <div class="summary-card-claim">
+          <div class="summary-card-header">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2.5 1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"
+              />
+            </svg>
+            Claim Summary
+          </div>
+          <div class="summary-rows">
+            <div class="summary-row">
+              <span class="summary-row-label">Transactions</span>
+              <span class="summary-row-value">{{ transactions.length }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-row-label">Total Credit</span>
+              <span class="summary-row-value credit-val"
+                >RM {{ totalDebit | number: '1.2-2' }}</span
+              >
+            </div>
+            <!-- <div class="summary-row">
+              <span class="summary-row-label">Total Debit</span>
+              <span class="summary-row-value debit-val">RM {{ totalDebit | number: '1.2-2' }}</span>
+            </div> -->
+            <div class="summary-row summary-row-net">
+              <span class="summary-row-label">Net Claimable</span>
+              <span
+                class="summary-row-value net-val"
+                [class.net-positive]="netAmount >= 0"
+                [class.net-negative]="netAmount < 0"
+              >
+                RM {{ netAmount | number: '1.2-2' }}
+              </span>
+            </div>
+          </div>
+
+          <button
+            class="btn-generate-pdf"
+            (click)="generatePdf()"
+            [disabled]="isGenerating || transactions.length === 0"
+          >
+            @if (isGenerating) {
+              <span class="spinner spinner-white"></span> Generating PDF...
+            } @else {
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="15"
+                height="15"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1L14 5.5z"
+                />
+              </svg>
+              Preview & Generate Claim PDF
+            }
+          </button>
+
+          @if (transactions.length === 0) {
+            <p class="no-tx-note">No transactions found for this period.</p>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- RIGHT: Transaction preview table -->
+    <div class="preview-panel">
+      @if (!hasFetched && !isLoading) {
+        <div class="preview-empty">
+          <div class="preview-empty-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="48"
+              height="48"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"
+              />
+              <path
+                d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2m0 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"
+              />
+            </svg>
+          </div>
+          <h3 class="preview-empty-title">No Data Yet</h3>
+          <p class="preview-empty-sub">
+            Select a date range and click "Load Transactions" to preview your claim.
+          </p>
+        </div>
+      }
+
+      @if (isLoading) {
+        <div class="preview-loading">
+          <div class="loading-rows">
+            @for (i of [1, 2, 3, 4, 5, 6, 7]; track i) {
+              <div class="loading-row">
+                <div class="skeleton-block" style="width: 24px"></div>
+                <div class="skeleton-block" style="flex: 1"></div>
+                <div class="skeleton-block" style="width: 100px"></div>
+                <div class="skeleton-block" style="width: 80px"></div>
+                <div class="skeleton-block" style="width: 80px"></div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (fetchError && !isLoading) {
+        <div class="preview-empty">
+          <p style="color: #dc2626">⚠️ {{ fetchError }}</p>
+        </div>
+      }
+
+      @if (hasFetched && !isLoading && transactions.length === 0) {
+        <div class="preview-empty">
+          <div class="preview-empty-icon" style="opacity: 0.3">🧾</div>
+          <h3 class="preview-empty-title">No Transactions</h3>
+          <p class="preview-empty-sub">
+            No transactions found between <strong>{{ formatDate(startDate) }}</strong> and
+            <strong>{{ formatDate(endDate) }}</strong
+            >.
+          </p>
+        </div>
+      }
+
+      @if (hasFetched && !isLoading && transactions.length > 0) {
+        <div class="preview-table-wrapper">
+          <div class="preview-table-header">
+            <div>
+              <h3 class="preview-table-title">Transaction Preview</h3>
+              <p class="preview-table-sub">
+                {{ formatDate(startDate) }} — {{ formatDate(endDate) }} ·
+                <strong>{{ transactions.length }}</strong> records
+              </p>
+            </div>
+          </div>
+          <div class="preview-table-scroll">
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Date & Time</th>
+                  <th>Student ID</th>
+                  <th>Amount</th>
+                  <!-- <th>Credit</th> -->
+                </tr>
+              </thead>
+              <tbody>
+                @for (tx of transactions; track tx.h_id; let i = $index) {
+                  <tr>
+                    <td class="col-num">{{ i + 1 }}</td>
+                    <td class="col-date">
+                      {{ tx.pay_date * 1000 | date: 'dd MMM yyyy, hh:mm a' }}
+                    </td>
+                    <td class="col-id">{{ tx.student_id || '—' }}</td>
+                    <td>
+                      @if (tx.debit > 0) {
+                        <span class="amount-debit">- RM {{ tx.debit | number: '1.2-2' }}</span>
+                      } @else {
+                        <span class="muted">—</span>
+                      }
+                    </td>
+                    <td>
+                      @if (tx.credit > 0) {
+                        <span class="amount-credit">+ RM {{ tx.credit | number: '1.2-2' }}</span>
+                      } @else {
+                        <span class="muted">—</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr class="totals-row">
+                  <td colspan="3" class="totals-label">TOTALS</td>
+                  <td>
+                    <span class="amount-credit">RM {{ totalDebit | number: '1.2-2' }}</span>
+                  </td>
+                  <!-- <td>
+                    <span class="amount-credit">RM {{ totalCredit | number: '1.2-2' }}</span>
+                  </td> -->
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- PDF Preview Modal -->
+@if (showPreview) {
+  <div class="modal-backdrop pdf-preview-backdrop" (click)="closePreview()">
+    <div class="pdf-preview-box" (click)="$event.stopPropagation()">
+      <div class="pdf-preview-header">
+        <div class="pdf-preview-title-group">
+          <div class="pdf-preview-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1L14 5.5z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 class="pdf-preview-title">Claim Report Preview</h3>
+            <p class="pdf-preview-subtitle">{{ seller.name }} · @{{ seller.username }}</p>
+          </div>
+        </div>
+        <div class="pdf-preview-actions">
+          <button class="btn-preview-download" (click)="downloadPdf()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="13"
+              height="13"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+              />
+              <path
+                d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
+              />
+            </svg>
+            Download PDF
+          </button>
+          <button class="pdf-close-btn" (click)="closePreview()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="pdf-preview-body">
+        <iframe [src]="pdfPreviewUrl" class="pdf-iframe" title="Claim PDF Preview"></iframe>
+      </div>
+      <div class="pdf-preview-footer">
+        <span class="pdf-preview-note">📄 Review the claim above before downloading.</span>
+        <div class="pdf-footer-btns">
+          <button class="btn-cancel" (click)="closePreview()">Close</button>
+          <button class="btn-preview-download" (click)="downloadPdf()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="13"
+              height="13"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+              />
+              <path
+                d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
+              />
+            </svg>
+            Download PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

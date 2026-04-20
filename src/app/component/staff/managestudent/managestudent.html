@@ -1,0 +1,704 @@
+<div class="student-list-wrapper">
+  <!-- Header -->
+  <div class="list-header">
+    <div class="header-left">
+      <h2 class="list-title">Student List</h2>
+      @if (!isLoading) {
+        <span class="total-badge">
+          {{ totalCount }} {{ searchQuery ? 'results' : 'students' }}
+        </span>
+      }
+    </div>
+
+    <div class="header-right">
+      <!-- Search Bar -->
+      <div class="search-wrapper">
+        <svg
+          class="search-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="15"
+          height="15"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414zm-5.242 1.15a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"
+          />
+        </svg>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search by name or student ID..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearchInput()"
+        />
+        @if (searchQuery) {
+          <button class="clear-btn" (click)="onClearSearch()">✕</button>
+        }
+      </div>
+
+      <!-- Add Student Button -->
+      <button class="btn-add" (click)="openAddModal()">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="15"
+          height="15"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
+          />
+        </svg>
+        Add Student
+      </button>
+      <!-- Add bulk Student Button -->
+      <button class="btn-add" (click)="openAddModal()">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="15"
+          height="15"
+          fill="currentColor"
+          class="bi bi-filetype-csv"
+          viewBox="0 0 16 16"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M14 4.5V14a2 2 0 0 1-2 2h-1v-1h1a1 1 0 0 0 1-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5zM3.517 14.841a1.13 1.13 0 0 0 .401.823q.195.162.478.252.284.091.665.091.507 0 .859-.158.354-.158.539-.44.187-.284.187-.656 0-.336-.134-.56a1 1 0 0 0-.375-.357 2 2 0 0 0-.566-.21l-.621-.144a1 1 0 0 1-.404-.176.37.37 0 0 1-.144-.299q0-.234.185-.384.188-.152.512-.152.214 0 .37.068a.6.6 0 0 1 .246.181.56.56 0 0 1 .12.258h.75a1.1 1.1 0 0 0-.2-.566 1.2 1.2 0 0 0-.5-.41 1.8 1.8 0 0 0-.78-.152q-.439 0-.776.15-.337.149-.527.421-.19.273-.19.639 0 .302.122.524.124.223.352.367.228.143.539.213l.618.144q.31.073.463.193a.39.39 0 0 1 .152.326.5.5 0 0 1-.085.29.56.56 0 0 1-.255.193q-.167.07-.413.07-.175 0-.32-.04a.8.8 0 0 1-.248-.115.58.58 0 0 1-.255-.384zM.806 13.693q0-.373.102-.633a.87.87 0 0 1 .302-.399.8.8 0 0 1 .475-.137q.225 0 .398.097a.7.7 0 0 1 .272.26.85.85 0 0 1 .12.381h.765v-.072a1.33 1.33 0 0 0-.466-.964 1.4 1.4 0 0 0-.489-.272 1.8 1.8 0 0 0-.606-.097q-.534 0-.911.223-.375.222-.572.632-.195.41-.196.979v.498q0 .568.193.976.197.407.572.626.375.217.914.217.439 0 .785-.164t.55-.454a1.27 1.27 0 0 0 .226-.674v-.076h-.764a.8.8 0 0 1-.118.363.7.7 0 0 1-.272.25.9.9 0 0 1-.401.087.85.85 0 0 1-.478-.132.83.83 0 0 1-.299-.392 1.7 1.7 0 0 1-.102-.627zm8.239 2.238h-.953l-1.338-3.999h.917l.896 3.138h.038l.888-3.138h.879z"
+          />
+        </svg>
+        Bulk Import
+      </button>
+    </div>
+  </div>
+
+  <!-- Skeleton Loading -->
+  @if (isLoading) {
+    <div class="table-container">
+      <table class="student-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Student ID</th>
+            <th>Full Name</th>
+            <th>IC Number</th>
+            <th class="th-action">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track i) {
+            <tr class="table-row">
+              <td><div class="skeleton-block" style="width: 24px"></div></td>
+              <td><div class="skeleton-block" style="width: 100px"></div></td>
+              <td><div class="skeleton-block" style="width: 180px"></div></td>
+              <td><div class="skeleton-block" style="width: 120px"></div></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (!isLoading && errorMessage) {
+    <div class="error-state">⚠️ {{ errorMessage }}</div>
+  }
+
+  <!-- Empty -->
+  @if (!isLoading && !errorMessage && pagedStudents.length === 0) {
+    <div class="empty-state">
+      @if (searchQuery) {
+        <p>
+          No results found for <strong>"{{ searchQuery }}"</strong>
+        </p>
+        <button class="btn-clear-search" (click)="onClearSearch()">Clear Search</button>
+      } @else {
+        <p>🎓 No students registered yet.</p>
+      }
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!isLoading && pagedStudents.length > 0) {
+    <div class="table-container">
+      <table class="student-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Student ID</th>
+            <th>Full Name</th>
+            <th>IC Number</th>
+            <th class="th-action">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (student of pagedStudents; track student.student_id; let i = $index) {
+            <tr class="table-row">
+              <td class="row-num">{{ getRowNumber(i) }}</td>
+              <td class="row-id">{{ student.student_id }}</td>
+              <td class="row-name">{{ student.student_name }}</td>
+              <td class="row-ic">{{ student.nric }}</td>
+              <td class="row-actions">
+                <!-- View Transactions -->
+                <button
+                  class="btn-icon btn-view"
+                  (click)="openTransactionModal(student)"
+                  title="View Transactions"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                    <path
+                      d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"
+                    />
+                  </svg>
+                </button>
+                <button
+                  class="btn-icon btn-edit"
+                  (click)="openEditModal(student.student_id, student)"
+                  title="Edit"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  class="btn-icon btn-delete"
+                  (click)="openDeleteModal(student)"
+                  title="Delete"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"
+                    />
+                    <path
+                      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"
+                    />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      @if (totalPages > 1) {
+        <div class="pagination-wrapper">
+          <span class="page-info">
+            Showing {{ getRowNumber(0) }}–{{ getRowNumber(pagedStudents.length - 1) }} of
+            {{ totalCount }}
+          </span>
+
+          <div class="pagination-controls">
+            <button class="page-btn nav-btn" (click)="previousPage()" [disabled]="!hasPrevious">
+              ‹ Prev
+            </button>
+
+            @if (pageNumbers[0] > 1) {
+              <button class="page-btn" (click)="goToPage(1)">1</button>
+              @if (pageNumbers[0] > 2) {
+                <span class="ellipsis">…</span>
+              }
+            }
+
+            @for (page of pageNumbers; track page) {
+              <button
+                class="page-btn"
+                [class.active]="page === currentPage"
+                (click)="goToPage(page)"
+              >
+                {{ page }}
+              </button>
+            }
+
+            @if (pageNumbers[pageNumbers.length - 1] < totalPages) {
+              @if (pageNumbers[pageNumbers.length - 1] < totalPages - 1) {
+                <span class="ellipsis">…</span>
+              }
+              <button class="page-btn" (click)="goToPage(totalPages)">{{ totalPages }}</button>
+            }
+
+            <button class="page-btn nav-btn" (click)="nextPage()" [disabled]="!hasNext">
+              Next ›
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+@if (showAddModal) {
+  <div class="modal-backdrop" (click)="onBackdropClick($event)">
+    <div class="modal-box">
+      <!-- Header -->
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Add New Student</h3>
+          <p class="modal-subtitle">Fill in all required fields marked with *</p>
+        </div>
+        <button class="modal-close" (click)="closeAddModal()">✕</button>
+      </div>
+
+      <!-- Scrollable Body -->
+      <div class="modal-body">
+        @if (addErrorMessage) {
+          <div class="alert alert-error">⚠️ {{ addErrorMessage }}</div>
+        }
+
+        <!-- Section: Personal Info -->
+        <div class="form-section">
+          <div class="section-label">Personal Information</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Student ID <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. STU-2024-001"
+                [(ngModel)]="newStudentForm.student_id"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">IC Number <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. 990101-14-1234"
+                [(ngModel)]="newStudentForm.nric"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. Ahmad bin Abdullah"
+                [(ngModel)]="newStudentForm.student_name"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="email"
+                placeholder="e.g. ahmad@student.edu.my"
+                [(ngModel)]="newStudentForm.email"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Academic Info -->
+        <div class="form-section">
+          <div class="section-label">Academic Information</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Intake <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. SEP2024"
+                [(ngModel)]="newStudentForm.intake"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Register Date <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="date"
+                [(ngModel)]="newStudentForm.register_date"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Complete Date</label>
+              <input class="form-input" type="date" [(ngModel)]="newStudentForm.complete_date" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Campus <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. Main Campus"
+                [(ngModel)]="newStudentForm.campus"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Course Code <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. CS101"
+                [(ngModel)]="newStudentForm.course_code"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeAddModal()" [disabled]="isSubmitting">
+          Cancel
+        </button>
+        <button class="btn-submit" (click)="submitAddStudent()" [disabled]="isSubmitting">
+          @if (isSubmitting) {
+            <span class="spinner"></span> Saving...
+          } @else {
+            Save Student
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Edit Student Modal -->
+@if (showEditModal) {
+  <div class="modal-backdrop" (click)="onEditBackdropClick($event)">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Edit Student</h3>
+          <p class="modal-subtitle">{{ editStudentForm.student_id }}</p>
+        </div>
+        <button class="modal-close" (click)="closeEditModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        @if (editErrorMessage) {
+          <div class="alert alert-error">⚠️ {{ editErrorMessage }}</div>
+        }
+
+        <!-- Personal Information -->
+        <div class="form-section">
+          <div class="section-label">Personal Information</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Student ID <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                [(ngModel)]="editStudentForm.student_id"
+                (input)="editErrorMessage = ''"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">IC Number <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                [(ngModel)]="editStudentForm.nric"
+                (input)="editErrorMessage = ''"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Full Name <span class="required">*</span></label>
+            <input
+              class="form-input"
+              type="text"
+              [(ngModel)]="editStudentForm.student_name"
+              (input)="editErrorMessage = ''"
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="email"
+                [(ngModel)]="editStudentForm.email"
+                (input)="editErrorMessage = ''"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic Information -->
+        <div class="form-section">
+          <div class="section-label">Academic Information</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Intake</label>
+              <input class="form-input" type="text" [(ngModel)]="editStudentForm.intake" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Course Code</label>
+              <input class="form-input" type="text" [(ngModel)]="editStudentForm.course_code" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Campus</label>
+              <input class="form-input" type="text" [(ngModel)]="editStudentForm.campus" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Register Date <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="date"
+                [(ngModel)]="editStudentForm.register_date"
+                (input)="editErrorMessage = ''"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Complete Date</label>
+              <input class="form-input" type="date" [(ngModel)]="editStudentForm.complete_date" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial & Credit -->
+        <div class="form-section">
+          <div class="section-label">Financial & Credit</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Balance (RM)</label>
+              <input
+                class="form-input"
+                type="number"
+                min="0"
+                step="0.01"
+                [(ngModel)]="editStudentForm.balance"
+                disabled
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="form-section">
+          <div class="section-label">Account Settings</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select class="form-input form-select" [(ngModel)]="editStudentForm.status">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Suspended">Suspended</option>
+                <option value="Graduated">Graduated</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeEditModal()" [disabled]="isUpdating">
+          Cancel
+        </button>
+        <button class="btn-submit" (click)="submitEditStudent()" [disabled]="isUpdating">
+          @if (isUpdating) {
+            <span class="spinner"></span> Updating...
+          } @else {
+            Save Changes
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Delete Confirmation Modal -->
+@if (showDeleteModal) {
+  <div class="modal-backdrop" (click)="onDeleteBackdropClick($event)">
+    <div class="modal-box modal-box-sm">
+      <div class="modal-header">
+        <h3 class="modal-title">Delete Student</h3>
+        <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="delete-icon-wrapper">
+          <div class="delete-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="28"
+              height="28"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"
+              />
+            </svg>
+          </div>
+        </div>
+        <p class="delete-title">Are you sure?</p>
+        <p class="delete-message">
+          You are about to delete
+          <strong>{{ studentToDelete?.student_name }}</strong>
+          ({{ studentToDelete?.student_id }}). This action cannot be undone.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeDeleteModal()" [disabled]="isDeleting">
+          Cancel
+        </button>
+        <button class="btn-danger" (click)="confirmDelete()" [disabled]="isDeleting">
+          @if (isDeleting) {
+            <span class="spinner spinner-red"></span> Deleting...
+          } @else {
+            Yes, Delete
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+<!-- Transaction Modal -->
+@if (showTransactionModal) {
+  <div class="modal-backdrop" (click)="onTransactionBackdropClick($event)">
+    <div class="modal-box modal-box-lg">
+      <!-- Header -->
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Transaction History</h3>
+          <p class="modal-subtitle">
+            {{ selectedStudent?.student_name }} · {{ selectedStudent?.student_id }}
+          </p>
+        </div>
+        <button class="modal-close" (click)="closeTransactionModal()">✕</button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body modal-body-tx">
+        <!-- Skeleton -->
+        @if (isLoadingTransactions) {
+          <div class="tx-skeleton">
+            @for (i of [1, 2, 3, 4, 5]; track i) {
+              <div class="tx-skeleton-row">
+                <div class="skeleton-block" style="width: 120px"></div>
+                <div class="skeleton-block" style="flex: 1"></div>
+                <div class="skeleton-block" style="width: 80px"></div>
+                <div class="skeleton-block" style="width: 70px"></div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Empty -->
+        @if (!isLoadingTransactions && transactions?.length == null) {
+          <div class="tx-empty">
+            <div class="tx-empty-icon">🧾</div>
+            <p>No transactions found for this student.</p>
+          </div>
+        }
+
+        <!-- Transaction List -->
+        @if (!isLoadingTransactions && transactions?.length != null) {
+          <div class="tx-summary">
+            Showing <strong>{{ transactions?.length }}</strong> of
+            <strong>{{ transactionTotalCount }}</strong> transactions
+          </div>
+
+          <div class="tx-table-wrapper">
+            <table class="tx-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (tx of transactions; track tx.pay_id; let i = $index) {
+                  <tr class="tx-row">
+                    <td class="tx-num">{{ i + 1 }}</td>
+                    <td class="tx-date">
+                      {{ tx.pay_date * 1000 | date: 'HH:mm:ss a, dd/MM/yyyy' }}
+                    </td>
+                    <td class="tx-desc">{{ tx.remark || '—' }}</td>
+                    @if (tx.credit != 0) {
+                      <td class="row-amount credit">
+                        <span class="badge text-bg-success">+ RM {{ tx.credit }}</span>
+                      </td>
+                    }
+                    @if (tx.debit != 0) {
+                      <td class="row-amount debit">
+                        <span class="badge text-bg-warning">- RM {{ tx.debit }}</span>
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Load More -->
+          @if (transactionHasNext) {
+            <div class="tx-load-more">
+              <button
+                class="btn-load-more"
+                (click)="loadMoreTransactions()"
+                [disabled]="isLoadingMoreTransactions"
+              >
+                @if (isLoadingMoreTransactions) {
+                  <span class="spinner"></span> Loading...
+                } @else {
+                  See More
+                  <span class="tx-remaining">
+                    ({{ transactionTotalCount - transactions.length }} remaining)
+                  </span>
+                }
+              </button>
+            </div>
+          }
+
+          <!-- End of records -->
+          @if (!transactionHasNext) {
+            <div class="tx-end">— End of transactions —</div>
+          }
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeTransactionModal()">Close</button>
+      </div>
+    </div>
+  </div>
+}

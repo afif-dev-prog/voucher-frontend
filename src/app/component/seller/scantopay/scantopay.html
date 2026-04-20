@@ -1,0 +1,296 @@
+<div class="seller-wrapper">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Seller Terminal</h2>
+      <p class="page-sub">
+        Seller ID: <strong>#{{ sellerId }}</strong>
+      </p>
+    </div>
+    <button class="btn-show-qr" (click)="openQrModal()">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        viewBox="0 0 16 16"
+      >
+        <path
+          d="M0 .5A.5.5 0 0 1 .5 0h3a.5.5 0 0 1 0 1H1v2.5a.5.5 0 0 1-1 0zm12 0a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V1h-2.5a.5.5 0 0 1-.5-.5M.5 12a.5.5 0 0 1 .5.5V15h2.5a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5v-3a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1H15v-2.5a.5.5 0 0 1 .5-.5M4 4h1v1H4z"
+        />
+        <path d="M7 2H2v5h5zM3 3h3v3H3zm2 8H4v1h1z" />
+        <path d="M7 9H2v5h5zm-4 1h3v3H3zm8-6h1v1h-1z" />
+        <path
+          d="M9 2h5v5H9zm1 1v3h3V3zM8 8v2h1v1H8v1h2v-2h1v2h1v-1h2v-1h-3V8zm2 2H9V9h1zm4 2h-1v1h-2v1h3zm-4 2v-1H8v1z"
+        />
+        <path d="M12 9h2V8h-2z" />
+      </svg>
+      My QR Code
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn" [class.tab-active]="activeTab === 'scan'" (click)="switchTab('scan')">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        viewBox="0 0 16 16"
+      >
+        <path
+          d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5M.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5"
+        />
+        <path
+          d="M3 4.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5"
+        />
+      </svg>
+      Scan QR
+    </button>
+    <button class="tab-btn" [class.tab-active]="activeTab === 'qr'" (click)="switchTab('qr')">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        viewBox="0 0 16 16"
+      >
+        <path
+          d="M0 .5A.5.5 0 0 1 .5 0h3a.5.5 0 0 1 0 1H1v2.5a.5.5 0 0 1-1 0zm12 0a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V1h-2.5a.5.5 0 0 1-.5-.5M.5 12a.5.5 0 0 1 .5.5V15h2.5a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5v-3a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1H15v-2.5a.5.5 0 0 1 .5-.5"
+        />
+        <path d="M4 4h1v1H4z" />
+        <path d="M7 2H2v5h5zM3 3h3v3H3zm2 8H4v1h1z" />
+        <path d="M7 9H2v5h5zm-4 1h3v3H3zm8-6h1v1h-1z" />
+        <path d="M9 2h5v5H9zm1 1v3h3V3z" />
+      </svg>
+      Receive
+    </button>
+  </div>
+
+  <!-- ── SCAN TAB ── -->
+  @if (activeTab === 'scan') {
+    <div class="scan-panel">
+      @if (isCameraActive) {
+        <!-- ✅ Clean camera viewport — no capture button -->
+        <div class="camera-viewport" [class.camera-hidden]="!isCameraActive">
+          <video #videoElement autoplay playsinline muted class="camera-video"></video>
+          <canvas #canvasElement class="camera-canvas-hidden"></canvas>
+
+          <div class="scan-overlay">
+            <div class="scan-frame">
+              <div class="corner tl"></div>
+              <div class="corner tr"></div>
+              <div class="corner bl"></div>
+              <div class="corner br"></div>
+              <div class="scan-line"></div>
+            </div>
+            <p class="scan-hint">Point at student's QR code</p>
+          </div>
+
+          <!-- Scanning indicator instead of button -->
+          <div class="scan-status">
+            <span class="scan-pulse"></span>
+            Scanning...
+          </div>
+        </div>
+      }
+
+      @if (!isCameraActive) {
+        <div class="camera-placeholder" [class.camera-error]="cameraError">
+          @if (isCameraLoading) {
+            <div class="camera-spinner"></div>
+            <p>Starting camera...</p>
+          } @else if (cameraError) {
+            <div class="camera-error-icon">📷</div>
+            <p>{{ cameraError }}</p>
+            <button class="btn-retry" (click)="startCamera()">Retry</button>
+          } @else {
+            <div class="camera-idle-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="48"
+                height="48"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"
+                />
+                <path
+                  d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"
+                />
+              </svg>
+            </div>
+            <p>Camera not started</p>
+            <button class="btn-start-camera" (click)="startCamera()">Start Camera</button>
+          }
+        </div>
+      }
+
+      <!-- Manual entry fallback -->
+      <div class="manual-entry">
+        <p class="manual-label">Or enter Student ID manually</p>
+        <div class="manual-row">
+          <input
+            class="manual-input"
+            type="text"
+            placeholder="e.g. STU-2024-001"
+            [(ngModel)]="scannedStudentId"
+          />
+          <button
+            class="btn-manual-pay"
+            (click)="openPaymentModal(scannedStudentId)"
+            [disabled]="!scannedStudentId.trim()"
+          >
+            Proceed
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── QR TAB ── -->
+  @if (activeTab === 'qr') {
+    <div class="qr-panel">
+      <div class="qr-card">
+        <div class="qr-card-header">
+          <p class="qr-card-title">Your Seller QR Code</p>
+          <p class="qr-card-sub">Students scan this to pay at your shop</p>
+        </div>
+        <div class="qr-image-wrapper">
+          @if (isGeneratingQr) {
+            <div class="qr-loading">Generating QR...</div>
+          } @else {
+            <img [src]="qrImageUrl" alt="Seller QR Code" class="qr-image" />
+          }
+        </div>
+        <div class="qr-seller-info">
+          <span class="qr-seller-label">Seller ID</span>
+          <span class="qr-seller-id">#{{ sellerId }}</span>
+        </div>
+        <button class="btn-enlarge-qr" (click)="openQrModal()">View Full Screen</button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ── PAYMENT MODAL ── -->
+@if (showPaymentModal) {
+  <div class="modal-backdrop" (click)="onPaymentBackdropClick($event)">
+    <div class="modal-box modal-payment">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">
+            @if (paymentSuccess) {
+              Payment Successful
+            } @else {
+              Confirm Payment
+            }
+          </h3>
+          <p class="modal-subtitle">Student: {{ scannedStudentId }}</p>
+        </div>
+        @if (!isProcessing) {
+          <button class="modal-close" (click)="closePaymentModal()">✕</button>
+        }
+      </div>
+
+      <div class="modal-body">
+        @if (!paymentSuccess) {
+          <!-- Amount input -->
+          <div class="amount-wrapper">
+            <span class="amount-prefix">RM</span>
+            <input
+              class="amount-input"
+              type="number"
+              placeholder="0.00"
+              min="0.01"
+              step="0.01"
+              [(ngModel)]="paymentAmount"
+              (input)="paymentError = ''"
+              [disabled]="isProcessing"
+              autofocus
+            />
+          </div>
+
+          @if (paymentError) {
+            <div class="alert alert-error">⚠️ {{ paymentError }}</div>
+          }
+
+          <!-- Quick amount buttons -->
+          <div class="quick-amounts">
+            <span class="quick-label">Quick Amount</span>
+            <div class="quick-btns">
+              @for (amt of [1, 2, 3, 5, 10, 20]; track amt) {
+                <button class="btn-quick" (click)="paymentAmount = amt" [disabled]="isProcessing">
+                  RM {{ amt }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Success state -->
+        @if (paymentSuccess) {
+          <div class="payment-success">
+            <div class="success-icon">✓</div>
+            <p class="success-amount">RM {{ paymentAmount | number: '1.2-2' }}</p>
+            <p class="success-msg">Payment processed successfully</p>
+
+            <!-- @if (paymentResult?.data?.balance !== undefined) {
+              <div class="balance-info">
+                Remaining Balance:
+                <strong>RM {{ paymentResult.data.balance | number: '1.2-2' }}</strong>
+              </div>
+            } -->
+
+            @if (paymentResult?.message) {
+              <div class="balance-info">{{ paymentResult?.message }}</div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        @if (!paymentSuccess) {
+          <button class="btn-cancel" (click)="closePaymentModal()" [disabled]="isProcessing">
+            Cancel
+          </button>
+          <button
+            class="btn-pay"
+            (click)="submitPayment()"
+            [disabled]="isProcessing || !paymentAmount"
+          >
+            @if (isProcessing) {
+              <span class="spinner"></span> Processing...
+            } @else {
+              Pay RM {{ paymentAmount || '0.00' | number: '1.2-2' }}
+            }
+          </button>
+        } @else {
+          <button class="btn-done" (click)="closePaymentModal()">Done</button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── QR FULLSCREEN MODAL ── -->
+@if (showQrModal) {
+  <div class="modal-backdrop" (click)="onQrBackdropClick($event)">
+    <div class="modal-box modal-qr">
+      <div class="modal-header">
+        <h3 class="modal-title">My QR Code</h3>
+        <button class="modal-close" (click)="closeQrModal()">✕</button>
+      </div>
+      <div class="modal-body qr-modal-body">
+        <img [src]="qrImageUrl" alt="Seller QR" class="qr-modal-image" />
+        <p class="qr-modal-hint">Students scan this code to make payment</p>
+        <div class="qr-modal-id">
+          <span>Seller ID</span>
+          <strong>#{{ sellerId }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+}
