@@ -37,26 +37,18 @@ export class Auth {
 
   // ── Logout ─────────────────────────────
   logout(): void {
-    const token = this.getToken();
+    const token = this.getToken(); // grab token FIRST before clearing
 
-    // Fire and forget
-    if (token) {
-      this.http
-        .post(
-          `${this.apiUrl}/logout`,
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        )
-        .subscribe({ error: () => {} });
-    }
-
-    // Small delay to show transition before clearing
     localStorage.removeItem('token');
     localStorage.removeItem('userInfo');
 
-    // Navigate — the NavigationStart event triggers the loader automatically
+    // Fire and forget AFTER clearing — 401 here doesn't matter
+    if (token) {
+      this.http
+        .post(`${this.apiUrl}/logout`, {}, { headers: { Authorization: `Bearer ${token}` } })
+        .subscribe({ error: () => {} }); // silently ignore any error
+    }
+
     this.router.navigate(['/login']);
   }
 
@@ -116,6 +108,9 @@ export class Auth {
 
   isRole(...roles: string[]): boolean {
     return roles.includes(this.getRole());
+  }
+  validate(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/validate`, {});
   }
 
   // ── Redirect after login ───────────────

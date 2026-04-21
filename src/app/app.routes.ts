@@ -11,6 +11,13 @@ export const routes: Routes = [
       import('./component/auth/unauthorized/unauthorized').then((m) => m.Unauthorized),
   },
 
+  {
+    path: 'authlog',
+    canActivate: [authGuard],
+    data: { roles: ['SUPERADMIN'] },
+    loadComponent: () => import('./component/auth/authlog/authlog').then((m) => m.Authlog),
+  },
+
   // ── Student ───────────────────────────
   {
     path: 'balance',
@@ -25,6 +32,13 @@ export const routes: Routes = [
     data: { roles: ['STUDENT'] },
     loadComponent: () =>
       import('./component/student/transhistory/transhistory').then((m) => m.Transhistory),
+  },
+  {
+    path: 'scan',
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT'] },
+    loadComponent: () =>
+      import('./component/student/studentscan/studentscan').then((m) => m.Studentscan),
   },
 
   // ── Seller ────────────────────────────
