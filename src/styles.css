@@ -3,6 +3,7 @@
 
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
+  padding-top: env(safe-area-inset-top);
   /*font-family: 'Poppins', sans-serif;*/
   background-color: #e7eaf6 !important;
   scroll-behavior: smooth;

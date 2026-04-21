@@ -33,7 +33,7 @@ export class Studentscan implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   studentId = '';
   constructor() {
-    this.studentId = this.auth.getName();
+    this.studentId = this.auth.getUserId();
   }
 
   // ── State ──────────────────────────────
@@ -86,6 +86,7 @@ export class Studentscan implements OnInit, OnDestroy {
       .subscribe({
         next: (res: any) => {
           this.currentBalance = res.data?.balance || 0;
+          console.log(this.currentBalance);
           this.cdr.markForCheck();
         },
       });
