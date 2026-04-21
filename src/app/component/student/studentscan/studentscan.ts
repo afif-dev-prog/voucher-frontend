@@ -170,17 +170,54 @@ export class Studentscan implements OnInit, OnDestroy {
   }
 
   // ── QR detected ───────────────────────
+  // onQrDetected(data: string): void {
+  //   this.stopCamera();
+  //   this.isValidatingSeller = true;
+  //   this.scanState = 'confirming';
+  //   this.cdr.markForCheck();
+
+  //   this.validateSeller(data);
+  // }
   onQrDetected(data: string): void {
     this.stopCamera();
     this.isValidatingSeller = true;
     this.scanState = 'confirming';
     this.cdr.markForCheck();
 
-    this.validateSeller(data);
+    this.sellerService
+      .getSellerList(1, 10, data)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          const sellers = res?.pagination?.data || res?.data || [];
+          const totalCount = res?.pagination?.totalCount;
+
+          if (totalCount === 1 && sellers.length > 0) {
+            const seller = sellers[0];
+            this.scannedSellerId = seller.s_id; // adjust to your actual field names
+            this.scannedSellerName = seller.username; // adjust to your actual field names
+            this.isValidatingSeller = false;
+            this.scanState = 'confirming';
+          } else {
+            // No seller found — show error
+            this.sellerValidError = 'This QR code does not belong to a registered seller.';
+            this.isValidatingSeller = false;
+            this.scanState = 'error';
+          }
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.sellerValidError = 'Could not validate seller. Please try again.';
+          this.isValidatingSeller = false;
+          this.scanState = 'error';
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   // ── Payment ───────────────────────────
   confirmPayment(): void {
+    console.log('seller id: ' + this.scannedSellerName + '' + 'student id: ' + this.studentId);
     if (!this.payAmount || this.payAmount <= 0) {
       this.payError = 'Please enter a valid amount.';
       return;
@@ -195,13 +232,15 @@ export class Studentscan implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     this.studentService
-      .studentPay(this.auth.getUserId(), this.scannedSellerId, this.payAmount)
+      .studentPay(this.studentId, this.scannedSellerName, this.payAmount)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
+          console.log(res);
           if (res?.success !== false) {
             this.successMsg = `RM ${this.payAmount.toFixed(2)} paid to ${this.scannedSellerName}`;
-            this.currentBalance -= this.payAmount;
+            // this.currentBalance -= this.payAmount;
+            this.ngOnInit();
             this.scanState = 'success';
           } else {
             this.payError = res?.message || 'Payment failed.';

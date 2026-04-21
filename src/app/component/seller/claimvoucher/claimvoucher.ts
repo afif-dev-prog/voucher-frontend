@@ -175,7 +175,7 @@ export class Claimvoucher implements OnInit, OnDestroy {
       .subscribe({
         next: (res: any) => {
           this.transactions = res.data || [];
-          console.log(this.transactions);
+          // console.log(this.transactions);
           // this.txTotalCount = res.pagination?.totalCount || 0;
           // this.txHasNext = res.pagination?.hasNext ?? false;
           // this.txPage = 1;
