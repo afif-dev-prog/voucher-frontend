@@ -18,7 +18,10 @@ app-transhistory,
 app-managestudent,
 app-manageseller,
 app-claimvoucher,
-app-permissions {
+app-permissions,
+app-authlog,
+app-viewbalance,
+app-login {
   height: 100%;
   width: 100%;
   overflow: hidden;

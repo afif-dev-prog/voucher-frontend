@@ -1,0 +1,402 @@
+<div class="authlog-wrapper">
+  <!-- Header -->
+  <div class="authlog-header">
+    <div class="authlog-header-left">
+      <div class="authlog-header-icon">🔐</div>
+      <div>
+        <h2 class="authlog-title">Auth Log & Session Manager</h2>
+        <p class="authlog-sub">Monitor logins and manage active user sessions</p>
+      </div>
+    </div>
+    @if (activeTab === 'sessions') {
+      <button class="btn-refresh" (click)="loadSessions()" [disabled]="isLoadingSessions">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="13"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0
+            1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0
+            0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0
+            .534 9z"
+          />
+          <path
+            fill-rule="evenodd"
+            d="M8 3c-1.552 0-2.94.707-3.857
+            1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002
+            5.002 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1
+            .771.636A6.002 6.002 0 0 1 2.083 9z"
+          />
+        </svg>
+        Refresh
+      </button>
+    }
+  </div>
+
+  <!-- Tabs -->
+  <div class="authlog-tabs">
+    <button
+      class="authlog-tab"
+      [class.active]="activeTab === 'sessions'"
+      (click)="activeTab = 'sessions'; loadSessions()"
+    >
+      🟢 Active Sessions
+      @if (sessions.length > 0) {
+        <span class="tab-count-badge">{{ sessions.length }}</span>
+      }
+    </button>
+    <button
+      class="authlog-tab"
+      [class.active]="activeTab === 'logs'"
+      (click)="activeTab = 'logs'; loadLogs()"
+    >
+      📋 Auth Logs
+    </button>
+  </div>
+
+  <!-- ══ ACTIVE SESSIONS ══ -->
+  @if (activeTab === 'sessions') {
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="search-wrapper-log">
+        <svg
+          class="search-icon-log"
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="13"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0
+            0 1.415-1.414zm-5.242 1.15a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"
+          />
+        </svg>
+        <input
+          class="filter-input"
+          type="text"
+          placeholder="Search user ID or IP..."
+          [(ngModel)]="sessionSearch"
+          (input)="loadSessions()"
+        />
+      </div>
+      <select class="filter-select" [(ngModel)]="sessionUserType" (change)="loadSessions()">
+        @for (opt of userTypeOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Skeleton -->
+    @if (isLoadingSessions) {
+      <div class="session-list">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="session-card skeleton-card">
+            <div style="display: flex; gap: 12px; align-items: center">
+              <div
+                class="skeleton-block"
+                style="width: 40px; height: 40px; border-radius: 50%"
+              ></div>
+              <div style="display: flex; flex-direction: column; gap: 6px; flex: 1">
+                <div class="skeleton-block" style="width: 120px"></div>
+                <div class="skeleton-block" style="width: 200px"></div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Empty -->
+    @if (!isLoadingSessions && sessions.length === 0) {
+      <div class="authlog-empty">
+        <div class="authlog-empty-icon">🔒</div>
+        <h3>No Active Sessions</h3>
+        <p>No users are currently logged in.</p>
+      </div>
+    }
+
+    <!-- Session cards -->
+    @if (!isLoadingSessions && sessions.length > 0) {
+      <div class="session-list">
+        @for (session of sessions; track session.session_id) {
+          <div class="session-card">
+            <div class="session-card-left">
+              <div class="session-avatar">
+                {{ session.user_id?.charAt(0)?.toUpperCase() }}
+              </div>
+              <div class="session-info">
+                <div class="session-info-top">
+                  <span class="session-user-id">{{ session.user_id }}</span>
+                  <span class="role-pill" [class]="getRoleClass(session.user_type)">
+                    {{ session.user_type }}
+                  </span>
+                </div>
+                <div class="session-meta">
+                  <span class="session-meta-item">
+                    🕐 {{ formatTimestamp(session.timestamp) }}
+                  </span>
+                  <span class="session-meta-item session-age">
+                    {{ getSessionAge(session.timestamp) }}
+                  </span>
+                  @if (session.ip_address) {
+                    <span class="session-meta-item"> 🌐 {{ session.ip_address }} </span>
+                  }
+                </div>
+                <div class="session-token-preview">
+                  🔑 {{ session.session_id?.substring(0, 16) }}...
+                </div>
+              </div>
+            </div>
+
+            <div class="session-card-right">
+              <button
+                class="btn-kill-all"
+                (click)="openKillAllModal(session.user_id)"
+                title="Kill all sessions for this user"
+              >
+                Kill All
+              </button>
+              <button class="btn-kill" (click)="openKillModal(session)" title="Kill this session">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="13"
+                  height="13"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5
+                    0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8
+                    8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646
+                    5.354a.5.5 0 0 1 0-.708"
+                  />
+                </svg>
+                Kill Session
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- ══ AUTH LOGS ══ -->
+  @if (activeTab === 'logs') {
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="search-wrapper-log">
+        <svg
+          class="search-icon-log"
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="13"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0
+            0 1.415-1.414zm-5.242 1.15a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"
+          />
+        </svg>
+        <input
+          class="filter-input"
+          type="text"
+          placeholder="Search user ID or IP..."
+          [(ngModel)]="logSearch"
+          (input)="onLogSearchInput()"
+        />
+      </div>
+      <select class="filter-select" [(ngModel)]="logAction" (change)="onFilterChange()">
+        @for (opt of actionOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+      <select class="filter-select" [(ngModel)]="logUserType" (change)="onFilterChange()">
+        @for (opt of userTypeOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container-log">
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>User ID</th>
+            <th>Role</th>
+            <th>Action</th>
+            <th>IP Address</th>
+            <th>Timestamp</th>
+            <th>Session ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoadingLogs) {
+            @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+              <tr>
+                <td><div class="skeleton-block" style="width: 24px"></div></td>
+                <td><div class="skeleton-block" style="width: 110px"></div></td>
+                <td><div class="skeleton-block" style="width: 70px"></div></td>
+                <td><div class="skeleton-block" style="width: 90px"></div></td>
+                <td><div class="skeleton-block" style="width: 90px"></div></td>
+                <td><div class="skeleton-block" style="width: 130px"></div></td>
+                <td><div class="skeleton-block" style="width: 100px"></div></td>
+              </tr>
+            }
+          } @else if (logs.length === 0) {
+            <tr>
+              <td colspan="7" class="log-empty-row">No logs found.</td>
+            </tr>
+          } @else {
+            @for (log of logs; track log.id; let i = $index) {
+              <tr class="log-row">
+                <td class="col-num">{{ getRowNumber(i) }}</td>
+                <td class="log-user-id">{{ log.user_id }}</td>
+                <td>
+                  <span class="role-pill" [class]="getRoleClass(log.user_type)">
+                    {{ log.user_type }}
+                  </span>
+                </td>
+                <td>
+                  <span class="action-badge" [class]="getActionClass(log.action)">
+                    {{ log.action }}
+                  </span>
+                </td>
+                <td class="log-ip">{{ log.ip_address || '—' }}</td>
+                <td class="log-ts">{{ formatTimestamp(log.timestamp) }}</td>
+                <td class="log-session">
+                  @if (log.session_id) {
+                    {{ log.session_id.substring(0, 12) }}...
+                  } @else {
+                    —
+                  }
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages > 1) {
+      <div class="pagination-wrapper">
+        <span class="page-info">
+          Showing {{ getRowNumber(0) }}–{{ getRowNumber(logs.length - 1) }} of {{ totalCount }}
+        </span>
+        <div class="pagination-controls">
+          <button
+            class="page-btn nav-btn"
+            (click)="goToPage(currentPage - 1)"
+            [disabled]="!hasPrevious"
+          >
+            ‹ Prev
+          </button>
+          @for (page of pageNumbers; track page) {
+            <button class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)">
+              {{ page }}
+            </button>
+          }
+          <button
+            class="page-btn nav-btn"
+            (click)="goToPage(currentPage + 1)"
+            [disabled]="!hasNext"
+          >
+            Next ›
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>
+
+<!-- ── KILL CONFIRM MODAL ── -->
+@if (showKillModal) {
+  <div class="modal-backdrop" (click)="!isKilling && closeKillModal()">
+    <div class="modal-box modal-box-sm" (click)="$event.stopPropagation()">
+      @if (killSuccess) {
+        <div class="modal-body kill-success">
+          <div class="kill-success-icon">✅</div>
+          <h3>{{ killSuccess }}</h3>
+        </div>
+      } @else {
+        <div class="modal-header">
+          <h3 class="modal-title">
+            @if (killMode === 'single') {
+              Terminate Session
+            } @else {
+              Terminate All Sessions
+            }
+          </h3>
+          <button class="modal-close" (click)="closeKillModal()" [disabled]="isKilling">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="kill-icon-wrapper">
+            <div class="kill-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="28"
+                height="28"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091
+                  1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0
+                  .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1
+                  5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"
+                />
+              </svg>
+            </div>
+          </div>
+          @if (killError) {
+            <div class="alert alert-error">⚠️ {{ killError }}</div>
+          }
+          @if (killMode === 'single') {
+            <p class="kill-title">Terminate this session?</p>
+            <p class="kill-message">
+              User <strong>{{ killTarget?.user_id }}</strong> will be immediately logged out. They
+              will need to log in again.
+            </p>
+            <div class="kill-detail">
+              <span class="kill-detail-label">Session</span>
+              <span class="kill-detail-value">
+                {{ killTarget?.session_id?.substring(0, 20) }}...
+              </span>
+            </div>
+            <div class="kill-detail">
+              <span class="kill-detail-label">Logged in</span>
+              <span class="kill-detail-value">
+                {{ formatTimestamp(killTarget?.timestamp) }}
+              </span>
+            </div>
+          } @else {
+            <p class="kill-title">Terminate ALL sessions?</p>
+            <p class="kill-message">
+              All active sessions for <strong>{{ killAllTarget }}</strong>
+              will be terminated immediately.
+            </p>
+          }
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeKillModal()" [disabled]="isKilling">
+            Cancel
+          </button>
+          <button class="btn-kill-confirm" (click)="confirmKill()" [disabled]="isKilling">
+            @if (isKilling) {
+              <span class="spinner spinner-white"></span> Terminating...
+            } @else {
+              ⚡ Confirm Terminate
+            }
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}

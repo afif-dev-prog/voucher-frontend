@@ -27,11 +27,16 @@ export class Scantopay implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
   sellerId: number = 0; // replace with actual seller ID from auth
+
+  sellerUsername = '';
   sellerRes: any = [];
 
   readonly apiUrl = 'http://localhost:5094/api/voucher/seller';
 
-  constructor() {}
+  constructor() {
+    this.sellerUsername = this.auth.getUserId();
+    console.log(this.sellerUsername);
+  }
 
   // Tabs
   activeTab: 'scan' | 'qr' = 'qr';
@@ -378,7 +383,7 @@ export class Scantopay implements OnInit, OnDestroy {
   loadSellerQr(): void {
     this.isGeneratingQr = true;
     // sellerId is guaranteed to be set here
-    const data = encodeURIComponent(`${this.sellerId}`);
+    const data = encodeURIComponent(`${this.sellerUsername}`);
     this.qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${data}&bgcolor=ffffff&color=1a1a2e&margin=16`;
     this.isGeneratingQr = false;
     this.cdr.markForCheck();
