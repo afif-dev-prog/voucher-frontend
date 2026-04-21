@@ -88,7 +88,7 @@ export class Viewbalance implements OnInit, AfterViewInit {
   loadTransactions(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    console.log(this.studentId);
+    // console.log(this.studentId);
 
     this.studentService
       .getTransactionsPaginated(this.studentId, this.currentPage, this.pageSize)
@@ -141,7 +141,7 @@ export class Viewbalance implements OnInit, AfterViewInit {
     this.studentService.getBalance(this.studentId).subscribe((res) => {
       this.apiRes = res.data;
       this.cdr.markForCheck();
-      console.log(this.apiRes);
+      // console.log(this.apiRes);
     });
   }
   // Add these helper methods to your component class:

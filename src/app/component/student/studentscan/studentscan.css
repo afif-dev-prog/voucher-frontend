@@ -643,3 +643,12 @@
     transform: rotate(360deg);
   }
 }
+
+/* studentscan.css */
+.scan-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scaleX(-1); /* un-mirror front camera visually */
+}

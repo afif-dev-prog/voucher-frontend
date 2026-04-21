@@ -299,7 +299,7 @@ export class Manageseller {
   // ── TRANSACTIONS ─────────────────────────────
   openTxModal(seller: any): void {
     this.selectedSeller = seller;
-    console.log(this.selectedSeller);
+    // console.log(this.selectedSeller);
     this.transactions = [];
     this.txPage = 1;
     this.txTotalCount = 0;
@@ -333,7 +333,7 @@ export class Manageseller {
       .subscribe({
         next: (res: any) => {
           this.transactions = res.data || [];
-          console.log(res);
+          // console.log(res);
           this.txTotalCount = res.pagination?.totalCount || 0;
           this.txHasNext = res.pagination?.hasNext ?? false;
           this.txPage = 1;
