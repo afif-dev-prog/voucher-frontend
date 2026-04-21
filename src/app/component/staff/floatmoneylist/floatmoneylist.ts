@@ -218,7 +218,7 @@ export class Floatmoneylist {
             row.pay_date = row.editPayDate;
             row.month_credit = row.editMonthCredit;
             row.editing = false;
-            console.log(res.message);
+            // console.log(res.message);
           }
           row.isSaving = false;
           this.cdr.markForCheck();

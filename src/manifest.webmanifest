@@ -3,7 +3,7 @@
   "short_name": "FVS",
   "description": "Food Voucher System",
   "theme_color": "#2a999b",
-  "background_color": "#f1f5f9",
+  "background_color": "#e7eaf6",
   "display": "standalone",
   "scope": "/",
   "start_url": "/",

@@ -40,10 +40,36 @@ export class Student {
   }
 
   studentPay(studentId: string, sellerId: string, amount: number): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/student/pay`, {
-      student_id: studentId,
-      seller_id: sellerId,
-      amount,
-    });
+    const headers = { 'content-type': 'application/json' };
+    return this.http
+      .post<any>(
+        `${this.apiUrl}/studentscantopay?studentId=${studentId}&sellerUsername=${sellerId}&amount=11`,
+        {
+          headers: headers,
+        },
+      )
+      .pipe(
+        catchError((error) => {
+          console.error('Error during scan to pay:', error);
+          throw error; // rethrow the error after logging it
+        }),
+      );
   }
+
+  // scantoPay(studentId: string, seller: number, amount: number) {
+  //   const headers = { 'content-type': 'application/json' };
+  //   return this.http
+  //     .post<any>(
+  //       `${this.apiUrl}/scantopay?studentId=${studentId}&sellerId=${seller}&price=${amount}`,
+  //       {
+  //         headers: headers,
+  //       },
+  //     )
+  //     .pipe(
+  //       catchError((error) => {
+  //         console.error('Error during scan to pay:', error);
+  //         throw error; // rethrow the error after logging it
+  //       }),
+  //     );
+  // }
 }

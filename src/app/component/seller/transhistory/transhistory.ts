@@ -75,7 +75,7 @@ export class Transhistory implements OnInit, OnDestroy {
   }
 
   loadTransactions(): void {
-    console.log(this.seller.username);
+    // console.log(this.seller.username);
     this.isLoading = true;
     this.errorMessage = '';
 
