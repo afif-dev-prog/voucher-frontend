@@ -1,0 +1,264 @@
+<div class="scan-wrapper">
+  <!-- ── IDLE state ── -->
+  @if (scanState === 'idle') {
+    <div class="scan-idle">
+      <div class="scan-idle-icon">
+        <svg
+          width="48"
+          height="48"
+          fill="none"
+          stroke="#2563eb"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          viewBox="0 0 24 24"
+        >
+          <rect width="7" height="7" x="3" y="3" rx="1" />
+          <rect width="7" height="7" x="14" y="3" rx="1" />
+          <rect width="7" height="7" x="3" y="14" rx="1" />
+          <path d="M14 14h3v3M14 17h.01M17 14v.01M17 17h.01" />
+        </svg>
+      </div>
+      <h2 class="scan-idle-title">Scan Seller QR</h2>
+      <p class="scan-idle-sub">
+        Point your camera at a seller's QR code to make a payment. Only seller QR codes are
+        accepted.
+      </p>
+
+      <!-- Balance pill -->
+      <div class="balance-pill">
+        <span class="balance-pill-label">Balance</span>
+        <span class="balance-pill-value"> RM {{ currentBalance | number: '1.2-2' }} </span>
+      </div>
+
+      <button class="btn-start-scan" (click)="startCamera()">
+        <svg
+          width="16"
+          height="16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+          />
+          <circle cx="12" cy="13" r="4" />
+        </svg>
+        Open Camera
+      </button>
+    </div>
+  }
+
+  <!-- ── SCANNING state ── -->
+  @if (scanState === 'scanning') {
+    <div class="scan-camera-section">
+      <!-- Viewfinder -->
+      <div class="scan-viewfinder">
+        <video #videoEl autoplay playsinline muted class="scan-video"></video>
+        <canvas #canvasEl class="scan-canvas-hidden"></canvas>
+
+        <!-- Corner guides -->
+        <div class="vf-corner vf-tl"></div>
+        <div class="vf-corner vf-tr"></div>
+        <div class="vf-corner vf-bl"></div>
+        <div class="vf-corner vf-br"></div>
+
+        <!-- Scan line animation -->
+        <div class="scan-line"></div>
+
+        <!-- Label -->
+        <div class="scan-hint-badge">
+          <span class="scan-dot"></span>
+          Scanning for seller QR...
+        </div>
+      </div>
+
+      <p class="scan-camera-note">Only QR codes from registered sellers will be accepted</p>
+
+      <button class="btn-cancel-scan" (click)="resetScan()">Cancel</button>
+    </div>
+  }
+
+  <!-- ── CONFIRMING state ── -->
+  @if (scanState === 'confirming') {
+    <div class="scan-confirm">
+      @if (isValidatingSeller) {
+        <div class="validating-state">
+          <span class="spinner spinner-blue spinner-lg"></span>
+          <p class="validating-text">Validating seller QR...</p>
+        </div>
+      } @else {
+        <!-- Seller info -->
+        <div class="seller-card">
+          <div class="seller-card-icon">
+            <svg
+              width="22"
+              height="22"
+              fill="none"
+              stroke="#15803d"
+              stroke-width="2"
+              stroke-linecap="round"
+              viewBox="0 0 24 24"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9,22 9,12 15,12 15,22" />
+            </svg>
+          </div>
+          <div class="seller-card-info">
+            <p class="seller-card-label">Paying to</p>
+            <p class="seller-card-name">{{ scannedSellerName }}</p>
+            <p class="seller-card-id">{{ scannedSellerId }}</p>
+          </div>
+          <div class="seller-verified-badge">
+            <svg width="12" height="12" fill="#15803d" viewBox="0 0 16 16">
+              <path
+                d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75
+                0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094
+                2.093 3.473-4.425z"
+              />
+            </svg>
+            Verified Seller
+          </div>
+        </div>
+
+        <!-- Balance row -->
+        <div class="confirm-balance-row">
+          <span class="confirm-balance-label">Your balance</span>
+          <span class="confirm-balance-value"> RM {{ currentBalance | number: '1.2-2' }} </span>
+        </div>
+
+        <!-- Amount input -->
+        <div class="amount-field">
+          <label class="amount-label">Amount to Pay</label>
+          <div class="amount-input-wrapper">
+            <span class="amount-prefix">RM</span>
+            <input
+              class="amount-input"
+              type="number"
+              min="0.01"
+              step="0.01"
+              placeholder="0.00"
+              [(ngModel)]="payAmount"
+              (input)="payError = ''"
+            />
+          </div>
+
+          <!-- Quick amount chips -->
+          <div class="quick-amounts">
+            @for (amt of [2, 3, 4, 5, 8, 10]; track amt) {
+              <button
+                class="quick-amt-chip"
+                [class.selected]="payAmount === amt"
+                (click)="payAmount = amt; payError = ''"
+              >
+                RM {{ amt }}
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (payError) {
+          <div class="pay-error-banner">
+            <svg width="13" height="13" fill="#dc2626" viewBox="0 0 16 16">
+              <path
+                d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091
+                1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0
+                .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1
+                5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"
+              />
+            </svg>
+            {{ payError }}
+          </div>
+        }
+
+        <div class="confirm-actions">
+          <button class="btn-rescan" (click)="resetScan()">Rescan</button>
+          <button
+            class="btn-pay"
+            (click)="confirmPayment()"
+            [disabled]="!payAmount || payAmount <= 0"
+          >
+            <svg
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            Pay RM {{ payAmount | number: '1.2-2' }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── PROCESSING state ── -->
+  @if (scanState === 'processing') {
+    <div class="scan-processing">
+      <div class="processing-ring">
+        <span class="spinner spinner-blue spinner-xl"></span>
+      </div>
+      <h3 class="processing-title">Processing Payment</h3>
+      <p class="processing-sub">RM {{ payAmount | number: '1.2-2' }} → {{ scannedSellerName }}</p>
+    </div>
+  }
+
+  <!-- ── SUCCESS state ── -->
+  @if (scanState === 'success') {
+    <div class="scan-success">
+      <div class="success-ring">
+        <div class="success-icon">
+          <svg
+            width="36"
+            height="36"
+            fill="none"
+            stroke="#15803d"
+            stroke-width="2"
+            stroke-linecap="round"
+            viewBox="0 0 24 24"
+          >
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <path d="M22 4 12 14.01l-3-3" />
+          </svg>
+        </div>
+      </div>
+      <h3 class="success-title">Payment Successful</h3>
+      <p class="success-msg">{{ successMsg }}</p>
+
+      <div class="success-balance-card">
+        <span class="success-balance-label">Remaining Balance</span>
+        <span class="success-balance-value"> RM {{ currentBalance | number: '1.2-2' }} </span>
+      </div>
+
+      <button class="btn-scan-again" (click)="resetScan()">Scan Again</button>
+    </div>
+  }
+
+  <!-- ── ERROR state ── -->
+  @if (scanState === 'error') {
+    <div class="scan-error-state">
+      <div class="error-icon-circle">
+        <svg
+          width="32"
+          height="32"
+          fill="none"
+          stroke="#dc2626"
+          stroke-width="2"
+          stroke-linecap="round"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M15 9l-6 6M9 9l6 6" />
+        </svg>
+      </div>
+      <h3 class="error-title">Invalid QR Code</h3>
+      <p class="error-msg">{{ sellerValidError }}</p>
+      <button class="btn-scan-again" (click)="resetScan()">Try Again</button>
+    </div>
+  }
+</div>

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { catchError, of } from 'rxjs';
+import { catchError, Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -31,5 +31,19 @@ export class Student {
           return of(error.status);
         }),
       );
+  }
+
+  validateSeller(scannedId: string): Observable<any> {
+    return this.http
+      .get<any>(`${this.apiUrl}/seller/validate/${scannedId}`)
+      .pipe(catchError(() => of({ success: false, isSeller: false })));
+  }
+
+  studentPay(studentId: string, sellerId: string, amount: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/student/pay`, {
+      student_id: studentId,
+      seller_id: sellerId,
+      amount,
+    });
   }
 }

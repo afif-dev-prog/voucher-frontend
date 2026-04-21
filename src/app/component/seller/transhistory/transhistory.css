@@ -334,3 +334,128 @@
     display: none;
   }
 }
+
+/* Card list */
+.tx-cards {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Card */
+.tx-card {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  align-items: flex-start;
+}
+
+/* Optional icon */
+.tx-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #e0f2fe;
+  color: #0284c7;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+/* Content */
+.tx-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Top row */
+.tx-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tx-card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Amount */
+.tx-card-amount {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.tx-card-amount.credit {
+  color: #16a34a;
+}
+
+.tx-card-amount.debit {
+  color: #dc2626;
+}
+
+/* Subtitle */
+.tx-card-sub {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Bottom row */
+.tx-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.tx-card-date {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* Status */
+.tx-card-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tx-card-status.success {
+  color: #16a34a;
+}
+
+.tx-mobile-title {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .table-container {
+    display: none;
+  }
+
+  .tx-cards {
+    display: flex;
+    height: 220px;
+    width: 100%;
+    overflow-y: auto;
+    margin: 10px 0px;
+    padding: 10px 0px;
+    /* background-color: #cfcece; */
+    border-radius: 0.5em;
+  }
+  .tx-card {
+    margin: 0px 10px;
+  }
+
+  .tx-mobile-title {
+    display: flex;
+    font-weight: bold;
+  }
+}

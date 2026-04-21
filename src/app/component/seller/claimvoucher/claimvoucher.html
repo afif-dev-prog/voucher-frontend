@@ -255,14 +255,14 @@
             </div>
           </div>
           <div class="preview-table-scroll">
-            <table class="preview-table">
+            <!-- ── DESKTOP TABLE ── -->
+            <table class="preview-table desktop-table">
               <thead>
                 <tr>
                   <th>#</th>
                   <th>Date & Time</th>
                   <th>Student ID</th>
                   <th>Amount</th>
-                  <!-- <th>Credit</th> -->
                 </tr>
               </thead>
               <tbody>
@@ -275,14 +275,7 @@
                     <td class="col-id">{{ tx.student_id || '—' }}</td>
                     <td>
                       @if (tx.debit > 0) {
-                        <span class="amount-debit">- RM {{ tx.debit | number: '1.2-2' }}</span>
-                      } @else {
-                        <span class="muted">—</span>
-                      }
-                    </td>
-                    <td>
-                      @if (tx.credit > 0) {
-                        <span class="amount-credit">+ RM {{ tx.credit | number: '1.2-2' }}</span>
+                        <span class="amount-credit">+ RM {{ tx.debit | number: '1.2-2' }}</span>
                       } @else {
                         <span class="muted">—</span>
                       }
@@ -296,13 +289,68 @@
                   <td>
                     <span class="amount-credit">RM {{ totalDebit | number: '1.2-2' }}</span>
                   </td>
-                  <!-- <td>
-                    <span class="amount-credit">RM {{ totalCredit | number: '1.2-2' }}</span>
-                  </td> -->
-                  <td></td>
                 </tr>
               </tfoot>
             </table>
+
+            <!-- ── MOBILE CARDS ── -->
+            <div class="mobile-tx-list">
+              <!-- Summary pill -->
+              <div class="mobile-summary-pill">
+                <span class="mobile-summary-count"> {{ transactions.length }} transactions </span>
+                <span class="mobile-summary-total">
+                  Total: <strong>RM {{ totalDebit | number: '1.2-2' }}</strong>
+                </span>
+              </div>
+
+              @for (tx of transactions; track tx.h_id; let i = $index) {
+                <div class="mobile-tx-card">
+                  <!-- Left: index + icon -->
+                  <div class="mobile-tx-left">
+                    <div class="mobile-tx-num">{{ i + 1 }}</div>
+                    <div class="mobile-tx-icon">
+                      <svg
+                        width="14"
+                        height="14"
+                        fill="none"
+                        stroke="#15803d"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 5v14M5 12l7-7 7 7" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- Middle: info -->
+                  <div class="mobile-tx-info">
+                    <p class="mobile-tx-student">{{ tx.student_id || '—' }}</p>
+                    <p class="mobile-tx-date">
+                      {{ tx.pay_date * 1000 | date: 'dd MMM yyyy' }}
+                      <span class="mobile-tx-time">
+                        {{ tx.pay_date * 1000 | date: 'hh:mm a' }}
+                      </span>
+                    </p>
+                  </div>
+
+                  <!-- Right: amount -->
+                  <div class="mobile-tx-amount-col">
+                    @if (tx.debit > 0) {
+                      <span class="mobile-tx-amount"> +RM {{ tx.debit | number: '1.2-2' }} </span>
+                    } @else {
+                      <span class="muted">—</span>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Mobile totals row -->
+              <div class="mobile-totals-row">
+                <span class="mobile-totals-label">Total Claimable</span>
+                <span class="mobile-totals-value"> RM {{ totalDebit | number: '1.2-2' }} </span>
+              </div>
+            </div>
           </div>
         </div>
       }

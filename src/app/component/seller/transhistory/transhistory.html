@@ -202,4 +202,54 @@
       }
     </div>
   }
+  <!-- Card List -->
+  @if (!isLoading && transactions.length > 0) {
+    <span class="tx-mobile-title">Transactions</span>
+    <div class="tx-cards">
+      @for (tx of transactions; track tx.h_id) {
+        <div class="tx-card">
+          <!-- LEFT ICON (optional remove if not needed) -->
+          <!-- <div class="tx-card-icon">RM</div> -->
+
+          <!-- MAIN CONTENT -->
+          <div class="tx-card-content">
+            <!-- TOP ROW -->
+            <div class="tx-card-top">
+              <div class="tx-card-title">
+                {{ tx.remark || 'Transaction' }}
+              </div>
+
+              <div
+                class="tx-card-amount"
+                [class.credit]="tx.debit > 0"
+                [class.debit]="tx.credit > 0"
+              >
+                @if (tx.debit > 0) {
+                  + RM {{ tx.debit | number: '1.2-2' }}
+                } @else if (tx.credit > 0) {
+                  - RM {{ tx.credit | number: '1.2-2' }}
+                } @else {
+                  RM 0.00
+                }
+              </div>
+            </div>
+
+            <!-- SUBTITLE -->
+            <div class="tx-card-sub">
+              {{ tx.student_id || '—' }}
+            </div>
+
+            <!-- BOTTOM ROW -->
+            <div class="tx-card-bottom">
+              <span class="tx-card-date">
+                {{ tx.pay_date * 1000 | date: 'dd MMM yyyy' }}
+              </span>
+
+              <!-- <span class="tx-card-status success"> Success </span> -->
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
 </div>

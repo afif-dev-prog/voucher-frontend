@@ -62,7 +62,7 @@ export class Transhistory implements OnInit {
   loadTransactions(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    console.log(this.studentId);
+    // console.log(this.studentId);
 
     this.studentService
       .getTransactionsPaginated(this.studentId, this.currentPage, this.pageSize)
@@ -92,20 +92,22 @@ export class Transhistory implements OnInit {
     this.isLoadingMore = true;
     const nextPage = this.currentPage + 1;
 
-    this.studentService.getTransactionsPaginated('3511050633', nextPage, this.pageSize).subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.transactions = [...this.transactions, ...res.data]; // append, not replace
-          this.pagination = res.pagination;
-          this.cdr.markForCheck();
-          this.currentPage = nextPage;
-        }
-        this.isLoadingMore = false;
-      },
-      error: () => {
-        this.isLoadingMore = false;
-      },
-    });
+    this.studentService
+      .getTransactionsPaginated(this.studentId, nextPage, this.pageSize)
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.transactions = [...this.transactions, ...res.data]; // append, not replace
+            this.pagination = res.pagination;
+            this.cdr.markForCheck();
+            this.currentPage = nextPage;
+          }
+          this.isLoadingMore = false;
+        },
+        error: () => {
+          this.isLoadingMore = false;
+        },
+      });
   }
 
   // For double-entry: credit = admin top-up received

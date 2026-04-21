@@ -4,10 +4,10 @@
     <div>
       <h2 class="page-title">Seller Terminal</h2>
       <p class="page-sub">
-        Seller ID: <strong>#{{ sellerId }}</strong>
+        Seller Username: <strong>#{{ sellerUsername }}</strong>
       </p>
     </div>
-    <button class="btn-show-qr" (click)="openQrModal()">
+    <!-- <button class="btn-show-qr" (click)="openQrModal()">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -26,7 +26,7 @@
         <path d="M12 9h2V8h-2z" />
       </svg>
       My QR Code
-    </button>
+    </button> -->
   </div>
 
   <!-- Tabs -->
@@ -166,8 +166,8 @@
           }
         </div>
         <div class="qr-seller-info">
-          <span class="qr-seller-label">Seller ID</span>
-          <span class="qr-seller-id">#{{ sellerId }}</span>
+          <span class="qr-seller-label">Seller Username</span>
+          <span class="qr-seller-id">#{{ sellerUsername }}</span>
         </div>
         <button class="btn-enlarge-qr" (click)="openQrModal()">View Full Screen</button>
       </div>
@@ -287,8 +287,8 @@
         <img [src]="qrImageUrl" alt="Seller QR" class="qr-modal-image" />
         <p class="qr-modal-hint">Students scan this code to make payment</p>
         <div class="qr-modal-id">
-          <span>Seller ID</span>
-          <strong>#{{ sellerId }}</strong>
+          <span>Seller Username</span>
+          <strong>#{{ sellerUsername }}</strong>
         </div>
       </div>
     </div>
