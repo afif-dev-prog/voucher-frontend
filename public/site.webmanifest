@@ -1,6 +1,6 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "FVS",
+  "short_name": "FVS",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

@@ -70,7 +70,7 @@ export class Viewbalance implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.getBalance();
     this.studentId = this.auth.getUserId();
-    console.log(this.studentId);
+    // console.log(this.studentId);
 
     this.studentService
       .getTransactionsPaginated(this.studentId, this.currentPage, this.pageSize)
