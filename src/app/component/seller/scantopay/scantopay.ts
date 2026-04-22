@@ -35,7 +35,7 @@ export class Scantopay implements OnInit, OnDestroy {
 
   constructor() {
     this.sellerUsername = this.auth.getUserId();
-    console.log(this.sellerUsername);
+    // console.log(this.sellerUsername);
   }
 
   // Tabs
@@ -84,7 +84,7 @@ export class Scantopay implements OnInit, OnDestroy {
   getSellerId(): number {
     this.sellerService.getSellerList(1, 10, this.sellerName).subscribe((res) => {
       this.sellerRes = res.data[0];
-      console.log(this.sellerRes);
+      // console.log(this.sellerRes);
     });
     return this.sellerId;
   }
@@ -109,7 +109,7 @@ export class Scantopay implements OnInit, OnDestroy {
     this.cameraError = '';
     this.cdr.markForCheck();
 
-    console.log('🎥 Requesting camera access...');
+    // console.log('🎥 Requesting camera access...');
 
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({
@@ -129,12 +129,12 @@ export class Scantopay implements OnInit, OnDestroy {
       if (this.videoElement?.nativeElement) {
         this.videoElement.nativeElement.srcObject = this.stream;
         await this.videoElement.nativeElement.play();
-        console.log('✅ Camera started successfully');
+        // console.log('✅ Camera started successfully');
         this.startQrScanning(); // ← uses jsQR now
         this.cdr.markForCheck();
       }
     } catch (err: any) {
-      console.error('❌ Camera error:', err);
+      // console.error('❌ Camera error:', err);
       this.stream?.getTracks().forEach((t) => t.stop());
       this.stream = null;
       this.isCameraLoading = false;
@@ -191,7 +191,7 @@ export class Scantopay implements OnInit, OnDestroy {
   //   }
   // }
   startQrScanning(): void {
-    console.log('📷 Starting jsQR scanning...');
+    // console.log('📷 Starting jsQR scanning...');
 
     this.scanInterval = setInterval(() => {
       this.autoScanFrame();
@@ -220,7 +220,7 @@ export class Scantopay implements OnInit, OnDestroy {
 
     // Video must be ready
     if (video.readyState !== video.HAVE_ENOUGH_DATA) {
-      console.log('⏳ Video not ready yet...');
+      // console.log('⏳ Video not ready yet...');
       return;
     }
 
@@ -237,7 +237,7 @@ export class Scantopay implements OnInit, OnDestroy {
     });
 
     if (code) {
-      console.log('🎯 QR Detected!', code.data);
+      // console.log('🎯 QR Detected!', code.data);
       this.onQrDetected(code.data);
     }
   }
@@ -270,14 +270,14 @@ export class Scantopay implements OnInit, OnDestroy {
   }
 
   onQrDetected(value: string): void {
-    console.log('🚀 onQrDetected called with:', value);
+    // console.log('🚀 onQrDetected called with:', value);
 
     if (this.showPaymentModal) {
-      console.log('⛔ Modal already open — ignoring scan');
+      // console.log('⛔ Modal already open — ignoring scan');
       return;
     }
 
-    console.log('✅ Proceeding to payment modal...');
+    // console.log('✅ Proceeding to payment modal...');
     this.stopCamera();
     this.scannedStudentId = value;
     this.openPaymentModal(value);
@@ -333,24 +333,24 @@ export class Scantopay implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
-          console.log('✅ Payment response:', res);
+          // console.log('✅ Payment response:', res);
 
           if (res.success !== false) {
             // Success — show success state inside modal
             this.paymentSuccess = true;
             this.paymentResult = res;
             this.isProcessing = false;
-            console.log('💰 Payment successful');
+            // console.log('💰 Payment successful');
           } else {
             // API returned failure
             this.paymentError = res.message || 'Payment failed. Please try again.';
             this.isProcessing = false;
-            console.error('❌ Payment failed:', res.message);
+            // console.error('❌ Payment failed:', res.message);
           }
           this.cdr.markForCheck();
         },
         error: (err: any) => {
-          console.error('❌ Payment error:', err);
+          // console.error('❌ Payment error:', err);
           this.paymentError = err?.error?.message || 'Something went wrong. Please try again.';
           this.isProcessing = false;
           this.cdr.markForCheck();
@@ -367,15 +367,15 @@ export class Scantopay implements OnInit, OnDestroy {
           if (res?.data?.length > 0) {
             this.sellerRes = res.data[0];
             this.sellerId = this.sellerRes.s_id;
-            console.log('✅ Seller ID:', this.sellerId);
+            // console.log('✅ Seller ID:', this.sellerId);
             this.loadSellerQr(); // ← only called AFTER sellerId is set
           } else {
-            console.warn('⚠️ No seller found for name:', this.sellerName);
+            // console.warn('⚠️ No seller found for name:', this.sellerName);
           }
           this.cdr.markForCheck();
         },
         error: (err) => {
-          console.error('❌ Failed to load seller:', err);
+          // console.error('❌ Failed to load seller:', err);
         },
       });
   }
