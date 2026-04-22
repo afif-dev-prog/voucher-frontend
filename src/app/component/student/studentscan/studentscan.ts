@@ -79,14 +79,14 @@ export class Studentscan implements OnInit, OnDestroy {
   }
 
   loadBalance(): void {
-    console.log(this.studentId);
+    // console.log(this.studentId);
     this.studentService
       .getBalance(this.studentId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
           this.currentBalance = res.data?.balance || 0;
-          console.log(this.currentBalance);
+          // console.log(this.currentBalance);
           this.cdr.markForCheck();
         },
       });
@@ -217,7 +217,7 @@ export class Studentscan implements OnInit, OnDestroy {
 
   // ── Payment ───────────────────────────
   confirmPayment(): void {
-    console.log('seller id: ' + this.scannedSellerName + '' + 'student id: ' + this.studentId);
+    // console.log('seller id: ' + this.scannedSellerName + '' + 'student id: ' + this.studentId);
     if (!this.payAmount || this.payAmount <= 0) {
       this.payError = 'Please enter a valid amount.';
       return;
@@ -236,7 +236,7 @@ export class Studentscan implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
-          console.log(res);
+          // console.log(res);
           if (res?.success !== false) {
             this.successMsg = `RM ${this.payAmount.toFixed(2)} paid to ${this.scannedSellerName}`;
             // this.currentBalance -= this.payAmount;

@@ -453,7 +453,7 @@ export class Managestudent {
       .subscribe({
         next: (response: any) => {
           this.transactions = response?.data;
-          console.log(this.transactions);
+          // console.log(this.transactions);
           this.transactionTotalCount = response?.pagination?.totalCount;
           this.transactionHasNext = response?.pagination?.hasNext;
           this.transactionPage = 1;
