@@ -1,3 +1,8 @@
+/* In each routed component's CSS */
+:host {
+  display: block;
+  width: 100%;
+}
 .perm-wrapper {
   max-width: 960px;
   margin: 0 auto;

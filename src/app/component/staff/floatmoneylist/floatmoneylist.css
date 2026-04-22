@@ -1,3 +1,8 @@
+/* In each routed component's CSS */
+:host {
+  display: block;
+  width: 100%;
+}
 .float-wrapper {
   max-width: 1100px;
   margin: 0 auto;

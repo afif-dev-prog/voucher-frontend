@@ -1,3 +1,9 @@
+/* In each routed component's CSS */
+:host {
+  display: block;
+  width: 100%;
+}
+
 .login-page {
   min-height: 100vh;
   display: flex;
