@@ -1,3 +1,8 @@
+/* In each routed component's CSS */
+:host {
+  display: block;
+  width: 100%;
+}
 .scan-wrapper {
   max-width: 480px;
   margin: 0 auto;
