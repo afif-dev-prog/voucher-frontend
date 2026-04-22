@@ -70,7 +70,7 @@ export class Transhistory implements OnInit {
         next: (res) => {
           if (res.success) {
             this.transactions = res.data;
-            console.log(this.transactions);
+            // console.log(this.transactions);
             this.cdr.markForCheck();
             this.pagination = res.pagination;
             this.currentPage = 1;

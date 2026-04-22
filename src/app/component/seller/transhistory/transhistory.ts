@@ -85,7 +85,7 @@ export class Transhistory implements OnInit, OnDestroy {
       .subscribe({
         next: (response: any) => {
           this.transactions = response?.data || [];
-          console.log(response);
+          // console.log(response);
           this.totalCount = response.pagination?.totalCount;
           this.totalPages = response.pagination?.totalPages;
           this.hasPrevious = response.pagination?.hasPrevious;
