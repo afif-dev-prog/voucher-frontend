@@ -1,7 +1,13 @@
+/* In each routed component's CSS */
+:host {
+  display: block;
+  width: 100%;
+}
+
 .wallet-wrapper {
   max-width: 480px;
   margin: 0 auto;
-  padding: 20px 16px 40px;
+  /* padding: 20px 16px 40px; */
   font-family: 'Segoe UI', sans-serif;
   display: flex;
   flex-direction: column;
@@ -288,7 +294,7 @@
 }
 
 /* ── Responsive ── */
-@media (max-width: 400px) {
+@media screen and (max-width: 400px) {
   .wallet-balance {
     font-size: 28px;
   }
@@ -303,10 +309,10 @@
   }
 }
 
-@media (max-width: 700px) {
+@media screen and (max-width: 700px) {
   .wallet-wrapper {
-    padding: 0 0 20px 0;
-    margin: 30px 0px;
+    padding: 0;
+    /* margin: 30px 0px; */
     overflow-y: auto;
   }
 }

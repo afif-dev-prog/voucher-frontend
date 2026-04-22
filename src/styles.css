@@ -1,18 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
+html,
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   padding-top: env(safe-area-inset-top);
-  /*font-family: 'Poppins', sans-serif;*/
   background-color: #e7eaf6 !important;
   scroll-behavior: smooth;
-  /* height: 100%; */
+  height: 100%;
   margin: 0;
   padding: 0;
+  width: 100%;
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-app-main {
+/* app-main {
   height: 100%;
 }
 
@@ -24,15 +27,11 @@ app-manageseller,
 app-claimvoucher,
 app-permissions,
 app-authlog,
-app-viewbalance,
-app-login,
 app-scantopay {
   height: 100%;
   width: 100%;
   overflow-y: auto;
-  /* margin-bottom: 40px; */
-  /* padding: 20px; */
-}
+} */
 
 .scrollbar::-webkit-scrollbar {
   width: 10px !important;
@@ -74,17 +73,12 @@ router-outlet + * {
 
 /* Prevent content from hiding behind fixed topbar and bottom nav on mobile */
 @media screen and (max-width: 700px) {
-  .screen-content {
-    padding-top: 60px; /* topbar height */
-    padding-bottom: 80px; /* bottom nav height */
-  }
-
   .screen-container {
     margin-left: 0 !important;
   }
 }
 
-@media screen and (max-width: 400px) {
+/* @media screen and (max-width: 400px) {
   .screen-content {
     padding-top: 56px;
     padding-bottom: 72px;
@@ -98,16 +92,14 @@ router-outlet + * {
   app-claimvoucher,
   app-permissions,
   app-authlog,
-  app-viewbalance,
-  app-login,
   app-scantopay {
     max-height: 500px;
     padding: 20px 0px;
   }
-}
+} */
 
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
+/* @supports (padding-bottom: env(safe-area-inset-bottom)) {
   body {
     padding-bottom: env(safe-area-inset-bottom);
   }
-}
+} */
