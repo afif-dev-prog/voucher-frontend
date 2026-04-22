@@ -36,12 +36,6 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withRouterConfig({ onSameUrlNavigation: 'reload' })),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initSession,
-      deps: [Auth],
-      multi: true,
-    },
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',

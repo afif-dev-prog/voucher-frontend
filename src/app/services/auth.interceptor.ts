@@ -16,8 +16,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(cloned).pipe(
     catchError((err: HttpErrorResponse) => {
-      // Token expired or unauthorized — force logout
-      if (err.status === 401) {
+      // ── Only force logout on 401 if NOT the login endpoint ──
+      const isLoginRequest = req.url.includes('/auth/login');
+      if (err.status === 401 && !isLoginRequest) {
         auth.logout();
         router.navigate(['/login']);
       }

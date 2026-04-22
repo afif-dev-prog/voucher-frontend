@@ -47,6 +47,22 @@
       </div>
     </div>
   </div>
+  @if (totalPages > 1) {
+    <div class="pagination-wrapper mobile">
+      <span class="page-info">
+        {{ getRowNumber(0) }}–{{ getRowNumber(rows.length - 1) }} of {{ totalCount }}
+      </span>
+      <div class="pagination-controls">
+        <button class="page-btn nav-btn" (click)="previousPage()" [disabled]="!hasPrevious">
+          ‹
+        </button>
+        <span style="font-size: 0.85rem; color: #374151; padding: 0 8px">
+          Page {{ currentPage }} / {{ totalPages }}
+        </span>
+        <button class="page-btn nav-btn" (click)="nextPage()" [disabled]="!hasNext">›</button>
+      </div>
+    </div>
+  }
 
   <!-- Selection Bar -->
   @if (selectedRows.length > 0) {
@@ -353,7 +369,7 @@
 
       <!-- Pagination -->
       @if (totalPages > 1) {
-        <div class="pagination-wrapper">
+        <div class="pagination-wrapper desktop">
           <span class="page-info">
             Showing {{ getRowNumber(0) }}–{{ getRowNumber(rows.length - 1) }} of {{ totalCount }}
           </span>

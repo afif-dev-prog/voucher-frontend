@@ -37,16 +37,22 @@ export class Auth {
 
   // ── Logout ─────────────────────────────
   logout(): void {
-    const token = this.getToken(); // grab token FIRST before clearing
+    const token = this.getToken();
 
     localStorage.removeItem('token');
     localStorage.removeItem('userInfo');
 
-    // Fire and forget AFTER clearing — 401 here doesn't matter
     if (token) {
       this.http
-        .post(`${this.apiUrl}/logout`, {}, { headers: { Authorization: `Bearer ${token}` } })
-        .subscribe({ error: () => {} }); // silently ignore any error
+        .post(
+          `${this.apiUrl}/logout`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        )
+        .pipe(catchError(() => of(null))) // ← silently swallow ALL errors including 401
+        .subscribe();
     }
 
     this.router.navigate(['/login']);
@@ -114,20 +120,40 @@ export class Auth {
   }
 
   // ── Redirect after login ───────────────
+  // redirectByRole(): void {
+  //   const role = this.getRole();
+  //   switch (role) {
+  //     case 'STUDENT':
+  //       this.router.navigate(['/student']);
+  //       break;
+  //     case 'SELLER':
+  //       this.router.navigate(['/seller']);
+  //       break;
+  //     case 'FINANCE':
+  //       this.router.navigate(['/finance']);
+  //       break;
+  //     case 'SUPERADMIN':
+  //       this.router.navigate(['/admin']);
+  //       break;
+  //     default:
+  //       this.router.navigate(['/login']);
+  //       break;
+  //   }
+  // }
   redirectByRole(): void {
     const role = this.getRole();
     switch (role) {
       case 'STUDENT':
-        this.router.navigate(['/student']);
+        this.router.navigate(['/balance']);
         break;
       case 'SELLER':
-        this.router.navigate(['/seller']);
+        this.router.navigate(['/scantopay']);
         break;
       case 'FINANCE':
-        this.router.navigate(['/finance']);
+        this.router.navigate(['/floatmoneylist']);
         break;
       case 'SUPERADMIN':
-        this.router.navigate(['/admin']);
+        this.router.navigate(['/managestudent']);
         break;
       default:
         this.router.navigate(['/login']);
