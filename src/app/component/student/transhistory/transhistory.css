@@ -214,7 +214,7 @@ table th {
 .load-more-wrapper {
   padding: 20px;
   text-align: center;
-  background: #fff;
+  /* background: #fff; */
   border-top: 1px solid #f1f5f9;
 }
 .btn-load-more {

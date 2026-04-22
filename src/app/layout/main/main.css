@@ -102,6 +102,21 @@
   height: 100vh;
   width: 100%;
 }
+@media (max-width: 400px) {
+  .screen-container {
+    /* height: calc(100vh - 200px);
+    padding: 1rem 0;
+    width: 100%;
+    margin-left: 0; */
+    background-color: transparent;
+    box-shadow: none;
+    /* visibility: hidden; */
+    padding: 0;
+    width: 100%;
+    min-height: unset;
+    /* height: auto; */
+  }
+}
 
 @media screen and (max-width: 700px) {
   .main-layout-container {
@@ -118,8 +133,9 @@
     /* visibility: hidden; */
     padding: 0;
     width: 100%;
+    margin-top: 60px;
     min-height: unset;
-    height: auto;
+    /* height: auto; */
   }
   .screen-container-login {
     margin-top: 0;
