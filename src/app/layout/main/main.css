@@ -24,6 +24,11 @@
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
+@media (max-height: 980px) {
+  /* .layout {
+    height: max-content;
+  } */
+}
 .screen-content {
   width: 100%;
   max-height: 100%;

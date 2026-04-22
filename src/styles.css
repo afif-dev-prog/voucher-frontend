@@ -22,10 +22,12 @@ app-claimvoucher,
 app-permissions,
 app-authlog,
 app-viewbalance,
-app-login {
+app-login,
+app-scantopay {
   height: 100%;
   width: 100%;
-  overflow: hidden;
+  overflow-y: auto;
+  /* margin-bottom: 40px; */
   padding: 20px;
 }
 

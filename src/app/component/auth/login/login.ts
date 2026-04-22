@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Auth } from '../../../services/auth';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 export class Login {
   private auth = inject(Auth);
   private cdr = inject(ChangeDetectorRef);
+  private route = inject(ActivatedRoute);
 
   private router = inject(Router);
 
@@ -38,24 +39,29 @@ export class Login {
     this.auth.login(this.username.trim(), this.password).subscribe({
       next: (res: any) => {
         if (res?.success) {
-          // ── Redirect based on role from response ──
-          const role = res.user?.role;
-          switch (role) {
-            case 'STUDENT':
-              this.router.navigate(['/balance']);
-              break;
-            case 'SELLER':
-              this.router.navigate(['/scantopay']);
-              break;
-            case 'FINANCE':
-              this.router.navigate(['/floatmoneylist']);
-              break;
-            case 'SUPERADMIN':
-              this.router.navigate(['/managestudent']);
-              break;
-            default:
-              this.router.navigate(['/login']);
-              break;
+          // ── Check for returnUrl first ──
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+          if (returnUrl) {
+            this.router.navigateByUrl(returnUrl);
+          } else {
+            const role = res.user?.role;
+            switch (role) {
+              case 'STUDENT':
+                this.router.navigate(['/balance']);
+                break;
+              case 'SELLER':
+                this.router.navigate(['/scantopay']);
+                break;
+              case 'FINANCE':
+                this.router.navigate(['/floatmoneylist']);
+                break;
+              case 'SUPERADMIN':
+                this.router.navigate(['/managestudent']);
+                break;
+              default:
+                this.router.navigate(['/login']);
+                break;
+            }
           }
         } else {
           this.errorMsg = res?.message || 'Invalid credentials.';

@@ -1,300 +1,225 @@
 .sidebar-wrapper {
   position: relative;
-  display: flex;
-  flex-direction: row;
-}
-
-/* ── Desktop sidebar ── */
-.sidebar {
-  width: auto;
-  min-width: 64px;
-  height: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  margin-left: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  z-index: 100;
-}
-
-.sidebar-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px 10px;
-  height: auto;
-  box-sizing: border-box;
-  background: linear-gradient(
-    2deg,
-    rgba(42, 153, 155, 1) 0%,
-    rgba(87, 199, 133, 1) 50%,
-    rgba(83, 237, 191, 1) 100%
-  );
-  border-radius: 20px;
-  margin: 100px 0;
-  gap: 0;
-}
-
-.icon-container > svg {
-  color: white !important;
-}
-
-.list-bar,
-.history-bar,
-.qr-bar,
-.scan-bar,
-.notification-bar,
-.profile-bar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 15px;
-  cursor: pointer;
-  max-width: 60px;
-}
-
-.sidebar a {
-  display: block;
-  color: #fff;
-  padding: 0;
-  text-decoration: none;
-  font-size: 10px;
-  font-weight: bold;
-  margin-top: 5px;
-  cursor: pointer;
-  text-align: center;
-  white-space: nowrap;
-}
-
-a.sidebar-title {
-  font-size: 10px !important;
-  color: #ffffff !important;
-}
-
-.active-link .icon-container {
-  background-color: rgba(155, 167, 217, 0.4);
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-}
-
-.icon-container {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
 }
 
 /* ── Topbar ── */
 .topbar {
   width: 100%;
-  padding: 10px 40px 0;
+  padding: 8px 24px;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  overflow: hidden;
   box-sizing: border-box;
   z-index: 100;
 }
 
 .topbar-content {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  justify-content: flex-end;
-  padding: 12px 0;
-  height: 100%;
-  box-sizing: border-box;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .topbar-username {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #374151;
-  margin-right: 8px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* ── Tablet ── */
-@media screen and (max-width: 1024px) and (min-width: 701px) {
-  .sidebar-content {
-    margin: 80px 0;
-    padding: 16px 8px;
-  }
-
-  .topbar {
-    padding: 8px 20px 0;
-  }
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-logout:hover {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #dc2626;
 }
 
-/* ── Mobile (≤700px) ── */
+/* ── Desktop sidebar ── */
+.sidebar {
+  position: fixed;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  z-index: 100;
+}
+
+/* ── Nav pill — DESKTOP (vertical) ── */
+.nav-pill {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #fff;
+  box-shadow:
+    0 0 1px 0 rgba(24, 94, 224, 0.15),
+    0 6px 24px 0 rgba(24, 94, 224, 0.12);
+  padding: 10px 8px;
+  border-radius: 28px;
+  gap: 2px;
+}
+
+/* Glider — desktop (vertical) */
+.glider {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 52px; /* matches nav-item height */
+  background: #e8f0fe;
+  border-radius: 18px;
+  z-index: 1;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  top: 10px; /* matches padding-top of nav-pill */
+}
+
+/* Nav items */
+.nav-item {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 56px;
+  height: 52px;
+  border-radius: 18px;
+  text-decoration: none;
+  color: #6b7280;
+  font-size: 9px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.nav-item svg {
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.nav-item.active,
+.nav-item:hover {
+  color: #185ee0;
+}
+
+.nav-item.active svg,
+.nav-item:hover svg {
+  color: #185ee0;
+}
+
+/* ── Mobile (≤700px) — horizontal pill at bottom ── */
 @media screen and (max-width: 700px) {
-  .sidebar-wrapper {
-    flex-direction: column;
-  }
-
   .sidebar {
-    width: 100%;
-    height: auto;
     position: fixed;
     top: auto;
     bottom: 16px;
-    left: 0;
-    right: 0;
-    margin: 0;
-    z-index: 200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* Floating pill — same green gradient as desktop */
-  .sidebar-content {
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 8px 10px;
-    margin: 0 16px;
-    height: auto;
-    min-height: 68px;
-    border-radius: 28px;
-    gap: 0; /* no gap — let margin-top from bar classes handle spacing */
+    left: 50%;
+    transform: translateX(-50%);
     width: auto;
     max-width: calc(100vw - 32px);
-    overflow-x: auto;
-    overflow-y: visible;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   }
 
-  .sidebar-content::-webkit-scrollbar {
-    display: none;
+  /* Switch pill to horizontal */
+  .nav-pill {
+    flex-direction: row;
+    padding: 8px 10px;
+    border-radius: 99px;
+    gap: 0;
+    box-shadow:
+      0 0 1px 0 rgba(24, 94, 224, 0.15),
+      0 8px 32px 0 rgba(24, 94, 224, 0.18);
   }
 
-  /* Reset vertical margin, switch to horizontal spacing */
-  .list-bar,
-  .history-bar,
-  .qr-bar,
-  .scan-bar,
-  .notification-bar,
-  .profile-bar {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-top: 0; /* remove the desktop margin-top */
-    margin-left: 0;
-    padding: 6px 10px;
-    flex-shrink: 0;
-    min-width: 52px;
-    max-width: none;
+  /* Glider — mobile (horizontal) */
+  .glider {
+    top: 8px;
+    left: 10px;
+    right: auto;
+    width: 56px;
+    height: calc(100% - 16px);
+    border-radius: 99px;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  .active-link .icon-container {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+  .nav-item {
+    width: 56px;
+    height: 44px;
+    border-radius: 99px;
+    font-size: 8px;
+    gap: 2px;
   }
 
-  .icon-container {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+  .nav-item svg {
+    width: 16px;
+    height: 16px;
   }
 
-  .list-bar svg,
-  .history-bar svg,
-  .qr-bar svg,
-  .scan-bar svg,
-  .notification-bar svg,
-  .profile-bar svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  a.sidebar-title {
-    font-size: 9px !important;
-    margin-top: 3px;
-    white-space: nowrap;
-  }
-
-  /* Topbar */
+  /* Topbar on mobile */
   .topbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    padding: 0 16px;
-    margin: 0;
-    background: #fff;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-    z-index: 200;
-    height: 52px;
-    display: flex;
-    align-items: center;
-    box-sizing: border-box;
-  }
-
-  .topbar-content {
-    width: 100%;
-    padding: 0;
-    justify-content: flex-end;
-    align-items: center;
+    padding: 6px 14px;
+    /* background: rgba(255, 255, 255, 0.9); */
+    backdrop-filter: blur(8px);
+    border-bottom: 0.5px solid #e5e7eb;
+    height: 50px;
   }
 
   .topbar-username {
-    font-size: 0.78rem;
-    max-width: 130px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-right: 6px;
+    font-size: 0.76rem;
+    max-width: 120px;
   }
 
-  .topbar .btn {
+  .btn-logout {
     padding: 5px 10px;
-    font-size: 0.8rem;
+    font-size: 0.76rem;
   }
 }
 
 /* ── Extra small (≤400px) ── */
 @media screen and (max-width: 400px) {
-  .sidebar-content {
-    padding: 6px 6px;
-    margin: 0 10px;
+  .sidebar {
+    bottom: 10px;
     max-width: calc(100vw - 20px);
   }
 
-  .list-bar,
-  .history-bar,
-  .qr-bar,
-  .scan-bar,
-  .notification-bar,
-  .profile-bar {
-    padding: 4px 7px;
-    min-width: 44px;
+  .nav-pill {
+    padding: 6px 8px;
   }
 
-  a.sidebar-title {
-    font-size: 8px !important;
+  .nav-item {
+    width: 48px;
+    height: 40px;
+    font-size: 7px;
   }
 
-  .topbar {
-    height: 48px;
-    padding: 0 10px;
+  .nav-item svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .glider {
+    width: 48px;
+    top: 6px;
+    left: 8px;
+    height: calc(100% - 12px);
   }
 
   .topbar-username {
     max-width: 80px;
-    font-size: 0.7rem;
   }
 }

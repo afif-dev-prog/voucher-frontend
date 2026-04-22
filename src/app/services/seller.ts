@@ -22,7 +22,7 @@ export class Seller {
       )
       .pipe(
         catchError((error) => {
-          console.error('Error during scan to pay:', error);
+          // console.error('Error during scan to pay:', error);
           throw error; // rethrow the error after logging it
         }),
       );
@@ -58,13 +58,13 @@ export class Seller {
     startDate?: number,
     endDate?: number,
   ): Observable<any> {
-    console.log('getSellerTransactions called with:', {
-      sellerName,
-      pageNumber,
-      pageSize,
-      startDate,
-      endDate,
-    });
+    // console.log('getSellerTransactions called with:', {
+    //   sellerName,
+    //   pageNumber,
+    //   pageSize,
+    //   startDate,
+    //   endDate,
+    // });
 
     let params = new HttpParams()
       .set('sellerName', sellerName)
@@ -74,7 +74,7 @@ export class Seller {
     if (startDate) params = params.set('startDate', startDate);
     if (endDate) params = params.set('endDate', endDate);
 
-    console.log('Final query params:', params.toString());
+    // console.log('Final query params:', params.toString());
 
     return this.http.get<any>(`${this.apiUrl}/transaction`, { params }).pipe(
       catchError((error) => {
@@ -91,7 +91,7 @@ export class Seller {
       .set('search', search);
     return this.http.get<any>(`${this.apiUrl}/list/pagination`, { params }).pipe(
       catchError((error) => {
-        console.error('Error fetching seller list:', error);
+        // console.error('Error fetching seller list:', error);
         return of(error.status);
       }),
     );
