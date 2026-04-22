@@ -38,6 +38,7 @@ export class Menubar implements OnInit {
     },
   };
 
+  private scrollOffset = 0;
   ngOnInit(): void {
     this.role = this.auth.getRole();
     this.userName = this.auth.getName();
@@ -54,13 +55,39 @@ export class Menubar implements OnInit {
     this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))
       .subscribe((e: any) => this.syncGliderFromUrl(e.urlAfterRedirects));
+
+    setTimeout(() => {
+      const pill = document.querySelector('.nav-pill');
+      if (pill) {
+        pill.addEventListener('scroll', () => {
+          this.scrollOffset = pill.scrollLeft;
+        });
+      }
+    }, 100);
   }
 
   syncGliderFromUrl(url: string): void {
     const map = this.routeIndexMap[this.role] || {};
-    const path = url.split('?')[0]; // strip query params
+    const path = url.split('?')[0];
     const index = map[path];
-    if (index !== undefined) this.activeIndex = index;
+    if (index !== undefined) {
+      this.activeIndex = index;
+      // ── Scroll active item into view ──
+      setTimeout(() => {
+        const pill = document.querySelector('.nav-pill');
+        const items = document.querySelectorAll('.nav-item');
+        if (pill && items[index]) {
+          const item = items[index] as HTMLElement;
+          const itemLeft = item.offsetLeft;
+          const itemWidth = item.offsetWidth;
+          const pillWidth = (pill as HTMLElement).offsetWidth;
+          pill.scrollTo({
+            left: itemLeft - pillWidth / 2 + itemWidth / 2,
+            behavior: 'smooth',
+          });
+        }
+      }, 50);
+    }
   }
 
   setActive(index: number): void {
