@@ -49,7 +49,7 @@
     </div>
   </div>
   @if (totalPages > 1) {
-    <div class="pagination-wrapper">
+    <div class="pagination-wrapper mobile">
       <span class="page-info">
         {{ getRowNumber(0) }}–{{ getRowNumber(sellers.length - 1) }} of {{ totalCount }}
       </span>
@@ -198,7 +198,7 @@
 
       <!-- Pagination -->
       @if (totalPages > 1) {
-        <div class="pagination-wrapper">
+        <div class="pagination-wrapper desktop">
           <span class="page-info">
             Showing {{ getRowNumber(0) }}–{{ getRowNumber(sellers.length - 1) }} of {{ totalCount }}
           </span>

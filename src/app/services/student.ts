@@ -43,7 +43,7 @@ export class Student {
     const headers = { 'content-type': 'application/json' };
     return this.http
       .post<any>(
-        `${this.apiUrl}/studentscantopay?studentId=${studentId}&sellerUsername=${sellerId}&amount=11`,
+        `${this.apiUrl}/studentscantopay?studentId=${studentId}&sellerUsername=${sellerId}&amount=${amount}`,
         {
           headers: headers,
         },

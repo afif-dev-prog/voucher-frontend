@@ -230,8 +230,12 @@
   color: #6b7280;
 }
 
+.pagination-wrapper.mobile {
+  display: none;
+}
+
 /* Pagination */
-.pagination-wrapper {
+.pagination-wrapper.desktop {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1188,9 +1192,13 @@
   .search-input {
     width: 100%;
   }
-  .pagination-wrapper {
+  .pagination-wrapper.mobile {
+    display: flex;
     flex-direction: column;
     align-items: center;
     background-color: transparent;
+  }
+  .pagination-wrapper.desktop {
+    display: none;
   }
 }
