@@ -222,10 +222,10 @@ export class Studentscan implements OnInit, OnDestroy {
       this.payError = 'Please enter a valid amount.';
       return;
     }
-    if (this.payAmount > this.currentBalance) {
-      this.payError = 'Insufficient balance.';
-      return;
-    }
+    // if (this.payAmount > this.currentBalance) {
+    //   this.payError = 'Insufficient balance.';
+    //   return;
+    // }
 
     this.scanState = 'processing';
     this.payError = '';
@@ -238,7 +238,8 @@ export class Studentscan implements OnInit, OnDestroy {
         next: (res: any) => {
           // console.log(res);
           if (res?.success !== false) {
-            this.successMsg = `RM ${this.payAmount.toFixed(2)} paid to ${this.scannedSellerName}`;
+            this.successMsg =
+              res?.message || `RM ${this.payAmount.toFixed(2)} paid to ${this.scannedSellerName}`;
             // this.currentBalance -= this.payAmount;
             this.ngOnInit();
             this.scanState = 'success';
