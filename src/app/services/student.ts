@@ -7,6 +7,7 @@ import { catchError, Observable, of } from 'rxjs';
 })
 export class Student {
   readonly apiUrl = 'https://glossary.sarawakskills.edu.my/gateway/fvs/student';
+  readonly apiUrl2 = 'https://glossary.sarawakskills.edu.my/gateway/fvs/usermanagement';
   // readonly apiUrl = 'http://localhost:5094/api/voucher/student';
 
   private http = inject(HttpClient);
@@ -15,6 +16,14 @@ export class Student {
     return this.http.get<any>(`${this.apiUrl}/find/${studentId}`).pipe(
       catchError((error) => {
         console.error('Error fetching balance:', error);
+        return of(error.status);
+      }),
+    );
+  }
+
+  getStudentById(studentId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl2}/student/find/${studentId}`).pipe(
+      catchError((error) => {
         return of(error.status);
       }),
     );
