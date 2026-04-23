@@ -340,12 +340,11 @@ export class Scantopay implements OnInit, OnDestroy {
             this.paymentSuccess = true;
             this.paymentResult = res;
             this.isProcessing = false;
-            // console.log('💰 Payment successful');
           } else {
             // API returned failure
             this.paymentError = res.message || 'Payment failed. Please try again.';
             this.isProcessing = false;
-            // console.error('❌ Payment failed:', res.message);
+            console.error('❌ Payment failed:', res.message);
           }
           this.cdr.markForCheck();
         },

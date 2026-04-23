@@ -2,8 +2,20 @@ import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angula
 import { Seller } from '../../../services/seller';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  forkJoin,
+  map,
+  of,
+  Subject,
+  switchMap,
+  takeUntil,
+} from 'rxjs';
 import { Auth } from '../../../services/auth';
+import { Student } from '../../../services/student';
+import { Staff } from '../../../services/staff';
 
 @Component({
   selector: 'app-transhistory',
@@ -13,10 +25,13 @@ import { Auth } from '../../../services/auth';
 })
 export class Transhistory implements OnInit, OnDestroy {
   private sellerService = inject(Seller);
+  private studentService = inject(Student);
   private cdr = inject(ChangeDetectorRef);
   private auth = inject(Auth);
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
+  studentName = '';
+  studentId = '';
 
   seller = {
     id: '13',
@@ -47,6 +62,19 @@ export class Transhistory implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.seller.username = this.auth.getName();
     this.loadTransactions();
+    // this.transactions.forEach((data) => {
+    //   console.log(data.student_id);
+    //   this.studentId = data.student_id;
+    //   this.staffService
+    //     .getStudentListPaginated(1, 10, this.studentId)
+    //     .pipe(takeUntil(this.destroy$))
+    //     .subscribe({
+    //       next: (res: any) => {
+    //         this.studentName = res.data[0].student_name;
+    //         console.log(this.studentName);
+    //       },
+    //     });
+    // });
     this.setupSearch();
   }
 
@@ -75,23 +103,46 @@ export class Transhistory implements OnInit, OnDestroy {
   }
 
   loadTransactions(): void {
-    // console.log(this.seller.username);
     this.isLoading = true;
     this.errorMessage = '';
 
     this.sellerService
       .getSellerTransactions(this.seller.username, this.currentPage, this.pageSize)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
-          this.transactions = response?.data || [];
-          // console.log(response);
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap((response: any) => {
+          const transactions: any[] = response?.data || [];
+
+          // Pagination metadata
           this.totalCount = response.pagination?.totalCount;
           this.totalPages = response.pagination?.totalPages;
           this.hasPrevious = response.pagination?.hasPrevious;
           this.hasNext = response.pagination?.hasNext;
 
-          // Calculate page totals
+          if (transactions.length === 0) {
+            return of({ transactions: [], response });
+          }
+
+          // Fire all student lookups in parallel
+          const studentRequests = transactions.map((t) =>
+            this.studentService.getStudentById(t.student_id).pipe(
+              map((res: any) => ({
+                ...t,
+                student_name: res?.data?.student_name ?? 'Unknown',
+              })),
+              catchError(() => of({ ...t, student_name: 'Unknown' })), // safe fallback
+            ),
+          );
+
+          return forkJoin(studentRequests).pipe(
+            map((enrichedTransactions) => ({ enrichedTransactions, response })),
+          );
+        }),
+      )
+      .subscribe({
+        next: ({ enrichedTransactions }: any) => {
+          this.transactions = enrichedTransactions;
+
           this.totalCredit = this.transactions.reduce((sum, t) => sum + (t.credit || 0), 0);
           this.totalDebit = this.transactions.reduce((sum, t) => sum + (t.debit || 0), 0);
 
