@@ -36,8 +36,15 @@
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  /* background: #fff;
+  border: 1px solid #e5e7eb; */
+  /* From https://css.glass */
+  background: rgba(0, 0, 0, 0.09);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(218, 180, 180, 0.1);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 20px;
   font-size: 0.82rem;
   font-weight: 600;
@@ -65,15 +72,21 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  background: #fff;
+  /* background: #fff;
   box-shadow:
     0 0 1px 0 rgba(24, 94, 224, 0.15),
-    0 6px 24px 0 rgba(24, 94, 224, 0.12);
+    0 6px 24px 0 rgba(24, 94, 224, 0.12); */
+  /* From https://css.glass */
+  background: rgba(0, 0, 0, 0.09);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   padding: 10px 8px;
   border-radius: 28px;
   gap: 2px;
 }
-
 /* Glider — desktop (vertical) */
 .glider {
   position: absolute;
@@ -100,7 +113,7 @@
   height: 52px;
   border-radius: 18px;
   text-decoration: none;
-  color: #6b7280;
+  color: #2e2e2e;
   font-size: 9px;
   font-weight: 600;
   cursor: pointer;
@@ -115,12 +128,12 @@
 
 .nav-item.active,
 .nav-item:hover {
-  color: #185ee0;
+  color: #000000;
 }
 
 .nav-item.active svg,
 .nav-item:hover svg {
-  color: #185ee0;
+  color: #000000;
 }
 
 /* ── Mobile (≤700px) — horizontal pill at bottom ── */
@@ -214,9 +227,9 @@
 
   .glider {
     width: 48px;
-    top: 6px;
-    left: 10px;
-    height: calc(100% - 15px);
+    top: 13px;
+    left: 11px;
+    height: calc(100% - 24px);
   }
 
   .topbar-username {
