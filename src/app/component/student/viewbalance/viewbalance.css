@@ -313,7 +313,7 @@
   .wallet-wrapper {
     /* padding: 0; */
     padding-bottom: 40px;
-    /* margin: 30px 0px; */
+    margin-top: 30px;
     overflow-y: auto;
   }
 }
