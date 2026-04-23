@@ -94,17 +94,18 @@ export class Scantopay implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     if (tab === 'scan') {
-      setTimeout(() => this.startCamera(), 100);
-    } else {
+      // setTimeout(() => this.startCamera(), 100);
       this.stopCamera();
+    } else {
       this.loadSellerQr(); // refresh QR URL when tab is opened
     }
   }
 
   // ── CAMERA ─────────────────────────────────────
   //
-
+  isButtonPressed = false;
   async startCamera(): Promise<void> {
+    this.isButtonPressed = true;
     this.isCameraLoading = true;
     this.cameraError = '';
     this.cdr.markForCheck();
@@ -149,16 +150,26 @@ export class Scantopay implements OnInit, OnDestroy {
     }
   }
 
+  // stopCamera(): void {
+  //   if (this.scanInterval) {
+  //     clearInterval(this.scanInterval);
+  //     this.scanInterval = null;
+  //   }
+  //   if (this.stream) {
+  //     this.stream.getTracks().forEach((t) => t.stop());
+  //     this.stream = null;
+  //   }
+  //   this.isCameraActive = false;
+  // }
+
   stopCamera(): void {
-    if (this.scanInterval) {
-      clearInterval(this.scanInterval);
-      this.scanInterval = null;
-    }
-    if (this.stream) {
-      this.stream.getTracks().forEach((t) => t.stop());
-      this.stream = null;
+    if (this.videoElement?.nativeElement?.srcObject) {
+      const stream = this.videoElement.nativeElement.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+      this.videoElement.nativeElement.srcObject = null;
     }
     this.isCameraActive = false;
+    this.cameraError = '';
   }
 
   // Scan QR from video frames using Canvas + BarcodeDetector API
