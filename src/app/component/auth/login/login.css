@@ -15,14 +15,21 @@
 }
 
 .login-card {
-  background: #fff;
+  /* background: #fff; */
   border-radius: 20px;
   padding: 40px 36px;
   width: 100%;
   max-width: 400px;
-  box-shadow:
+  /* box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    0 2px 4px -1px rgba(0, 0, 0, 0.06); */
+  /* From https://css.glass */
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8.3px);
+  -webkit-backdrop-filter: blur(8.3px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -174,7 +181,7 @@
 .login-footer {
   text-align: center;
   font-size: 0.76rem;
-  color: #9ca3af;
+  color: #303132;
   margin: 0;
 }
 
