@@ -336,9 +336,27 @@ export class Creditvoucher {
     this.parseExcel(file);
   }
 
-  private formatMonthCredit(serial: number): string {
-    const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
-    return date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  private formatMonthCredit(value: any): string {
+    if (!value && value !== 0) return '';
+
+    // Serial number (Excel date)
+    if (typeof value === 'number') {
+      const date = new Date(Math.round((value - 25569) * 86400 * 1000));
+      return date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    }
+
+    const str = String(value).trim();
+
+    // Already in correct format e.g. "May 2026"
+    if (/^[A-Za-z]+ \d{4}$/.test(str)) return str;
+
+    // Date string like "5/1/2026" or "2026-05-01"
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    }
+
+    return str; // fallback — return as-is
   }
 
   parseExcel(file: File): void {
@@ -350,8 +368,15 @@ export class Creditvoucher {
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows: any[] = XLSX.utils.sheet_to_json(ws, { defval: '', raw: true });
 
+        const dataRows = rows.filter(
+          (row) =>
+            String(row['student_id'] ?? '').trim() !== '' ||
+            String(row['amount'] ?? '').trim() !== '' ||
+            String(row['month_credit'] ?? '').trim() !== '',
+        );
+
         const requiredCols = this.csvTemplateHeaders;
-        const actualCols = rows.length > 0 ? Object.keys(rows[0]) : [];
+        const actualCols = dataRows.length > 0 ? Object.keys(dataRows[0]) : []; // ← rows → dataRows
         const missingCols = requiredCols.filter((c) => !actualCols.includes(c));
 
         if (missingCols.length > 0) {
@@ -362,15 +387,12 @@ export class Creditvoucher {
           return;
         }
 
-        this.csvRows = rows.map((row) => {
+        this.csvRows = dataRows.map((row) => {
           const errors: string[] = [];
           const studentId = String(row['student_id'] ?? '').trim();
           const amount = String(row['amount'] ?? '').trim();
           const rawMonthCredit = row['month_credit'];
-          const monthCredit =
-            typeof rawMonthCredit === 'number'
-              ? this.formatMonthCredit(rawMonthCredit)
-              : String(rawMonthCredit ?? '').trim();
+          const monthCredit = this.formatMonthCredit(rawMonthCredit);
 
           if (!studentId) errors.push('student_id required');
           if (!amount || isNaN(Number(amount)) || Number(amount) <= 0)
@@ -385,6 +407,19 @@ export class Creditvoucher {
             _valid: errors.length === 0,
             _errors: errors,
           } as CsvRow;
+        });
+
+        const seenIds = new Set<string>();
+        this.csvRows = this.csvRows.map((row) => {
+          if (seenIds.has(row.student_id)) {
+            return {
+              ...row,
+              _valid: false,
+              _errors: [...row._errors, 'duplicate student_id in file'],
+            };
+          }
+          seenIds.add(row.student_id);
+          return row;
         });
 
         this.csvValidRows = this.csvRows.filter((r) => r._valid);
@@ -422,20 +457,20 @@ export class Creditvoucher {
 
   downloadCsvTemplate(): void {
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet([
-      ['student_id', 'amount', 'month_credit'],
-      ['3511050633', '50.00', 'April 2026'],
-    ]);
+    const ws = XLSX.utils.aoa_to_sheet([['student_id', 'amount', 'month_credit']]);
 
-    // Force month_credit column (C) to text format so Excel won't auto-convert
-    const range = XLSX.utils.decode_range(ws['!ref']!);
-    for (let row = 0; row <= range.e.r; row++) {
-      const cellAddress = XLSX.utils.encode_cell({ r: row, c: 2 }); // column C = index 2
-      if (ws[cellAddress]) {
-        ws[cellAddress].t = 's'; // force type to string
-        ws[cellAddress].z = '@'; // cell format = Text
-      }
+    // Pre-fill 100 rows in column C with empty text-formatted cells
+    // so Excel knows the column is text before the user types anything
+    for (let row = 1; row <= 100; row++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: row, c: 2 });
+      ws[cellAddress] = { t: 's', v: '', z: '@' };
     }
+
+    // Also format the header cell
+    ws['C1'] = { t: 's', v: 'month_credit', z: '@' };
+
+    // Extend the sheet range to include the pre-formatted rows
+    ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 100, c: 2 } });
 
     ws['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 16 }];
     XLSX.utils.book_append_sheet(wb, ws, 'Credit Voucher');
@@ -474,7 +509,7 @@ export class Creditvoucher {
           .pipe(takeUntil(this.destroy$))
           .subscribe({
             next: (res: any) => {
-              if (res?.success !== false) {
+              if (res?.success === true) {
                 this.progressItems[i].status = 'success';
                 this.progressItems[i].message = res?.message || 'Success';
                 this.progressDone++;
