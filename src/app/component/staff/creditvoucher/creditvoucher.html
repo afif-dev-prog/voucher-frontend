@@ -470,7 +470,7 @@
                 d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
               />
             </svg>
-            Download Template
+            Download Excel Template
           </button>
         </div>
 
@@ -504,7 +504,7 @@
               Browse File
               <input
                 type="file"
-                accept=".csv"
+                accept=".xlsx,.xls"
                 class="hidden-file-input"
                 (change)="onFileSelect($event)"
               />
@@ -568,7 +568,7 @@
                     <th>Student ID</th>
                     <th>Amount</th>
                     <th>Month Credit</th>
-                    <th>Updated By</th>
+                    <!-- <th>Updated By</th> -->
                     <!-- ✅ added -->
                     <th>Status</th>
                     <th></th>
@@ -589,7 +589,7 @@
                         }
                       </td>
                       <td class="row-mono">{{ row.month_credit || '—' }}</td>
-                      <td class="text-muted">{{ row.user_update || '—' }}</td>
+                      <!-- <td class="text-muted">{{ row.user_update || '—' }}</td> -->
                       <!-- ✅ added -->
                       <td>
                         @if (row._valid) {
