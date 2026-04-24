@@ -1132,3 +1132,45 @@
   font-weight: 600;
   color: #374151;
 }
+
+.select-all-banner {
+  font-size: 0.82rem;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.select-all-active {
+  color: #1d4ed8;
+  font-weight: 600;
+}
+.btn-select-all-db {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+.btn-select-all-db:hover {
+  color: #1d4ed8;
+}
+.btn-bulk-delete {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-bulk-delete:hover {
+  background: #fecaca;
+}

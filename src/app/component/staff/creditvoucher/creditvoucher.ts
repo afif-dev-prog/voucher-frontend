@@ -336,6 +336,11 @@ export class Creditvoucher {
     this.parseExcel(file);
   }
 
+  private formatMonthCredit(serial: number): string {
+    const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
+    return date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  }
+
   parseExcel(file: File): void {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -343,7 +348,7 @@ export class Creditvoucher {
         const data = new Uint8Array(e.target!.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: 'array' });
         const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows: any[] = XLSX.utils.sheet_to_json(ws, { defval: '' });
+        const rows: any[] = XLSX.utils.sheet_to_json(ws, { defval: '', raw: true });
 
         const requiredCols = this.csvTemplateHeaders;
         const actualCols = rows.length > 0 ? Object.keys(rows[0]) : [];
@@ -361,7 +366,11 @@ export class Creditvoucher {
           const errors: string[] = [];
           const studentId = String(row['student_id'] ?? '').trim();
           const amount = String(row['amount'] ?? '').trim();
-          const monthCredit = String(row['month_credit'] ?? '').trim();
+          const rawMonthCredit = row['month_credit'];
+          const monthCredit =
+            typeof rawMonthCredit === 'number'
+              ? this.formatMonthCredit(rawMonthCredit)
+              : String(rawMonthCredit ?? '').trim();
 
           if (!studentId) errors.push('student_id required');
           if (!amount || isNaN(Number(amount)) || Number(amount) <= 0)
@@ -418,9 +427,17 @@ export class Creditvoucher {
       ['3511050633', '50.00', 'April 2026'],
     ]);
 
-    // Column widths
-    ws['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 16 }, { wch: 16 }];
+    // Force month_credit column (C) to text format so Excel won't auto-convert
+    const range = XLSX.utils.decode_range(ws['!ref']!);
+    for (let row = 0; row <= range.e.r; row++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: row, c: 2 }); // column C = index 2
+      if (ws[cellAddress]) {
+        ws[cellAddress].t = 's'; // force type to string
+        ws[cellAddress].z = '@'; // cell format = Text
+      }
+    }
 
+    ws['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 16 }];
     XLSX.utils.book_append_sheet(wb, ws, 'Credit Voucher');
     XLSX.writeFile(wb, 'credit_voucher_template.xlsx');
   }
