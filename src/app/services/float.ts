@@ -15,10 +15,10 @@ export class Float {
     const params = new HttpParams()
       .set('pageNumber', pageNumber)
       .set('pageSize', pageSize)
-      .set('search', search); // ← added, empty string by default
+      .set('search', search);
 
     return this.http
-      .get<any>(`${this.apiUrl}/paginated?pageNumber=${pageNumber}&pageSize=${pageSize}`)
+      .get<any>(`${this.apiUrl}/paginated`, { params }) // ← use params object, not hardcoded URL
       .pipe(
         catchError((err) => {
           return of(err.status);
