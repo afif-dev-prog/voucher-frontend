@@ -48,6 +48,17 @@ export class Floatmoneylist {
   hasPrevious = false;
   hasNext = false;
 
+  showBulkDeleteModal = false;
+  isBulkDeleting = false;
+  bulkDeleteError = '';
+
+  // Add these new state properties after existing selection properties
+  selectAllPages = false; // true = user opted into all-DB selection
+
+  get effectiveSelectedCount(): number {
+    return this.selectAllPages ? this.totalCount : this.selectedRows.length;
+  }
+
   // ── Selection ─────────────────────────
   get selectedRows(): FloatRow[] {
     return this.rows.filter((r) => r.selected);
@@ -171,6 +182,19 @@ export class Floatmoneylist {
   toggleSelectAll(): void {
     const newVal = !this.allSelected;
     this.rows.forEach((r) => (r.selected = newVal));
+    if (!newVal) this.selectAllPages = false; // deselecting clears all-pages flag
+    this.cdr.markForCheck();
+  }
+
+  selectAllAcrossPages(): void {
+    this.selectAllPages = true;
+    this.rows.forEach((r) => (r.selected = true));
+    this.cdr.markForCheck();
+  }
+
+  clearAllSelection(): void {
+    this.selectAllPages = false;
+    this.rows.forEach((r) => (r.selected = false));
     this.cdr.markForCheck();
   }
 
@@ -282,6 +306,70 @@ export class Floatmoneylist {
           this.cdr.markForCheck();
         },
       });
+  }
+
+  openBulkDeleteModal(): void {
+    this.bulkDeleteError = '';
+    this.showBulkDeleteModal = true;
+  }
+
+  closeBulkDeleteModal(): void {
+    if (this.isBulkDeleting) return;
+    this.showBulkDeleteModal = false;
+    this.bulkDeleteError = '';
+  }
+
+  confirmBulkDelete(): void {
+    this.isBulkDeleting = true;
+    this.bulkDeleteError = '';
+
+    if (this.selectAllPages) {
+      // Fetch all IDs first, then delete
+      this.floatService
+        .getPaginatedFloatList(1, this.totalCount, '')
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (res: any) => {
+            const allRows: FloatRow[] = res.data || [];
+            this.deleteSequentially(allRows);
+          },
+          error: () => {
+            this.bulkDeleteError = 'Failed to fetch all records.';
+            this.isBulkDeleting = false;
+            this.cdr.markForCheck();
+          },
+        });
+    } else {
+      this.deleteSequentially(this.selectedRows);
+    }
+  }
+
+  private deleteSequentially(rows: FloatRow[]): void {
+    const deleteNext = (index: number) => {
+      if (index >= rows.length) {
+        this.isBulkDeleting = false;
+        this.selectAllPages = false;
+        this.showBulkDeleteModal = false;
+        this.loadRows();
+        this.cdr.markForCheck();
+        return;
+      }
+
+      const row = rows[index];
+      this.floatService
+        .deleteFloat(row.student_id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => deleteNext(index + 1),
+          error: (err: any) => {
+            this.bulkDeleteError = `Failed at ${row.student_id}: ${err?.error?.message || 'Server error'}`;
+            this.isBulkDeleting = false;
+            this.cdr.markForCheck();
+          },
+        });
+    };
+
+    deleteNext(0);
   }
 
   // ── Proceed modal ─────────────────────
