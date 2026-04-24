@@ -1,9 +1,12 @@
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { Staff } from '../../../services/staff';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
-import * as Papa from 'papaparse';
+// import * as Papa from 'papaparse';
+// Remove PapaParse import, add SheetJS
+import * as XLSX from 'xlsx';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Auth } from '../../../services/auth';
 
 interface StudentCredit {
   id: number;
@@ -38,6 +41,8 @@ interface UploadProgress {
 export class Creditvoucher {
   private staffService = inject(Staff); // adjust to your service
   private cdr = inject(ChangeDetectorRef);
+
+  private auth = inject(Auth);
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
 
@@ -50,6 +55,8 @@ export class Creditvoucher {
   selectedStudents: StudentCredit[] = [];
   isSearching = false;
   hasSearched = false;
+
+  currentUsernameLogged = '';
 
   // Individual — Credit Form
   creditAmount: number = 0.0;
@@ -83,10 +90,11 @@ export class Creditvoucher {
   uploadComplete = false;
 
   // ── CSV Template columns ──────────────────
-  readonly csvTemplateHeaders = ['student_id', 'amount', 'month_credit', 'user_update'];
+  readonly csvTemplateHeaders = ['student_id', 'amount', 'month_credit'];
 
   ngOnInit(): void {
     this.setupSearch();
+    this.currentUsernameLogged = this.auth.getName() ?? 'Admin';
   }
 
   ngOnDestroy(): void {
@@ -218,7 +226,7 @@ export class Creditvoucher {
       amount: this.creditAmount,
       remark: this.creditRemark,
       month_credit: this.creditMonthCredit,
-      user_update: this.currentUser,
+      user_update: this.currentUsernameLogged,
     }));
 
     // Sequential submission with per-student result
@@ -310,31 +318,35 @@ export class Creditvoucher {
     e.preventDefault();
     this.isDragging = false;
     const file = e.dataTransfer?.files[0];
-    if (file) this.handleCsvFile(file);
+    if (file) this.handleExcelFile(file);
   }
 
   onFileSelect(e: Event): void {
     const file = (e.target as HTMLInputElement).files?.[0];
-    if (file) this.handleCsvFile(file);
+    if (file) this.handleExcelFile(file);
   }
 
-  handleCsvFile(file: File): void {
-    if (!file.name.endsWith('.csv')) {
-      this.csvError = 'Only .csv files are accepted.';
+  handleExcelFile(file: File): void {
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      this.csvError = 'Only .xlsx or .xls files are accepted.';
       return;
     }
     this.csvFile = file;
     this.csvError = '';
-    this.parseCsv(file);
+    this.parseExcel(file);
   }
 
-  parseCsv(file: File): void {
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (result) => {
+  parseExcel(file: File): void {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target!.result as ArrayBuffer);
+        const wb = XLSX.read(data, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows: any[] = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
         const requiredCols = this.csvTemplateHeaders;
-        const actualCols = result.meta.fields || [];
+        const actualCols = rows.length > 0 ? Object.keys(rows[0]) : [];
         const missingCols = requiredCols.filter((c) => !actualCols.includes(c));
 
         if (missingCols.length > 0) {
@@ -345,19 +357,22 @@ export class Creditvoucher {
           return;
         }
 
-        this.csvRows = (result.data as any[]).map((row) => {
+        this.csvRows = rows.map((row) => {
           const errors: string[] = [];
-          if (!row.student_id?.trim()) errors.push('student_id required');
-          if (!row.amount || isNaN(Number(row.amount)) || Number(row.amount) <= 0)
+          const studentId = String(row['student_id'] ?? '').trim();
+          const amount = String(row['amount'] ?? '').trim();
+          const monthCredit = String(row['month_credit'] ?? '').trim();
+
+          if (!studentId) errors.push('student_id required');
+          if (!amount || isNaN(Number(amount)) || Number(amount) <= 0)
             errors.push('invalid amount');
-          if (!row.month_credit?.trim()) errors.push('month_credit required');
-          if (!row.user_update?.trim()) errors.push('user_update required'); // ✅ added
+          if (!monthCredit) errors.push('month_credit required');
 
           return {
-            student_id: row.student_id?.trim() || '',
-            amount: row.amount?.trim() || '',
-            month_credit: row.month_credit?.trim() || '',
-            user_update: row.user_update?.trim() || '', // ✅ added
+            student_id: studentId,
+            amount,
+            month_credit: monthCredit,
+            user_update: this.currentUsernameLogged,
             _valid: errors.length === 0,
             _errors: errors,
           } as CsvRow;
@@ -368,12 +383,12 @@ export class Creditvoucher {
         this.csvParsed = true;
         this.csvError = '';
         this.cdr.markForCheck();
-      },
-      error: () => {
-        this.csvError = 'Failed to parse CSV file.';
+      } catch {
+        this.csvError = 'Failed to parse Excel file.';
         this.cdr.markForCheck();
-      },
-    });
+      }
+    };
+    reader.readAsArrayBuffer(file);
   }
 
   removeCsvRow(index: number): void {
@@ -397,14 +412,17 @@ export class Creditvoucher {
   }
 
   downloadCsvTemplate(): void {
-    const header = this.csvTemplateHeaders.join(',');
-    const example = '3511050633,50.00,2024-03,admin'; // ✅ added user_update example
-    const csv = `${header}\n${example}`;
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'credit_voucher_template.csv';
-    a.click();
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+      ['student_id', 'amount', 'month_credit'],
+      ['3511050633', '50.00', 'April 2026'],
+    ]);
+
+    // Column widths
+    ws['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 16 }, { wch: 16 }];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Credit Voucher');
+    XLSX.writeFile(wb, 'credit_voucher_template.xlsx');
   }
   async submitBulk(): Promise<void> {
     if (this.csvValidRows.length === 0) return;
@@ -434,7 +452,7 @@ export class Creditvoucher {
             student_id: row.student_id,
             credit: Number(row.amount),
             month_credit: row.month_credit,
-            user_update: this.currentUser,
+            user_update: this.currentUsernameLogged,
           })
           .pipe(takeUntil(this.destroy$))
           .subscribe({
