@@ -38,6 +38,10 @@ export class Menubar implements OnInit {
     },
   };
 
+  // In your layout/shell component
+  get showNav(): boolean {
+    return this.auth.isLoggedIn() && !this.auth.isTokenExpired();
+  }
   private scrollOffset = 0;
   ngOnInit(): void {
     this.role = this.auth.getRole();

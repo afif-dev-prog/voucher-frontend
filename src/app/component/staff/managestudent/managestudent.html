@@ -53,7 +53,7 @@
         Add Student
       </button>
       <!-- Add bulk Student Button -->
-      <button class="btn-add" (click)="openAddModal()">
+      <button class="btn-add" (click)="openBulkModal()">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="15"
@@ -188,6 +188,24 @@
                   >
                     <path
                       d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+                    />
+                  </svg>
+                </button>
+                <!-- Reset Password -->
+                <button
+                  class="btn-icon btn-reset"
+                  (click)="openResetModal(student.student_id)"
+                  title="Reset Password"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"
                     />
                   </svg>
                 </button>
@@ -329,6 +347,24 @@
                 />
               </svg>
               <span class="card-btn-label">Edit</span>
+            </button>
+            <button
+              class="btn-icon btn-reset"
+              (click)="openResetModal(student.student_id); $event.stopPropagation()"
+              title="Reset Password"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"
+                />
+              </svg>
+              <span class="card-btn-label">Reset</span>
             </button>
 
             <button class="btn-icon btn-delete" (click)="openDeleteModal(student)" title="Delete">
@@ -808,6 +844,331 @@
       <!-- Footer -->
       <div class="modal-footer">
         <button class="btn-cancel" (click)="closeTransactionModal()">Close</button>
+      </div>
+    </div>
+  </div>
+}
+@if (showResetModal) {
+  <div class="modal-backdrop" (click)="closeResetModal()">
+    <div class="modal-box modal-box-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Reset Password</h3>
+        <button class="modal-close" (click)="closeResetModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        @if (!resetPasswordResult) {
+          <div class="delete-icon-wrapper">
+            <div class="delete-icon" style="background: #fef3c7; color: #d97706">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="26"
+                height="26"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"
+                />
+              </svg>
+            </div>
+          </div>
+          <p class="delete-title">
+            Reset password for <strong>{{ resetTargetId }}</strong
+            >?
+          </p>
+          <p class="delete-message">
+            A temporary password in the format <code>swk@{{ resetTargetId }}</code> will be set. The
+            user must change it on next login.
+          </p>
+          @if (resetError) {
+            <div class="alert alert-error">⚠️ {{ resetError }}</div>
+          }
+        } @else {
+          <!-- Success — show temp password -->
+          <div style="text-align: center; padding: 8px 0">
+            <div style="font-size: 2rem; margin-bottom: 8px">✅</div>
+            <p style="font-weight: 700; color: #111827; margin: 0 0 6px">Password Reset!</p>
+            <p style="font-size: 0.84rem; color: #6b7280; margin: 0 0 16px">
+              Share this temporary password with the user:
+            </p>
+            <div class="temp-password-box">
+              {{ resetPasswordResult.tempPassword }}
+            </div>
+            <p style="font-size: 0.78rem; color: #9ca3af; margin-top: 8px">
+              User will be forced to change this on next login.
+            </p>
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        @if (!resetPasswordResult) {
+          <button class="btn-cancel" (click)="closeResetModal()" [disabled]="isResetting">
+            Cancel
+          </button>
+          <button
+            class="btn-danger"
+            style="background: #d97706"
+            (click)="confirmReset(resetTargetId, studentUserType)"
+            [disabled]="isResetting"
+          >
+            @if (isResetting) {
+              <span class="spinner spinner-white"></span> Resetting...
+            } @else {
+              Yes, Reset Password
+            }
+          </button>
+        } @else {
+          <button class="btn-proceed" (click)="closeResetModal()">Done</button>
+        }
+      </div>
+    </div>
+  </div>
+}
+<!-- ── BULK IMPORT MODAL ── -->
+@if (showBulkModal) {
+  <div class="modal-backdrop" (click)="!isBulkUploading && closeBulkModal()">
+    <div class="modal-box modal-box-xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Bulk Import Students</h3>
+          <p class="modal-subtitle">Upload an Excel file to add multiple students at once</p>
+        </div>
+        @if (!isBulkUploading) {
+          <button class="modal-close" (click)="closeBulkModal()">✕</button>
+        }
+      </div>
+
+      <div class="modal-body">
+        <!-- Progress Panel -->
+        @if (showBulkProgress) {
+          <div class="progress-panel">
+            <div class="progress-panel-header">
+              <div>
+                <h3 class="progress-title">
+                  {{ isBulkUploading ? 'Importing Students...' : 'Import Complete' }}
+                </h3>
+                <p class="progress-sub">
+                  {{ bulkProgressDone }} succeeded · {{ bulkProgressFailed }} failed ·
+                  {{ bulkProgressItems.length }} total
+                </p>
+              </div>
+              @if (bulkUploadComplete) {
+                <button class="btn-reset-bulk" (click)="resetBulk()">Import Another File</button>
+              }
+            </div>
+            <div class="progress-bar-track">
+              <div
+                class="progress-bar-fill"
+                [style.width.%]="bulkProgressPercent"
+                [class.complete]="bulkUploadComplete && bulkProgressFailed === 0"
+                [class.incomplete]="bulkUploadComplete && bulkProgressFailed > 0"
+              ></div>
+            </div>
+            <div class="progress-bar-label">{{ bulkProgressPercent }}%</div>
+            <div class="progress-list">
+              @for (item of bulkProgressItems; track item.index) {
+                <div class="progress-item" [class]="'pi-' + item.status">
+                  <div class="pi-indicator">
+                    @if (item.status === 'pending') {
+                      <span class="pi-dot"></span>
+                    }
+                    @if (item.status === 'processing') {
+                      <span class="spinner spinner-sm spinner-blue"></span>
+                    }
+                    @if (item.status === 'success') {
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"
+                        />
+                      </svg>
+                    }
+                    @if (item.status === 'failed') {
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
+                        />
+                      </svg>
+                    }
+                  </div>
+                  <span class="pi-id">{{ item.student_id }}</span>
+                  <span class="pi-msg">{{ item.message || item.status }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (!showBulkProgress) {
+          <!-- Template Download -->
+          <div class="template-banner">
+            <div class="template-banner-left">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1L14 5.5zM8 6.5a.5.5 0 0 0-1 0V10H5.5a.5.5 0 0 0 0 1H7v1.5a.5.5 0 0 0 1 0V11h1.5a.5.5 0 0 0 0-1H8z"
+                />
+              </svg>
+              <div>
+                <p class="template-title">Download Excel Template</p>
+                <p class="template-sub">
+                  Required:
+                  <code
+                    >student_id, student_name, nric, email, intake, course_code, campus,
+                    register_date</code
+                  >
+                </p>
+              </div>
+            </div>
+            <button class="btn-template-dl" (click)="downloadBulkTemplate()">
+              Download Template
+            </button>
+          </div>
+
+          <!-- Drop Zone -->
+          @if (!bulkParsed) {
+            <div
+              class="drop-zone"
+              [class.dragging]="isDragging"
+              (dragover)="onBulkDragOver($event)"
+              (dragleave)="onBulkDragLeave()"
+              (drop)="onBulkDrop($event)"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="40"
+                height="40"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+                class="drop-icon"
+              >
+                <path
+                  d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+                />
+                <path
+                  d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"
+                />
+              </svg>
+              <p class="drop-title">Drag & drop your Excel file here</p>
+              <p class="drop-sub">or</p>
+              <label class="btn-browse">
+                Browse File
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  class="hidden-file-input"
+                  (change)="onBulkFileSelect($event)"
+                />
+              </label>
+              @if (bulkError) {
+                <div class="alert alert-error" style="margin-top: 12px">⚠️ {{ bulkError }}</div>
+              }
+            </div>
+          }
+
+          <!-- Preview Table -->
+          @if (bulkParsed) {
+            <div class="csv-preview-wrapper">
+              <div class="csv-preview-header">
+                <div>
+                  <h3 class="csv-preview-title">File Preview</h3>
+                  <p class="csv-preview-sub">
+                    {{ bulkFile?.name }} ·
+                    <span class="badge-valid">{{ bulkValidRows.length }} valid</span>
+                    @if (bulkInvalidRows.length > 0) {
+                      · <span class="badge-invalid">{{ bulkInvalidRows.length }} invalid</span>
+                    }
+                  </p>
+                </div>
+                <button class="btn-reset-csv" (click)="resetBulk()">Change File</button>
+              </div>
+
+              @if (bulkInvalidRows.length > 0) {
+                <div class="csv-warning-bar">
+                  ⚠️ <strong>{{ bulkInvalidRows.length }} rows</strong> have errors and will be
+                  skipped. Only <strong>{{ bulkValidRows.length }} valid rows</strong> will be
+                  imported.
+                </div>
+              }
+
+              <div class="csv-table-container">
+                <table class="csv-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Student ID</th>
+                      <th>Full Name</th>
+                      <th>NRIC</th>
+                      <th>Email</th>
+                      <th>Intake</th>
+                      <th>Course</th>
+                      <th>Campus</th>
+                      <th>Reg Date</th>
+                      <th>Status</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of bulkRows; track $index; let i = $index) {
+                      <tr [class.row-invalid]="!row._valid">
+                        <td class="row-num">{{ i + 1 }}</td>
+                        <td class="row-mono">{{ row.student_id || '—' }}</td>
+                        <td>{{ row.student_name || '—' }}</td>
+                        <td class="row-mono">{{ row.nric || '—' }}</td>
+                        <td>{{ row.email || '—' }}</td>
+                        <td>{{ row.intake || '—' }}</td>
+                        <td>{{ row.course_code || '—' }}</td>
+                        <td>{{ row.campus || '—' }}</td>
+                        <td>{{ row.register_date || '—' }}</td>
+                        <td>
+                          @if (row._valid) {
+                            <span class="badge-valid-sm">✓ Valid</span>
+                          } @else {
+                            <span class="badge-invalid-sm" [title]="row._errors.join(', ')">
+                              ✕ {{ row._errors[0] }}
+                            </span>
+                          }
+                        </td>
+                        <td>
+                          <button class="btn-remove-row" (click)="removeBulkRow(i)">✕</button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="csv-submit-bar">
+                <p class="submit-bar-info">
+                  Ready to import <strong>{{ bulkValidRows.length }}</strong> students
+                </p>
+                <button
+                  class="btn-submit"
+                  [disabled]="bulkValidRows.length === 0"
+                  (click)="submitBulkStudents()"
+                >
+                  Import {{ bulkValidRows.length }} Students
+                </button>
+              </div>
+            </div>
+          }
+        }
       </div>
     </div>
   </div>

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './services/auth.guard';
 import { Login } from './component/auth/login/login';
+import { ChangePassword } from './component/all/change-password/change-password';
 
 export const routes: Routes = [
   // ── Public ────────────────────────────
@@ -104,6 +105,12 @@ export const routes: Routes = [
       import('./component/auth/permissions/permissions').then((m) => m.Permissions),
   },
 
+  {
+    path: 'change-password',
+    canActivate: [authGuard], // must be logged in to access
+    loadComponent: () =>
+      import('./component/all/change-password/change-password').then((m) => m.ChangePassword),
+  },
   // ── Fallback ──────────────────────────
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', redirectTo: '/login' },
