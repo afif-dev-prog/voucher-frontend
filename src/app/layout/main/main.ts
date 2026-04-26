@@ -19,7 +19,7 @@ export class Main implements OnInit {
 
   constructor() {
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe((e: any) => {
-      const hidden = ['/login', '/unauthorized', '/'];
+      const hidden = ['/login', '/change-password', '/unauthorized', '/'];
       this.showMenubar = !hidden.includes(e.urlAfterRedirects);
     });
   }

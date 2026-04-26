@@ -5,6 +5,29 @@ import { Student } from '../../../services/student';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { AddStudent, StudentModel } from '../../../model/student';
 import { FormsModule } from '@angular/forms';
+import { Auth } from '../../../services/auth';
+import * as XLSX from 'xlsx';
+
+interface BulkStudentRow {
+  student_id: string;
+  student_name: string;
+  nric: string;
+  email: string;
+  intake: string;
+  course_code: string;
+  campus: string;
+  register_date: string;
+  complete_date: string;
+  _valid: boolean;
+  _errors: string[];
+}
+
+interface BulkProgress {
+  index: number;
+  student_id: string;
+  status: 'pending' | 'processing' | 'success' | 'failed';
+  message: string;
+}
 
 @Component({
   selector: 'app-managestudent',
@@ -15,6 +38,7 @@ import { FormsModule } from '@angular/forms';
 export class Managestudent {
   private staffService = inject(Staff);
   private studentService = inject(Student);
+  private auth = inject(Auth);
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
@@ -32,6 +56,24 @@ export class Managestudent {
   readonly pageSize = 10;
   totalCount = 0;
   totalPages = 0;
+
+  // Bulk import state
+  showBulkModal = false;
+  bulkFile: File | null = null;
+  bulkRows: BulkStudentRow[] = [];
+  bulkValidRows: BulkStudentRow[] = [];
+  bulkInvalidRows: BulkStudentRow[] = [];
+  bulkParsed = false;
+  bulkError = '';
+  isDragging = false;
+
+  // Bulk progress
+  showBulkProgress = false;
+  bulkProgressItems: BulkProgress[] = [];
+  bulkProgressDone = 0;
+  bulkProgressFailed = 0;
+  isBulkUploading = false;
+  bulkUploadComplete = false;
 
   ngOnInit(): void {
     this.loadStudentList();
@@ -489,5 +531,320 @@ export class Managestudent {
           this.cdr.markForCheck();
         },
       });
+  }
+  // In the component TS
+  resetPasswordResult: { userId: string; tempPassword: string } | null = null;
+  showResetModal = false;
+  isResetting = false;
+  resetTargetId = '';
+  resetError = '';
+  readonly studentUserType = 1;
+
+  openResetModal(userId: string): void {
+    this.resetTargetId = userId;
+    this.resetPasswordResult = null;
+    this.resetError = '';
+    this.showResetModal = true;
+  }
+
+  closeResetModal(): void {
+    this.showResetModal = false;
+    this.resetPasswordResult = null;
+    this.resetError = '';
+  }
+
+  confirmReset(userId: string, userType: number): void {
+    this.isResetting = true;
+    this.resetError = '';
+
+    this.auth.resetPassword(userId, userType, '').subscribe({
+      next: (res: any) => {
+        if (res?.success) {
+          this.resetPasswordResult = {
+            userId,
+            tempPassword: res.temporary_password,
+          };
+        } else {
+          this.resetError = res?.message || 'Failed to reset password.';
+        }
+        this.isResetting = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  readonly bulkTemplateHeaders = [
+    'student_id',
+    'student_name',
+    'nric',
+    'email',
+    'intake',
+    'course_code',
+    'campus',
+    'register_date',
+    'complete_date',
+  ];
+
+  get bulkProgressPercent(): number {
+    if (!this.bulkProgressItems.length) return 0;
+    const done = this.bulkProgressItems.filter(
+      (p) => p.status === 'success' || p.status === 'failed',
+    ).length;
+    return Math.round((done / this.bulkProgressItems.length) * 100);
+  }
+
+  openBulkModal(): void {
+    this.resetBulk();
+    this.showBulkModal = true;
+  }
+
+  closeBulkModal(): void {
+    if (this.isBulkUploading) return;
+    this.showBulkModal = false;
+    this.resetBulk();
+  }
+
+  resetBulk(): void {
+    this.bulkFile = null;
+    this.bulkRows = [];
+    this.bulkValidRows = [];
+    this.bulkInvalidRows = [];
+    this.bulkParsed = false;
+    this.bulkError = '';
+    this.showBulkProgress = false;
+    this.bulkProgressItems = [];
+    this.bulkUploadComplete = false;
+    this.isBulkUploading = false;
+    this.cdr.markForCheck();
+  }
+
+  onBulkDragOver(e: DragEvent): void {
+    e.preventDefault();
+    this.isDragging = true;
+  }
+
+  onBulkDragLeave(): void {
+    this.isDragging = false;
+  }
+
+  onBulkDrop(e: DragEvent): void {
+    e.preventDefault();
+    this.isDragging = false;
+    const file = e.dataTransfer?.files[0];
+    if (file) this.handleBulkFile(file);
+  }
+
+  onBulkFileSelect(e: Event): void {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) this.handleBulkFile(file);
+  }
+
+  handleBulkFile(file: File): void {
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      this.bulkError = 'Only .xlsx or .xls files are accepted.';
+      return;
+    }
+    this.bulkFile = file;
+    this.bulkError = '';
+    this.parseBulkExcel(file);
+  }
+
+  parseBulkExcel(file: File): void {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target!.result as ArrayBuffer);
+        const wb = XLSX.read(data, { type: 'array', raw: true });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows: any[] = XLSX.utils.sheet_to_json(ws, { defval: '', raw: true });
+
+        // Filter empty rows
+        const dataRows = rows.filter(
+          (row) =>
+            String(row['student_id'] ?? '').trim() !== '' ||
+            String(row['student_name'] ?? '').trim() !== '',
+        );
+
+        const actualCols = dataRows.length > 0 ? Object.keys(dataRows[0]) : [];
+        const missingCols = this.bulkTemplateHeaders
+          .filter((c) => !['complete_date'].includes(c)) // complete_date is optional
+          .filter((c) => !actualCols.includes(c));
+
+        if (missingCols.length > 0) {
+          this.bulkError = `Missing required columns: ${missingCols.join(', ')}`;
+          this.bulkParsed = false;
+          this.bulkRows = [];
+          this.cdr.markForCheck();
+          return;
+        }
+
+        this.bulkRows = dataRows.map((row) => {
+          const errors: string[] = [];
+          const studentId = String(row['student_id'] ?? '').trim();
+          const studentName = String(row['student_name'] ?? '').trim();
+          const nric = String(row['nric'] ?? '').trim();
+          const email = String(row['email'] ?? '').trim();
+          const intake = String(row['intake'] ?? '').trim();
+          const courseCode = String(row['course_code'] ?? '').trim();
+          const campus = String(row['campus'] ?? '').trim();
+          const registerDate = String(row['register_date'] ?? '').trim();
+          const completeDate = String(row['complete_date'] ?? '').trim();
+
+          if (!studentId) errors.push('student_id required');
+          if (!studentName) errors.push('student_name required');
+          if (!nric) errors.push('nric required');
+          if (!email || !email.includes('@')) errors.push('valid email required');
+          if (!intake) errors.push('intake required');
+          if (!courseCode) errors.push('course_code required');
+          if (!campus) errors.push('campus required');
+          if (!registerDate) errors.push('register_date required');
+
+          return {
+            student_id: studentId,
+            student_name: studentName,
+            nric,
+            email,
+            intake,
+            course_code: courseCode,
+            campus,
+            register_date: registerDate,
+            complete_date: completeDate,
+            _valid: errors.length === 0,
+            _errors: errors,
+          } as BulkStudentRow;
+        });
+
+        // Duplicate check
+        const seenIds = new Set<string>();
+        this.bulkRows = this.bulkRows.map((row) => {
+          if (seenIds.has(row.student_id)) {
+            return { ...row, _valid: false, _errors: [...row._errors, 'duplicate student_id'] };
+          }
+          seenIds.add(row.student_id);
+          return row;
+        });
+
+        this.bulkValidRows = this.bulkRows.filter((r) => r._valid);
+        this.bulkInvalidRows = this.bulkRows.filter((r) => !r._valid);
+        this.bulkParsed = true;
+        this.bulkError = '';
+        this.cdr.markForCheck();
+      } catch {
+        this.bulkError = 'Failed to parse Excel file.';
+        this.cdr.markForCheck();
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  removeBulkRow(index: number): void {
+    this.bulkRows.splice(index, 1);
+    this.bulkValidRows = this.bulkRows.filter((r) => r._valid);
+    this.bulkInvalidRows = this.bulkRows.filter((r) => !r._valid);
+    this.cdr.markForCheck();
+  }
+
+  downloadBulkTemplate(): void {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+      [
+        'student_id',
+        'student_name',
+        'nric',
+        'email',
+        'intake',
+        'course_code',
+        'campus',
+        'register_date',
+        'complete_date',
+      ],
+    ]);
+    ws['!cols'] = [
+      { wch: 16 },
+      { wch: 24 },
+      { wch: 16 },
+      { wch: 28 },
+      { wch: 12 },
+      { wch: 14 },
+      { wch: 16 },
+      { wch: 16 },
+      { wch: 16 },
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, 'Students');
+    XLSX.writeFile(wb, 'student_bulk_template.xlsx');
+  }
+
+  async submitBulkStudents(): Promise<void> {
+    if (this.bulkValidRows.length === 0) return;
+
+    this.showBulkProgress = true;
+    this.isBulkUploading = true;
+    this.bulkUploadComplete = false;
+    this.bulkProgressDone = 0;
+    this.bulkProgressFailed = 0;
+    this.bulkProgressItems = this.bulkValidRows.map((row, i) => ({
+      index: i,
+      student_id: row.student_id,
+      status: 'pending',
+      message: '',
+    }));
+    this.cdr.markForCheck();
+
+    for (let i = 0; i < this.bulkValidRows.length; i++) {
+      const row = this.bulkValidRows[i];
+      this.bulkProgressItems[i].status = 'processing';
+      this.cdr.markForCheck();
+
+      await new Promise<void>((resolve) => {
+        const payload = {
+          student_id: row.student_id,
+          student_name: row.student_name,
+          nric: row.nric,
+          email: row.email,
+          intake: row.intake,
+          course_code: row.course_code,
+          campus: row.campus,
+          register_date: row.register_date
+            ? Math.floor(new Date(row.register_date).getTime() / 1000)
+            : 0,
+          complete_date: row.complete_date
+            ? Math.floor(new Date(row.complete_date).getTime() / 1000)
+            : 0,
+        };
+
+        this.staffService
+          .addStudent(payload)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (res: any) => {
+              if (res?.success === true) {
+                this.bulkProgressItems[i].status = 'success';
+                this.bulkProgressItems[i].message = res?.message || 'Added successfully';
+                this.bulkProgressDone++;
+              } else {
+                this.bulkProgressItems[i].status = 'failed';
+                this.bulkProgressItems[i].message = res?.message || 'Failed';
+                this.bulkProgressFailed++;
+              }
+              this.cdr.markForCheck();
+              resolve();
+            },
+            error: (err: any) => {
+              this.bulkProgressItems[i].status = 'failed';
+              this.bulkProgressItems[i].message = err?.error?.message || 'Server error';
+              this.bulkProgressFailed++;
+              this.cdr.markForCheck();
+              resolve();
+            },
+          });
+      });
+
+      await new Promise((r) => setTimeout(r, 100));
+    }
+
+    this.isBulkUploading = false;
+    this.bulkUploadComplete = true;
+    this.loadStudentList(); // refresh the table
+    this.cdr.markForCheck();
   }
 }

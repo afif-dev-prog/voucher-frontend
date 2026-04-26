@@ -374,12 +374,35 @@ export class Floatmoneylist {
 
   // ── Proceed modal ─────────────────────
   openConfirmModal(): void {
-    // Pre-fill month_credit from first selected row as a default
     this.proceedMonthCredit = this.selectedRows[0]?.month_credit || '';
-    this.proceedAmount = this.selectedRows[0]?.credit || 0;
     this.proceedError = '';
     this.proceedSuccess = false;
+    this.allRowsForProceed = [];
+
+    if (this.selectAllPages) {
+      // Fetch all to calculate real total
+      this.floatService
+        .getPaginatedFloatList(1, this.totalCount, '')
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (res: any) => {
+            this.allRowsForProceed = res.data || [];
+            this.proceedMonthCredit = this.allRowsForProceed[0]?.month_credit || '';
+            this.cdr.markForCheck();
+          },
+        });
+    }
+
     this.showConfirmModal = true;
+  }
+
+  allRowsForProceed: FloatRow[] = [];
+
+  get proceedRealTotal(): number {
+    if (this.selectAllPages) {
+      return this.allRowsForProceed.reduce((sum, r) => sum + (r.credit || 0), 0);
+    }
+    return this.selectedRows.reduce((sum, r) => sum + (r.credit || 0), 0);
   }
 
   closeConfirmModal(): void {
@@ -393,23 +416,21 @@ export class Floatmoneylist {
   }
 
   confirmProceed(): void {
-    if (!this.proceedAmount || this.proceedAmount <= 0) {
-      this.proceedError = 'Please enter a valid credit amount.';
-      return;
-    }
     if (!this.proceedMonthCredit) {
-      this.proceedError = 'Please select a month credit.';
+      this.proceedError = 'Month credit is required.';
       return;
     }
 
-    const ids = this.selectedRows.map((r) => r.student_id) as unknown as [string];
     this.isProceeding = true;
     this.proceedError = '';
 
+    const rowsToProcess = this.selectAllPages ? this.allRowsForProceed : this.selectedRows;
+    const ids = rowsToProcess.map((r) => r.student_id) as unknown as [''];
+
     this.floatService
       .proceedFloat({
-        ids: ids as unknown as [''],
-        amount: this.proceedAmount,
+        ids,
+        amount: this.proceedRealTotal, // total sum, not single row amount
         month_credit: this.proceedMonthCredit,
         user_update: this.currentUser,
       })
@@ -417,10 +438,10 @@ export class Floatmoneylist {
       .subscribe({
         next: (res: any) => {
           if (res?.success !== false) {
-            const proceededIds = this.selectedRows.map((r) => r.h_id);
-            this.rows = this.rows.filter((r) => !proceededIds.includes(r.h_id));
-            this.totalCount -= proceededIds.length;
             this.proceedSuccess = true;
+            this.selectAllPages = false;
+            this.allRowsForProceed = [];
+            this.rows.forEach((r) => (r.selected = false));
           } else {
             this.proceedError = res?.message || 'Failed to proceed.';
           }

@@ -637,7 +637,8 @@
           <div>
             <h3 class="modal-title">Confirm Credit Proceed</h3>
             <p class="modal-subtitle">
-              {{ selectedRows.length }} student{{ selectedRows.length > 1 ? 's' : '' }} selected
+              {{ effectiveSelectedCount }} student{{ effectiveSelectedCount > 1 ? 's' : '' }}
+              selected
             </p>
           </div>
           <button class="modal-close" (click)="closeConfirmModal()" [disabled]="isProceeding">
@@ -653,48 +654,58 @@
           <!-- Shared credit fields -->
           <div class="proceed-fields">
             <div class="proceed-field">
-              <label class="field-label">Credit Amount <span class="field-required">*</span></label>
-              <div class="amount-input-wrapper">
-                <span class="amount-prefix">RM</span>
-                <input
-                  class="field-input"
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  placeholder="0.00"
-                  [(ngModel)]="proceedAmount"
-                />
-              </div>
-            </div>
-            <div class="proceed-field">
               <label class="field-label">Month Credit <span class="field-required">*</span></label>
-              <input class="field-input" type="month" [(ngModel)]="proceedMonthCredit" />
+              <input
+                class="field-input"
+                type="text"
+                placeholder="e.g. May 2026"
+                [(ngModel)]="proceedMonthCredit"
+                readonly
+              />
             </div>
           </div>
 
-          <!-- Total callout -->
           <div class="proceed-total-callout">
             <span class="ptc-label">Total to Credit</span>
             <span class="ptc-value">
-              RM {{ proceedTotal | number: '1.2-2' }}
-              <span class="ptc-note">
-                ({{ proceedAmount | number: '1.2-2' }} × {{ selectedRows.length }})
-              </span>
+              @if (selectAllPages && allRowsForProceed.length === 0) {
+                <span class="spinner spinner-blue spinner-sm"></span> Calculating...
+              } @else {
+                RM {{ proceedRealTotal | number: '1.2-2' }}
+                <span class="ptc-note">({{ effectiveSelectedCount }} students)</span>
+              }
             </span>
           </div>
-
           <!-- Selected students list -->
           <div class="proceed-students-wrapper">
             <p class="proceed-students-label">Students to be credited</p>
-            <div class="proceed-students-list">
-              @for (row of selectedRows; track row.h_id; let i = $index) {
-                <div class="proceed-student-chip">
-                  <span class="chip-num">{{ i + 1 }}</span>
-                  <span class="chip-id">{{ row.student_id }}</span>
-                  <span class="chip-date">{{ row.pay_date * 1000 | date: 'dd MMM' }}</span>
-                </div>
-              }
-            </div>
+
+            @if (selectAllPages) {
+              <div class="select-all-notice">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  fill="#1d4ed8"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"
+                  />
+                </svg>
+                All <strong>{{ totalCount }}</strong> records across all pages will be credited.
+              </div>
+            } @else {
+              <div class="proceed-students-list">
+                @for (row of selectedRows; track row.h_id; let i = $index) {
+                  <div class="proceed-student-chip">
+                    <span class="chip-num">{{ i + 1 }}</span>
+                    <span class="chip-id">{{ row.student_id }}</span>
+                    <span class="chip-date">{{ row.pay_date * 1000 | date: 'dd MMM' }}</span>
+                  </div>
+                }
+              </div>
+            }
           </div>
         </div>
 

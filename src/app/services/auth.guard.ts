@@ -13,19 +13,21 @@ export const authGuard: CanActivateFn = (
 ) => {
   const auth = inject(Auth);
   const router = inject(Router);
-  // Not logged in
-  // if (!auth.isLoggedIn()) {
-  //   router.navigate(['/login']);
-  //   return false;
-  // }
 
-  if (!auth.isLoggedIn()) {
+  // Not logged in OR token expired
+  if (!auth.isLoggedIn() || auth.isTokenExpired()) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userInfo');
     router.navigate(['/login'], {
-      queryParams: { returnUrl: state.url }, // ← save where they were going
+      queryParams: { returnUrl: state.url },
     });
     return false;
   }
-
+  const payload = auth.getPayload();
+  if (payload?.must_change_password === 'true' && state.url !== '/change-password') {
+    router.navigate(['/change-password']);
+    return false;
+  }
   // Check allowed roles
   const allowedRoles: string[] = route.data?.['roles'] || [];
   if (allowedRoles.length > 0 && !auth.isRole(...allowedRoles)) {
