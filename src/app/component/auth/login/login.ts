@@ -39,6 +39,16 @@ export class Login {
     this.auth.login(this.username.trim(), this.password).subscribe({
       next: (res: any) => {
         if (res?.success) {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+          // ── Check must_change_password from JWT payload ──
+          const payload = this.auth.getPayload();
+          // console.log(payload);
+          if (payload?.must_change_password === 'true') {
+            this.router.navigate(['/change-password']);
+            return;
+          }
+
           // ── Check for returnUrl first ──
           const returnUrl = this.route.snapshot.queryParams['returnUrl'];
           if (returnUrl) {

@@ -9,16 +9,19 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const token = auth.getToken();
 
-  // Attach token to every request
   const cloned = token
     ? req.clone({ headers: req.headers.set('Authorization', `Bearer ${token}`) })
     : req;
 
   return next(cloned).pipe(
     catchError((err: HttpErrorResponse) => {
-      // ── Only force logout on 401 if NOT the login endpoint ──
-      const isLoginRequest = req.url.includes('/auth/login');
-      if (err.status === 401 && !isLoginRequest) {
+      const skipAutoLogout =
+        req.url.includes('/auth/login') ||
+        req.url.includes('/auth/validate') ||
+        req.url.includes('/auth/logout') ||
+        req.url.includes('/auth/change-password'); // ← add all these
+
+      if (err.status === 401 && !skipAutoLogout) {
         auth.logout();
         router.navigate(['/login']);
       }

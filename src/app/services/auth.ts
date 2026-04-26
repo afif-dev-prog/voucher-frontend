@@ -8,9 +8,10 @@ interface JwtPayload {
   name: string;
   username: string;
   role: string;
-  permissions: string; // JSON stringified array
+  permissions: string;
   exp: number;
   jti: string;
+  must_change_password?: string; // ← add this
 }
 @Injectable({
   providedIn: 'root',
@@ -56,6 +57,17 @@ export class Auth {
     }
 
     this.router.navigate(['/login']);
+  }
+
+  resetPassword(userId: string, userType: number, temporaryPassword: string): Observable<any> {
+    return this.http
+      .post(`${this.apiUrl}/reset-password`, {
+        userId,
+        userType,
+        temporaryPassword,
+        // 1=Student, 2=Seller, 3=Staff
+      })
+      .pipe(catchError((err) => of(err.error)));
   }
 
   // ── Token ──────────────────────────────
@@ -159,5 +171,28 @@ export class Auth {
         this.router.navigate(['/login']);
         break;
     }
+  }
+  changePassword(
+    currentPassword: string,
+    newPassword: string,
+    confirmPassword: string,
+  ): Observable<any> {
+    return this.http
+      .post(`${this.apiUrl}/change-password`, {
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      })
+      .pipe(catchError((err) => of(err.error)));
+  }
+
+  // In your auth.service.ts
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) return true;
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const exp = payload.exp * 1000; // convert to ms
+    return Date.now() >= exp;
   }
 }
