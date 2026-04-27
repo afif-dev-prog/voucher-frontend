@@ -138,4 +138,20 @@ export class Staff {
       )
       .pipe(catchError((err) => of(err.error)));
   }
+
+  correctWrongChargeBySeller(
+    studentId: string,
+    wrongAmount: number,
+    sellerName: string,
+    exactAmount: number,
+  ): Observable<any> {
+    const headers = { 'content-type': 'application/json' };
+
+    return this.http
+      .post(
+        `${this.apiUrl}/usermanagement/wrongcreditbyseller?studentId=${studentId}&wrongamount=${wrongAmount}&sellerName=${sellerName}&exactamount=${exactAmount}`,
+        { headers: headers },
+      )
+      .pipe(catchError((err) => of(err.error)));
+  }
 }

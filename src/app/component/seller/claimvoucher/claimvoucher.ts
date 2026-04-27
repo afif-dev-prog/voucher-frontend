@@ -403,8 +403,8 @@ export class Claimvoucher implements OnInit, OnDestroy {
     // ]);
 
     const rows = this.transactions.map((tx, i) => {
-      const isLegacy = !tx.transaction_id || tx.transaction_id === 'No Value';
-      const income = isLegacy ? tx.debit || 0 : tx.credit || 0;
+      // const isLegacy = !tx.transaction_id || tx.transaction_id === 'No Value';
+      const income = tx.debit || 0;
       return [
         (i + 1).toString(),
         new Date(tx.pay_date * 1000).toLocaleString('en-MY', {
