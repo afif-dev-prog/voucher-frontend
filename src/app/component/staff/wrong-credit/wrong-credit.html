@@ -1,0 +1,416 @@
+<div class="wc-wrapper">
+  <!-- Header -->
+  <div class="wc-header">
+    <div>
+      <h2 class="wc-title">Wrong Credit Correction</h2>
+      <p class="wc-sub">Correct incorrectly credited amounts for students</p>
+    </div>
+  </div>
+
+  <!-- Global error -->
+  @if (globalError) {
+    <div class="alert alert-error">⚠️ {{ globalError }}</div>
+  }
+
+  <!-- ── SETUP PANEL ── -->
+  @if (!isProcessing && !isComplete) {
+    <div class="wc-setup">
+      <!-- Shared values card -->
+      <div class="wc-card">
+        <div class="wc-card-header">
+          <h3 class="wc-card-title">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2.5 1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"
+              />
+            </svg>
+            Correction Details
+          </h3>
+          <label class="wc-toggle-label">
+            <input type="checkbox" [(ngModel)]="useSharedValues" />
+            Use same values for all entered students
+          </label>
+        </div>
+        <div class="wc-card-body">
+          <div class="wc-fields">
+            <div class="wc-field">
+              <label class="wc-label">Wrong Amount (RM) <span class="wc-req">*</span></label>
+              <div class="wc-input-prefix">
+                <span class="prefix">RM</span>
+                <input
+                  class="wc-input"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="0.00"
+                  [(ngModel)]="sharedWrongAmount"
+                />
+              </div>
+            </div>
+            <div class="wc-field">
+              <label class="wc-label">Correct Amount (RM) <span class="wc-req">*</span></label>
+              <div class="wc-input-prefix">
+                <span class="prefix">RM</span>
+                <input
+                  class="wc-input"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="0.00"
+                  [(ngModel)]="sharedExactAmount"
+                />
+              </div>
+            </div>
+            <div class="wc-field">
+              <label class="wc-label">Seller Name <span class="wc-req">*</span></label>
+              <input
+                class="wc-input"
+                type="text"
+                placeholder="e.g. Kantin A"
+                [(ngModel)]="sharedSellerName"
+              />
+            </div>
+          </div>
+
+          <!-- Difference preview -->
+          @if (sharedWrongAmount != null && sharedExactAmount != null) {
+            <div
+              class="wc-diff-preview"
+              [class.positive]="isPositiveDiff"
+              [class.negative]="!isPositiveDiff"
+            >
+              <div class="diff-breakdown">
+                <span class="diff-step">
+                  Remove wrong credit:
+                  <strong>- RM {{ sharedWrongAmount | number: '1.2-2' }}</strong>
+                </span>
+                <span class="diff-arrow">→</span>
+                <span class="diff-step">
+                  Add correct credit:
+                  <strong>+ RM {{ sharedExactAmount | number: '1.2-2' }}</strong>
+                </span>
+                <span class="diff-arrow">→</span>
+                <span class="diff-step">
+                  Net balance change:
+                  <strong [style.color]="isPositiveDiff ? '#16a34a' : '#dc2626'">
+                    {{ isPositiveDiff ? '+' : '' }}RM {{ totalDifference | number: '1.2-2' }}
+                  </strong>
+                </span>
+              </div>
+            </div>
+          }
+
+          @if (rows.length > 0 && useSharedValues) {
+            <button class="btn-apply-all" (click)="applySharedToAll()">
+              Apply these values to all {{ rows.length }} students
+            </button>
+          }
+        </div>
+      </div>
+      <div class="scroll-area">
+        <div class="wc-card">
+        <div class="wc-card-header">
+          <h3 class="wc-card-title">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+            </svg>
+            Student IDs
+          </h3>
+        </div>
+        <div class="wc-card-body">
+          <label class="wc-label">Enter student IDs (comma or newline separated)</label>
+          <textarea
+            class="wc-textarea"
+            rows="4"
+            placeholder="e.g. 2601010101, 2601010102, 2601010103&#10;or one per line"
+            [(ngModel)]="bulkIdInput"
+          >
+          </textarea>
+          <button class="btn-parse" (click)="parseBulkIds()" [disabled]="!bulkIdInput.trim()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"
+              />
+              <path
+                fill-rule="evenodd"
+                d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"
+              />
+            </svg>
+            Load Students
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview table -->
+      @if (rows.length > 0) {
+        <div class="wc-card preview">
+          <div class="wc-card-header">
+            <h3 class="wc-card-title">
+              Preview
+              <span class="wc-count-badge">{{ rows.length }} students</span>
+            </h3>
+          </div>
+          <div class="wc-table-wrapper">
+            <table class="wc-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Student ID</th>
+                  <th>Wrong Amount (RM)</th>
+                  <th>Correct Amount (RM)</th>
+                  <th>Seller</th>
+                  <th>Adjustment</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of rows; track $index; let i = $index) {
+                  <tr>
+                    <td class="wc-row-num">{{ i + 1 }}</td>
+                    <td class="wc-row-id">{{ row.student_id }}</td>
+                    <td>
+                      <div class="wc-input-prefix sm">
+                        <span class="prefix">RM</span>
+                        <input
+                          class="wc-input sm"
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          [(ngModel)]="row.wrong_amount"
+                          (ngModelChange)="updateRowDiff(row)"
+                        />
+                      </div>
+                    </td>
+                    <td>
+                      <div class="wc-input-prefix sm">
+                        <span class="prefix">RM</span>
+                        <input
+                          class="wc-input sm"
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          [(ngModel)]="row.exact_amount"
+                          (ngModelChange)="updateRowDiff(row)"
+                        />
+                      </div>
+                    </td>
+                    <td>
+                      <input class="wc-input sm" type="text" [(ngModel)]="row.seller_name" />
+                    </td>
+                    <td>
+                      @if (row.difference != null) {
+                        <span
+                          class="wc-diff-chip"
+                          [class.positive]="row.difference >= 0"
+                          [class.negative]="row.difference < 0"
+                        >
+                          {{ row.difference >= 0 ? '+' : '' }}RM
+                          {{ row.difference | number: '1.2-2' }}
+                        </span>
+                      } @else {
+                        <span class="wc-dash">—</span>
+                      }
+                    </td>
+                    <td>
+                      <button class="btn-remove-row" (click)="removeRow(i)">✕</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="wc-submit-bar">
+            <p class="wc-submit-info">
+              Correcting <strong>{{ rows.length }}</strong> student(s)
+            </p>
+            <div style="display: flex; gap: 10px">
+              <button class="btn-cancel" (click)="reset()">Clear All</button>
+              <button class="btn-proceed" (click)="openConfirm()" [disabled]="!canSubmit">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="13"
+                  height="13"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"
+                  />
+                </svg>
+                Submit Corrections
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+      </div>
+
+      <!-- Bulk ID input -->
+      
+    </div>
+  }
+
+  <!-- ── PROGRESS ── -->
+  @if (isProcessing || isComplete) {
+    <div class="wc-card">
+      <div class="wc-card-header">
+        <div>
+          <h3 class="wc-card-title">
+            {{ isProcessing ? 'Processing Corrections...' : 'Corrections Complete' }}
+          </h3>
+          <p class="wc-sub-sm">
+            {{ successCount }} succeeded · {{ failCount }} failed · {{ rows.length }} total
+          </p>
+        </div>
+        @if (isComplete) {
+          <button class="btn-reset-bulk" (click)="reset()">New Correction</button>
+        }
+      </div>
+
+      <!-- Progress bar -->
+      <div style="padding: 0 20px 4px">
+        <div class="progress-bar-track">
+          <div
+            class="progress-bar-fill"
+            [style.width.%]="((successCount + failCount) / rows.length) * 100"
+            [class.complete]="isComplete && failCount === 0"
+            [class.incomplete]="isComplete && failCount > 0"
+          ></div>
+        </div>
+        <div class="progress-bar-label">
+          {{ ((successCount + failCount) / rows.length) * 100 | number: '1.0-0' }}%
+        </div>
+      </div>
+
+      <div class="progress-list" style="padding: 0 20px 20px">
+        @for (row of rows; track $index) {
+          <div class="progress-item" [class]="'pi-' + row.status">
+            <div class="pi-indicator">
+              @if (row.status === 'idle') {
+                <span class="pi-dot"></span>
+              }
+              @if (row.status === 'processing') {
+                <span class="spinner spinner-sm spinner-blue"></span>
+              }
+              @if (row.status === 'success') {
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"
+                  />
+                </svg>
+              }
+              @if (row.status === 'failed') {
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
+                  />
+                </svg>
+              }
+            </div>
+            <span class="pi-id">{{ row.student_id }}</span>
+            <span class="pi-msg">
+              @if (row.status === 'idle') {
+                Waiting...
+              } @else {
+                {{ row.message }}
+              }
+            </span>
+            @if (row.status === 'success' && row.difference != null) {
+              <span
+                class="wc-diff-chip sm"
+                [class.positive]="row.difference >= 0"
+                [class.negative]="row.difference < 0"
+              >
+                {{ row.difference >= 0 ? '+' : '' }}RM {{ row.difference | number: '1.2-2' }}
+              </span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ── CONFIRM MODAL ── -->
+@if (showConfirmModal) {
+  <div class="modal-backdrop" (click)="closeConfirm()">
+    <div class="modal-box modal-box-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Confirm Corrections</h3>
+        <button class="modal-close" (click)="closeConfirm()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-summary">
+          <div class="confirm-row">
+            <span class="confirm-label">Students affected</span>
+            <span class="confirm-value">{{ rows.length }}</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Wrong amount</span>
+            <span class="confirm-value">RM {{ sharedWrongAmount | number: '1.2-2' }}</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Correct amount</span>
+            <span class="confirm-value">RM {{ sharedExactAmount | number: '1.2-2' }}</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Remove wrong credit</span>
+            <span class="confirm-value" style="color: #dc2626"
+              >- RM {{ sharedWrongAmount | number: '1.2-2' }}</span
+            >
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Add correct credit</span>
+            <span class="confirm-value" style="color: #16a34a"
+              >+ RM {{ sharedExactAmount | number: '1.2-2' }}</span
+            >
+          </div>
+          <div class="confirm-row" style="background: #f8fafc">
+            <span class="confirm-label">Net balance change per student</span>
+            <span class="confirm-value" [style.color]="isPositiveDiff ? '#16a34a' : '#dc2626'">
+              {{ isPositiveDiff ? '+' : '' }}RM {{ totalDifference | number: '1.2-2' }}
+            </span>
+          </div>
+        </div>
+        <p style="font-size: 0.83rem; color: #6b7280; margin: 0; text-align: center">
+          This action cannot be undone. Please verify the amounts before proceeding.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeConfirm()">Cancel</button>
+        <button class="btn-proceed" (click)="submitCorrections()">Confirm & Apply</button>
+      </div>
+    </div>
+  </div>
+}
