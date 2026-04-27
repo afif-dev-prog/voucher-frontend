@@ -318,6 +318,12 @@
   }
 }
 
+@media screen and (max-height: 850px) {
+  .wallet-wrapper {
+    /* padding-bottom: 40px; */
+    margin-top: 80px;
+  }
+}
 /* ── Profile Card ── */
 .profile-card {
   background: #fff;

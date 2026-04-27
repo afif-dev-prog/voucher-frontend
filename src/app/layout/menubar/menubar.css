@@ -157,10 +157,12 @@
     box-shadow:
       0 0 1px 0 rgba(24, 94, 224, 0.15),
       0 8px 32px 0 rgba(24, 94, 224, 0.18);
+    max-width: 300px;
+    overflow-x: auto;
   }
 
   /* Glider — mobile (horizontal) */
-  .glider {
+  /* .glider {
     top: 8px;
     left: 15px;
     right: auto;
@@ -168,8 +170,14 @@
     height: calc(100% - 16px);
     border-radius: 99px;
     transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+  } */
 
+  .glider {
+    width: 48px;
+    top: 9px;
+    left: 25px;
+    height: calc(100% - 24px);
+  }
   .nav-item {
     width: 56px;
     height: 44px;
@@ -204,7 +212,7 @@
 }
 
 /* ── Extra small (≤400px) ── */
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 850px) {
   .sidebar {
     bottom: 10px;
     max-width: calc(100vw - 20px);

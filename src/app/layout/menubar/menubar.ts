@@ -99,7 +99,7 @@ export class Menubar implements OnInit {
   }
 
   get gliderTransform(): string {
-    const isMobile = window.innerWidth <= 700;
+    const isMobile = window.innerWidth <= 800;
     if (isMobile) {
       return `translateX(${this.activeIndex * 100}%)`;
     } else {

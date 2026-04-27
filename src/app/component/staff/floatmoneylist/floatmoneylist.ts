@@ -120,6 +120,38 @@ export class Floatmoneylist {
     this.loadRows();
   }
 
+  // loadRows(): void {
+  //   this.isLoading = true;
+  //   this.errorMessage = '';
+
+  //   this.floatService
+  //     .getPaginatedFloatList(this.currentPage, this.pageSize, this.searchQuery)
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe({
+  //       next: (res: any) => {
+  //         this.rows = (res.data || []).map((r: any) => ({
+  //           ...r,
+  //           selected: false,
+  //           editing: false,
+  //           editAmount: r.amount,
+  //           editMonthCredit: r.month_credit,
+  //           editPaydate: r.pay_date,
+  //           isSaving: false,
+  //         }));
+  //         this.totalCount = res.pagination?.totalCount || 0;
+  //         this.totalPages = res.pagination?.totalPages || 0;
+  //         this.hasPrevious = res.pagination?.hasPrevious || false;
+  //         this.hasNext = res.pagination?.hasNext || false;
+  //         this.isLoading = false;
+  //         this.cdr.markForCheck();
+  //       },
+  //       error: () => {
+  //         this.errorMessage = 'Failed to load float records.';
+  //         this.isLoading = false;
+  //         this.cdr.markForCheck();
+  //       },
+  //     });
+  // }
   loadRows(): void {
     this.isLoading = true;
     this.errorMessage = '';
@@ -129,14 +161,9 @@ export class Floatmoneylist {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
-          this.rows = (res.data || []).map((r: any) => ({
+          this.rows = this.mapApiRows(res.data || []).map((r) => ({
             ...r,
-            selected: false,
-            editing: false,
-            editAmount: r.amount,
-            editMonthCredit: r.month_credit,
-            editPaydate: r.pay_date,
-            isSaving: false,
+            selected: false, // override to false for normal load
           }));
           this.totalCount = res.pagination?.totalCount || 0;
           this.totalPages = res.pagination?.totalPages || 0;
@@ -163,6 +190,24 @@ export class Floatmoneylist {
   }
   nextPage(): void {
     this.goToPage(this.currentPage + 1);
+  }
+
+  private mapApiRows(data: any[]): FloatRow[] {
+    return data.map((r: any) => ({
+      h_id: r.h_id,
+      student_id: r.student_id,
+      credit: r.credit ?? r.amount ?? 0, // ← handle both field names from API
+      pay_date: r.pay_date,
+      month_credit: r.month_credit,
+      user_update: r.user_update,
+      // UI state defaults
+      selected: true,
+      editing: false,
+      editAmount: r.credit ?? r.amount ?? 0,
+      editPayDate: r.pay_date,
+      editMonthCredit: r.month_credit,
+      isSaving: false,
+    }));
   }
 
   get pageNumbers(): number[] {
@@ -413,17 +458,18 @@ export class Floatmoneylist {
     }
   }
 
+  // Add this property
+  succeededCount = 0;
+
   confirmProceed(): void {
     if (!this.proceedMonthCredit) {
       this.proceedError = 'Month credit is required.';
       return;
     }
-
     this.isProceeding = true;
     this.proceedError = '';
-
     const rowsToProcess = this.selectAllPages ? this.allRowsForProceed : this.selectedRows;
-
+    this.succeededCount = rowsToProcess.length; // ← save before processing
     this.proceedSequentially(rowsToProcess, 0);
   }
 

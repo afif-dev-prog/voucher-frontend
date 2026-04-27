@@ -43,6 +43,7 @@ export class Scantopay implements OnInit, OnDestroy {
 
   // Camera / Scan
   @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
+  @ViewChild('manualInput') manualInput!: ElementRef<HTMLInputElement>;
   isCameraActive = false;
   isCameraLoading = false;
   cameraError = '';
@@ -61,7 +62,11 @@ export class Scantopay implements OnInit, OnDestroy {
   paymentError = '';
   paymentSuccess = false;
   paymentResult: any = null;
-
+  // Scanner detection
+  private scanBuffer = '';
+  private scanBufferTimer: any = null;
+  readonly SCAN_THRESHOLD_MS = 100; // chars arriving faster than this = scanner
+  isFromScanner = false;
   // QR modal
   showQrModal = false;
   qrImageUrl = '';
@@ -69,10 +74,20 @@ export class Scantopay implements OnInit, OnDestroy {
 
   sellerName = '';
 
+  // Add this state
+  showInlineAmount = false;
+  inlineAmount: number | null = null;
+  inlineError = '';
+  isInlineProcessing = false;
+
   ngOnInit(): void {
     this.sellerName = this.auth.getName();
 
     this.loadSellerData();
+    if (this.activeTab === 'scan') {
+      // ← add this block
+      this.focusManualInput();
+    }
   }
 
   ngOnDestroy(): void {
@@ -80,6 +95,127 @@ export class Scantopay implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  // submitPaymentDirect(studentId: string): void {
+  //   this.scannedStudentId = studentId;
+  //   this.showInlineAmount = true; // show a quick inline amount bar
+  //   this.inlineAmount = null;
+  //   this.inlineError = '';
+  //   setTimeout(() => {
+  //     (document.querySelector('.inline-amount-input') as HTMLInputElement)?.focus();
+  //   }, 50);
+  //   this.cdr.markForCheck();
+  // }
+
+  submitInlinePayment(): void {
+    if (!this.inlineAmount || this.inlineAmount <= 0) {
+      this.inlineError = 'Enter a valid amount.';
+      return;
+    }
+    this.isInlineProcessing = true;
+    this.inlineError = '';
+    this.cdr.markForCheck();
+
+    this.sellerService
+      .scantoPay(this.scannedStudentId, this.sellerId, this.inlineAmount)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          if (res.success !== false) {
+            const charged = this.inlineAmount; // ← save BEFORE resetting
+            const studentId = this.scannedStudentId; // ← save BEFORE resetting
+
+            this.showInlineAmount = false;
+            this.scannedStudentId = '';
+            this.inlineAmount = null;
+            this.isInlineProcessing = false;
+
+            this.lastScanSuccess = `✓ RM ${Number(charged).toFixed(2)} charged to ${studentId}`;
+            setTimeout(() => {
+              this.lastScanSuccess = '';
+              this.focusManualInput();
+              this.cdr.markForCheck();
+            }, 2500);
+          } else {
+            this.inlineError = res.message || 'Payment failed.';
+            this.isInlineProcessing = false;
+          }
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          this.inlineError = err?.error?.message || 'Something went wrong.';
+          this.isInlineProcessing = false;
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  cancelInlinePayment(): void {
+    this.showInlineAmount = false;
+    this.scannedStudentId = '';
+    this.inlineAmount = null;
+    this.inlineError = '';
+    this.focusManualInput();
+    this.cdr.markForCheck();
+  }
+
+  lastScanSuccess = '';
+
+  onManualInputChange(value: string): void {
+    const now = Date.now();
+
+    // Clear previous timer
+    if (this.scanBufferTimer) {
+      clearTimeout(this.scanBufferTimer);
+    }
+
+    this.scannedStudentId = value;
+
+    // If characters arrive very fast, it's a scanner
+    this.scanBufferTimer = setTimeout(() => {
+      this.isFromScanner = false; // reset after human typing pause
+    }, this.SCAN_THRESHOLD_MS);
+  }
+
+  onManualKeydown(event: KeyboardEvent): void {
+    const input = event.target as HTMLInputElement;
+
+    if (event.key === 'Enter') {
+      const id = input.value.trim();
+      if (!id) return;
+
+      if (this.isFromScanner) {
+        // Scanner hit Enter — go straight to payment, skip amount step
+        this.scannedStudentId = id;
+        this.submitPaymentDirect(id);
+      } else {
+        // Human pressed Enter — open modal to enter amount
+        this.openPaymentModal(id);
+      }
+      return;
+    }
+
+    // Detect scanner: keystrokes arriving very rapidly
+    const timeSinceLastKey = Date.now();
+    if (this.lastKeyTime && timeSinceLastKey - this.lastKeyTime < this.SCAN_THRESHOLD_MS) {
+      this.isFromScanner = true;
+    }
+    this.lastKeyTime = timeSinceLastKey;
+  }
+
+  submitPaymentDirect(studentId: string): void {
+    // Open modal normally — scanner flow still needs an amount
+    // But if your use case is fixed amount, replace with direct API call
+    this.openPaymentModal(studentId);
+
+    // If you want FULLY automatic with a preset amount (e.g. RM 1.00):
+    // this.scannedStudentId = studentId;
+    // this.paymentAmount = 1.00;
+    // this.isProcessing = true;
+    // this.sellerService.scantoPay(...).subscribe(...)
+  }
+
+  private lastKeyTime = 0;
 
   getSellerId(): number {
     this.sellerService.getSellerList(1, 10, this.sellerName).subscribe((res) => {
@@ -96,9 +232,24 @@ export class Scantopay implements OnInit, OnDestroy {
     if (tab === 'scan') {
       // setTimeout(() => this.startCamera(), 100);
       this.stopCamera();
+      this.focusManualInput();
     } else {
       this.loadSellerQr(); // refresh QR URL when tab is opened
     }
+  }
+
+  onScanPanelClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const isInteractive = target.closest('button, input, .camera-viewport');
+    if (!isInteractive) {
+      this.focusManualInput();
+    }
+  }
+
+  private focusManualInput(): void {
+    setTimeout(() => {
+      this.manualInput?.nativeElement?.focus();
+    }, 100);
   }
 
   // ── CAMERA ─────────────────────────────────────
@@ -319,6 +470,7 @@ export class Scantopay implements OnInit, OnDestroy {
     // Restart camera after closing
     if (this.activeTab === 'scan') {
       setTimeout(() => this.startCamera(), 200);
+      this.focusManualInput();
     }
     this.cdr.markForCheck();
   }
