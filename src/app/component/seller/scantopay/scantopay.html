@@ -1,4 +1,4 @@
-<div class="seller-wrapper">
+<div class="seller-wrapper" (click)="onScanPanelClick($event)">
   <!-- Page Header -->
   <div class="page-header">
     <div>
@@ -141,23 +141,112 @@
       }
 
       <!-- Manual entry fallback -->
-      <div class="manual-entry">
-        <p class="manual-label">Or enter Student ID manually</p>
-        <div class="manual-row">
-          <input
-            class="manual-input"
-            type="text"
-            placeholder="e.g. STU-2024-001"
-            [(ngModel)]="scannedStudentId"
-          />
-          <button
-            class="btn-manual-pay"
-            (click)="openPaymentModal(scannedStudentId)"
-            [disabled]="!scannedStudentId.trim()"
-          >
-            Proceed
-          </button>
-        </div>
+      <div class="manual-entry" (click)="onScanPanelClick($event)">
+        <p class="manual-label">
+          Enter Student ID
+          <span class="input-mode-badge" [class.badge-scanner]="isFromScanner">
+            {{ isFromScanner ? '⚡ Scanner detected' : '⌨ Manual' }}
+          </span>
+        </p>
+
+        <!-- ID input row -->
+        @if (!showInlineAmount) {
+          <div class="manual-row">
+            <input
+              #manualInput
+              class="manual-input"
+              type="text"
+              placeholder="Scan or type Student ID..."
+              [value]="scannedStudentId"
+              (input)="onManualInputChange($any($event.target).value)"
+              (keydown)="onManualKeydown($event)"
+            />
+            <button
+              class="btn-manual-pay"
+              (click)="openPaymentModal(scannedStudentId)"
+              [disabled]="!scannedStudentId.trim()"
+            >
+              Proceed
+            </button>
+          </div>
+          <p class="manual-hint">
+            Scanner → Enter key skips to amount · Manual → press Proceed or Enter
+          </p>
+        }
+
+        <!-- Inline amount (scanner flow) -->
+        @if (showInlineAmount) {
+          <div class="inline-amount-panel">
+            <div class="inline-student-badge">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="13"
+                height="13"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+              </svg>
+              {{ scannedStudentId }}
+            </div>
+
+            @if (inlineError) {
+              <div class="alert alert-error">⚠️ {{ inlineError }}</div>
+            }
+
+            <div class="inline-amount-row">
+              <span class="inline-prefix">RM</span>
+              <input
+                class="inline-amount-input"
+                type="number"
+                placeholder="0.00"
+                min="0.01"
+                step="0.01"
+                [(ngModel)]="inlineAmount"
+                (keydown.enter)="submitInlinePayment()"
+                [disabled]="isInlineProcessing"
+              />
+            </div>
+
+            <div class="quick-btns" style="margin: 10px 0">
+              @for (amt of [1, 2, 3, 5, 10, 20]; track amt) {
+                <button
+                  class="btn-quick"
+                  (click)="inlineAmount = amt"
+                  [disabled]="isInlineProcessing"
+                >
+                  RM {{ amt }}
+                </button>
+              }
+            </div>
+
+            <div class="inline-actions">
+              <button
+                class="btn-cancel"
+                (click)="cancelInlinePayment()"
+                [disabled]="isInlineProcessing"
+              >
+                Cancel
+              </button>
+              <button
+                class="btn-pay"
+                (click)="submitInlinePayment()"
+                [disabled]="isInlineProcessing || !inlineAmount"
+              >
+                @if (isInlineProcessing) {
+                  <span class="spinner"></span> Processing...
+                } @else {
+                  Pay RM {{ inlineAmount || '0.00' | number: '1.2-2' }}
+                }
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Success flash -->
+        @if (lastScanSuccess) {
+          <div class="scan-success-flash">{{ lastScanSuccess }}</div>
+        }
       </div>
     </div>
   }
