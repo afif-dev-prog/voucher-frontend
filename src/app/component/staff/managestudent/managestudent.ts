@@ -16,12 +16,13 @@ interface BulkStudentRow {
   intake: string;
   course_code: string;
   campus: string;
-  register_date: string;
-  complete_date: string;
+  register_date: string; // display string: "05/12/2022"
+  complete_date: string; // display string
+  register_date_raw: any; // raw Excel value for Unix conversion
+  complete_date_raw: any; // raw Excel value for Unix conversion
   _valid: boolean;
   _errors: string[];
 }
-
 interface BulkProgress {
   index: number;
   student_id: string;
@@ -107,6 +108,36 @@ export class Managestudent {
           this.cdr.markForCheck();
         },
       });
+  }
+
+  private formatDateDisplay(value: any): string {
+    if (!value && value !== 0) return '';
+
+    // Excel serial number → format as dd/MM/yyyy
+    if (typeof value === 'number') {
+      const date = new Date(Math.round((value - 25569) * 86400 * 1000));
+      const d = String(date.getDate()).padStart(2, '0');
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const y = date.getFullYear();
+      return `${d}/${m}/${y}`;
+    }
+
+    const str = String(value).trim();
+    if (!str) return '';
+
+    // Already in dd/MM/yyyy — return as-is
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) return str;
+
+    // ISO or other parseable string → reformat
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime())) {
+      const d = String(parsed.getDate()).padStart(2, '0');
+      const m = String(parsed.getMonth() + 1).padStart(2, '0');
+      const y = parsed.getFullYear();
+      return `${d}/${m}/${y}`;
+    }
+
+    return str; // fallback: show whatever it is
   }
 
   setupSearch(): void {
@@ -658,12 +689,16 @@ export class Managestudent {
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows: any[] = XLSX.utils.sheet_to_json(ws, { defval: '', raw: true });
 
-        // Filter empty rows
-        const dataRows = rows.filter(
-          (row) =>
-            String(row['student_id'] ?? '').trim() !== '' ||
-            String(row['student_name'] ?? '').trim() !== '',
-        );
+        // Filter empty rows — also skip the hint row
+        const dataRows = rows.filter((row) => {
+          const id = String(row['student_id'] ?? '').trim();
+          const name = String(row['student_name'] ?? '').trim();
+          // Skip hint row (where student_id is empty and register_date contains 'dd/MM')
+          const regDate = String(row['register_date'] ?? '').trim();
+          if (!id && !name) return false;
+          if (regDate.toLowerCase().includes('dd/mm')) return false;
+          return true;
+        });
 
         const actualCols = dataRows.length > 0 ? Object.keys(dataRows[0]) : [];
         const missingCols = this.bulkTemplateHeaders
@@ -687,8 +722,11 @@ export class Managestudent {
           const intake = String(row['intake'] ?? '').trim();
           const courseCode = String(row['course_code'] ?? '').trim();
           const campus = String(row['campus'] ?? '').trim();
-          const registerDate = String(row['register_date'] ?? '').trim();
-          const completeDate = String(row['complete_date'] ?? '').trim();
+          const registerDateRaw = row['register_date'];
+          const completeDateRaw = row['complete_date'];
+
+          const registerDateDisplay = this.formatDateDisplay(registerDateRaw);
+          const completeDateDisplay = this.formatDateDisplay(completeDateRaw);
 
           if (!studentId) errors.push('student_id required');
           if (!studentName) errors.push('student_name required');
@@ -697,7 +735,12 @@ export class Managestudent {
           if (!intake) errors.push('intake required');
           if (!courseCode) errors.push('course_code required');
           if (!campus) errors.push('campus required');
-          if (!registerDate) errors.push('register_date required');
+
+          if (!registerDateDisplay) {
+            errors.push('register_date required');
+          } else if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(registerDateDisplay)) {
+            errors.push('register_date must be dd/MM/yyyy');
+          }
 
           return {
             student_id: studentId,
@@ -707,8 +750,10 @@ export class Managestudent {
             intake,
             course_code: courseCode,
             campus,
-            register_date: registerDate,
-            complete_date: completeDate,
+            register_date: registerDateDisplay, // shown in preview
+            complete_date: completeDateDisplay, // shown in preview
+            register_date_raw: registerDateRaw, // used for Unix conversion
+            complete_date_raw: completeDateRaw, // used for Unix conversion
             _valid: errors.length === 0,
             _errors: errors,
           } as BulkStudentRow;
@@ -758,7 +803,28 @@ export class Managestudent {
         'register_date',
         'complete_date',
       ],
+      ['', '', '', '', '', '', '', 'dd/MM/yyyy', 'dd/MM/yyyy (optional)'], // format hint row
     ]);
+
+    // Force date columns (H and I) to text so Excel doesn't convert them
+    for (let row = 0; row <= 1; row++) {
+      ['H', 'I'].forEach((col) => {
+        const cell = ws[`${col}${row + 1}`];
+        if (cell) {
+          cell.t = 's';
+          cell.z = '@';
+        }
+      });
+    }
+
+    // Pre-fill rows 3-100 in date columns as text
+    for (let row = 2; row <= 100; row++) {
+      ['H', 'I'].forEach((col) => {
+        ws[`${col}${row + 1}`] = { t: 's', v: '', z: '@' };
+      });
+    }
+
+    ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 100, c: 8 } });
     ws['!cols'] = [
       { wch: 16 },
       { wch: 24 },
@@ -768,10 +834,38 @@ export class Managestudent {
       { wch: 14 },
       { wch: 16 },
       { wch: 16 },
-      { wch: 16 },
+      { wch: 20 },
     ];
     XLSX.utils.book_append_sheet(wb, ws, 'Students');
     XLSX.writeFile(wb, 'student_bulk_template.xlsx');
+  }
+  private parseDateDMY(value: any): number {
+    if (!value && value !== 0) return 0;
+
+    // Excel serial number
+    if (typeof value === 'number') {
+      const date = new Date(Math.round((value - 25569) * 86400 * 1000));
+      return Math.floor(date.getTime() / 1000);
+    }
+
+    const str = String(value).trim();
+    if (!str) return 0;
+
+    // dd/MM/yyyy format
+    const dmyMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (dmyMatch) {
+      const [, d, m, y] = dmyMatch;
+      const date = new Date(Number(y), Number(m) - 1, Number(d));
+      return Math.floor(date.getTime() / 1000);
+    }
+
+    // Fallback: ISO or any other parseable format
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime())) {
+      return Math.floor(parsed.getTime() / 1000);
+    }
+
+    return 0;
   }
 
   async submitBulkStudents(): Promise<void> {
@@ -804,12 +898,8 @@ export class Managestudent {
           intake: row.intake,
           course_code: row.course_code,
           campus: row.campus,
-          register_date: row.register_date
-            ? Math.floor(new Date(row.register_date).getTime() / 1000)
-            : 0,
-          complete_date: row.complete_date
-            ? Math.floor(new Date(row.complete_date).getTime() / 1000)
-            : 0,
+          register_date: this.parseDateDMY(row.register_date_raw), // ← raw value
+          complete_date: this.parseDateDMY(row.complete_date_raw), // ← raw value
         };
 
         this.staffService
