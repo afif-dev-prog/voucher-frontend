@@ -45,6 +45,15 @@ export class WrongCredit {
   showConfirmModal = false;
   globalError = '';
 
+  // ── Tabs ──────────────────────────────
+  activeTab: 'finance' | 'seller' = 'finance';
+
+  switchTab(tab: 'finance' | 'seller'): void {
+    this.activeTab = tab;
+    this.reset();
+    this.cdr.markForCheck();
+  }
+
   get totalDifference(): number {
     if (this.sharedExactAmount == null || this.sharedWrongAmount == null) return 0;
     return this.sharedExactAmount - this.sharedWrongAmount;
@@ -56,6 +65,26 @@ export class WrongCredit {
 
   parseBulkIds(): void {
     this.globalError = '';
+
+    // Validate shared fields first if useSharedValues is on
+    if (this.useSharedValues) {
+      if (!this.sharedWrongAmount || this.sharedWrongAmount <= 0) {
+        this.globalError = 'Please enter the wrong amount first.';
+        return;
+      }
+      if (!this.sharedExactAmount || this.sharedExactAmount <= 0) {
+        this.globalError = 'Please enter the correct amount first.';
+        return;
+      }
+      if (!this.sharedSellerName.trim()) {
+        this.globalError =
+          this.activeTab === 'finance'
+            ? 'Please enter the finance staff name first.'
+            : 'Please enter the seller name first.';
+        return;
+      }
+    }
+
     const ids = this.bulkIdInput
       .split(/[\n,]+/)
       .map((id) => id.trim())
@@ -66,7 +95,6 @@ export class WrongCredit {
       return;
     }
 
-    // Deduplicate
     const unique = [...new Set(ids)];
 
     this.rows = unique.map((id) => ({
@@ -153,31 +181,44 @@ export class WrongCredit {
       this.cdr.markForCheck();
 
       await new Promise<void>((resolve) => {
-        this.staffService
-          .correctWrongCredit(row.student_id, row.wrong_amount!, row.seller_name, row.exact_amount!)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: (res: any) => {
-              if (res?.success === true) {
-                row.status = 'success';
-                row.message = res.message || 'Corrected successfully';
-                this.successCount++;
-              } else {
-                row.status = 'failed';
-                row.message = res?.message || 'Failed';
-                this.failCount++;
-              }
-              this.cdr.markForCheck();
-              resolve();
-            },
-            error: (err: any) => {
+        // ← choose endpoint based on active tab
+        const call =
+          this.activeTab === 'finance'
+            ? this.staffService.correctWrongCredit(
+                row.student_id,
+                row.wrong_amount!,
+                row.seller_name,
+                row.exact_amount!,
+              )
+            : this.staffService.correctWrongChargeBySeller(
+                row.student_id,
+                row.wrong_amount!,
+                row.seller_name,
+                row.exact_amount!,
+              );
+
+        call.pipe(takeUntil(this.destroy$)).subscribe({
+          next: (res: any) => {
+            if (res?.success === true) {
+              row.status = 'success';
+              row.message = res.message || 'Corrected successfully';
+              this.successCount++;
+            } else {
               row.status = 'failed';
-              row.message = err?.error?.message || 'Server error';
+              row.message = res?.message || 'Failed';
               this.failCount++;
-              this.cdr.markForCheck();
-              resolve();
-            },
-          });
+            }
+            this.cdr.markForCheck();
+            resolve();
+          },
+          error: (err: any) => {
+            row.status = 'failed';
+            row.message = err?.error?.message || 'Server error';
+            this.failCount++;
+            this.cdr.markForCheck();
+            resolve();
+          },
+        });
       });
 
       await new Promise((r) => setTimeout(r, 150));
@@ -187,7 +228,6 @@ export class WrongCredit {
     this.isComplete = true;
     this.cdr.markForCheck();
   }
-
   reset(): void {
     this.bulkIdInput = '';
     this.rows = [];

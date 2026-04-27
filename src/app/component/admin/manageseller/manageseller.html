@@ -615,8 +615,7 @@
                 <th>#</th>
                 <th>Date</th>
                 <th>Student ID</th>
-                <th>Debit</th>
-                <th>Credit</th>
+                <th>Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -678,8 +677,8 @@
                         }
                       </td> -->
                     <td>
-                      @if (tx.credit > 0 && tx.remark == 'SELLER_PAYMENT_RECEIVED') {
-                        <span class="amount-credit">+ RM {{ tx.credit | number: '1.2-2' }}</span>
+                      @if (tx.credit > 0) {
+                        <span class="amount-debit">- RM {{ tx.credit | number: '1.2-2' }}</span>
                       }
 
                       @if (tx.debit > 0) {
