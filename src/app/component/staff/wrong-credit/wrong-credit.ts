@@ -1,0 +1,209 @@
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { Staff } from '../../../services/staff';
+import { Subject, takeUntil } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+interface CorrectionRow {
+  student_id: string;
+  wrong_amount: number | null;
+  exact_amount: number | null;
+  seller_name: string;
+  status: 'idle' | 'processing' | 'success' | 'failed';
+  message: string;
+  difference: number | null;
+}
+
+@Component({
+  selector: 'app-wrong-credit',
+  imports: [CommonModule, FormsModule],
+  templateUrl: './wrong-credit.html',
+  styleUrl: './wrong-credit.css',
+})
+export class WrongCredit {
+  private staffService = inject(Staff);
+  private cdr = inject(ChangeDetectorRef);
+  private destroy$ = new Subject<void>();
+
+  // ── Shared fields ─────────────────────
+  sharedWrongAmount: number | null = null;
+  sharedExactAmount: number | null = null;
+  sharedSellerName = '';
+  useSharedValues = true;
+
+  // ── Bulk ID input ──────────────────────
+  bulkIdInput = '';
+  rows: CorrectionRow[] = [];
+
+  // ── Submission ─────────────────────────
+  isProcessing = false;
+  isComplete = false;
+  successCount = 0;
+  failCount = 0;
+
+  // ── Confirm modal ──────────────────────
+  showConfirmModal = false;
+  globalError = '';
+
+  get totalDifference(): number {
+    if (this.sharedExactAmount == null || this.sharedWrongAmount == null) return 0;
+    return this.sharedExactAmount - this.sharedWrongAmount;
+  }
+
+  get isPositiveDiff(): boolean {
+    return this.totalDifference > 0;
+  }
+
+  parseBulkIds(): void {
+    this.globalError = '';
+    const ids = this.bulkIdInput
+      .split(/[\n,]+/)
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+
+    if (ids.length === 0) {
+      this.globalError = 'Please enter at least one student ID.';
+      return;
+    }
+
+    // Deduplicate
+    const unique = [...new Set(ids)];
+
+    this.rows = unique.map((id) => ({
+      student_id: id,
+      wrong_amount: this.useSharedValues ? this.sharedWrongAmount : null,
+      exact_amount: this.useSharedValues ? this.sharedExactAmount : null,
+      seller_name: this.useSharedValues ? this.sharedSellerName : '',
+      status: 'idle',
+      message: '',
+      difference:
+        this.useSharedValues && this.sharedWrongAmount != null && this.sharedExactAmount != null
+          ? this.sharedExactAmount - this.sharedWrongAmount
+          : null,
+    }));
+
+    this.cdr.markForCheck();
+  }
+
+  applySharedToAll(): void {
+    this.rows = this.rows.map((row) => ({
+      ...row,
+      wrong_amount: this.sharedWrongAmount,
+      exact_amount: this.sharedExactAmount,
+      seller_name: this.sharedSellerName,
+      difference:
+        this.sharedWrongAmount != null && this.sharedExactAmount != null
+          ? this.sharedExactAmount - this.sharedWrongAmount
+          : null,
+    }));
+    this.cdr.markForCheck();
+  }
+
+  updateRowDiff(row: CorrectionRow): void {
+    row.difference =
+      row.wrong_amount != null && row.exact_amount != null
+        ? row.exact_amount - row.wrong_amount
+        : null;
+  }
+
+  removeRow(index: number): void {
+    this.rows.splice(index, 1);
+    this.cdr.markForCheck();
+  }
+
+  get canSubmit(): boolean {
+    return (
+      this.rows.length > 0 &&
+      this.rows.every(
+        (r) =>
+          r.student_id.trim() &&
+          r.wrong_amount != null &&
+          r.wrong_amount > 0 &&
+          r.exact_amount != null &&
+          r.exact_amount > 0 &&
+          r.seller_name.trim(),
+      )
+    );
+  }
+
+  openConfirm(): void {
+    this.globalError = '';
+    if (!this.canSubmit) {
+      this.globalError = 'Please fill in all required fields for every row.';
+      return;
+    }
+    this.showConfirmModal = true;
+  }
+
+  closeConfirm(): void {
+    if (this.isProcessing) return;
+    this.showConfirmModal = false;
+  }
+
+  async submitCorrections(): Promise<void> {
+    this.showConfirmModal = false;
+    this.isProcessing = true;
+    this.isComplete = false;
+    this.successCount = 0;
+    this.failCount = 0;
+
+    for (let i = 0; i < this.rows.length; i++) {
+      const row = this.rows[i];
+      row.status = 'processing';
+      this.cdr.markForCheck();
+
+      await new Promise<void>((resolve) => {
+        this.staffService
+          .correctWrongCredit(row.student_id, row.wrong_amount!, row.seller_name, row.exact_amount!)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (res: any) => {
+              if (res?.success === true) {
+                row.status = 'success';
+                row.message = res.message || 'Corrected successfully';
+                this.successCount++;
+              } else {
+                row.status = 'failed';
+                row.message = res?.message || 'Failed';
+                this.failCount++;
+              }
+              this.cdr.markForCheck();
+              resolve();
+            },
+            error: (err: any) => {
+              row.status = 'failed';
+              row.message = err?.error?.message || 'Server error';
+              this.failCount++;
+              this.cdr.markForCheck();
+              resolve();
+            },
+          });
+      });
+
+      await new Promise((r) => setTimeout(r, 150));
+    }
+
+    this.isProcessing = false;
+    this.isComplete = true;
+    this.cdr.markForCheck();
+  }
+
+  reset(): void {
+    this.bulkIdInput = '';
+    this.rows = [];
+    this.sharedWrongAmount = null;
+    this.sharedExactAmount = null;
+    this.sharedSellerName = '';
+    this.isProcessing = false;
+    this.isComplete = false;
+    this.successCount = 0;
+    this.failCount = 0;
+    this.globalError = '';
+    this.cdr.markForCheck();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+}

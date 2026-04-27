@@ -111,6 +111,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./component/all/change-password/change-password').then((m) => m.ChangePassword),
   },
+
+  {
+    path: 'wrong-credit',
+    canActivate: [authGuard],
+    data: { roles: ['SUPERADMIN'] },
+    loadComponent: () =>
+      import('./component/staff/wrong-credit/wrong-credit').then((m) => m.WrongCredit),
+  },
   // ── Fallback ──────────────────────────
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', redirectTo: '/login' },

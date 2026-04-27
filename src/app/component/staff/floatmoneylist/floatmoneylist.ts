@@ -399,10 +399,8 @@ export class Floatmoneylist {
   allRowsForProceed: FloatRow[] = [];
 
   get proceedRealTotal(): number {
-    if (this.selectAllPages) {
-      return this.allRowsForProceed.reduce((sum, r) => sum + (r.credit || 0), 0);
-    }
-    return this.selectedRows.reduce((sum, r) => sum + (r.credit || 0), 0);
+    const rows = this.selectAllPages ? this.allRowsForProceed : this.selectedRows;
+    return rows.reduce((sum, r) => sum + (r.credit || 0), 0);
   }
 
   closeConfirmModal(): void {
@@ -425,31 +423,44 @@ export class Floatmoneylist {
     this.proceedError = '';
 
     const rowsToProcess = this.selectAllPages ? this.allRowsForProceed : this.selectedRows;
-    const ids = rowsToProcess.map((r) => r.student_id) as unknown as [''];
+
+    this.proceedSequentially(rowsToProcess, 0);
+  }
+
+  private proceedSequentially(rows: FloatRow[], index: number): void {
+    if (index >= rows.length) {
+      // All done
+      this.proceedSuccess = true;
+      this.selectAllPages = false;
+      this.allRowsForProceed = [];
+      this.rows.forEach((r) => (r.selected = false));
+      this.isProceeding = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const row = rows[index];
 
     this.floatService
       .proceedFloat({
-        ids,
-        amount: this.proceedRealTotal, // total sum, not single row amount
+        ids: [row.student_id] as unknown as [''],
+        amount: row.credit, // ← each student's own amount
         month_credit: this.proceedMonthCredit,
         user_update: this.currentUser,
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
-          if (res?.success !== false) {
-            this.proceedSuccess = true;
-            this.selectAllPages = false;
-            this.allRowsForProceed = [];
-            this.rows.forEach((r) => (r.selected = false));
-          } else {
-            this.proceedError = res?.message || 'Failed to proceed.';
+          if (res?.success === false) {
+            this.proceedError = res?.message || `Failed for ${row.student_id}.`;
+            this.isProceeding = false;
+            this.cdr.markForCheck();
+            return; // stop on first failure
           }
-          this.isProceeding = false;
-          this.cdr.markForCheck();
+          this.proceedSequentially(rows, index + 1);
         },
         error: (err: any) => {
-          this.proceedError = err?.error?.message || 'Something went wrong.';
+          this.proceedError = err?.error?.message || `Server error at ${row.student_id}.`;
           this.isProceeding = false;
           this.cdr.markForCheck();
         },
