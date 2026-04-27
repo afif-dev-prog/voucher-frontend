@@ -727,3 +727,94 @@
 .camera-hidden {
   display: none;
 }
+.input-mode-badge {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.badge-scanner {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.manual-hint {
+  font-size: 0.73rem;
+  color: #9ca3af;
+  margin: 6px 0 0;
+}
+
+/* Inline amount panel */
+.inline-amount-panel {
+  background: #f0f9ff;
+  border: 1.5px solid #bae6fd;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.inline-student-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  width: fit-content;
+  font-family: monospace;
+}
+.inline-amount-row {
+  display: flex;
+  align-items: center;
+  border: 2px solid #2563eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.inline-prefix {
+  background: #eff6ff;
+  padding: 0 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2563eb;
+  border-right: 2px solid #2563eb;
+  height: 50px;
+  display: flex;
+  align-items: center;
+}
+.inline-amount-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #111827;
+  padding: 0 14px;
+  height: 50px;
+  background: #fff;
+}
+.inline-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Success flash */
+.scan-success-flash {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  animation: fadeIn 0.2s ease;
+}
