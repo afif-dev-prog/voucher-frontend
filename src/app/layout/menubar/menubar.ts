@@ -3,10 +3,11 @@ import { Component, HostListener, inject, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterModule } from '@angular/router';
 import { Auth } from '../../services/auth';
 import { filter } from 'rxjs';
+import { NotificationBell } from '../../component/global/notification-bell/notification-bell';
 
 @Component({
   selector: 'app-menubar',
-  imports: [RouterLink, RouterLinkActive, RouterModule, CommonModule],
+  imports: [RouterLink, RouterLinkActive, RouterModule, CommonModule, NotificationBell],
   templateUrl: './menubar.html',
   styleUrl: './menubar.css',
 })

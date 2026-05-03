@@ -4,6 +4,7 @@
     <div class="topbar-content">
       <span class="topbar-username">{{ userName }}</span>
       @if (showNav) {
+        <!-- <app-notification-bell></app-notification-bell> -->
         <button type="button" class="btn-logout" (click)="logout()">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -365,7 +366,21 @@
           </svg>
           <span>Perms</span>
         </a>
-
+        <a
+          class="nav-item"
+          routerLink="/announcements"
+          routerLinkActive
+          #saAnnLink="routerLinkActive"
+          [class.active]="saAnnLink.isActive"
+          (click)="setActive(7)"
+        >
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path
+              d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0v-.214c-2.162-1.241-4.49-1.843-6.912-2.083l.405 2.712A1 1 0 0 1 5.51 15.1h-.548a1 1 0 0 1-.916-.599l-1.85-3.49-.202-.003A2.014 2.014 0 0 1 0 9V7a2.02 2.02 0 0 1 1.992-2.013 75 75 0 0 0 2.483-.075c3.043-.154 6.148-.849 8.525-2.199zm1 0v11a.5.5 0 0 0 1 0v-11a.5.5 0 0 0-1 0m-1 1.35c-2.344 1.205-5.209 1.842-8 2.033v4.233c2.791.19 5.656.827 8 2.033zM5.51 14.1l-.37-2.46H.992A1.01 1.01 0 0 0 2 13h1.52zm-2.176-4.096L3.5 8.5H2v1z"
+            />
+          </svg>
+          <span>Announce</span>
+        </a>
         <a
           class="nav-item"
           routerLink="/authlog"

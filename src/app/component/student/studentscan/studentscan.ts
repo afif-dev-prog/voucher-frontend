@@ -14,6 +14,7 @@ import { Student } from '../../../services/student';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Seller } from '../../../services/seller';
+import { SharedService } from '../../../services/shared-service';
 
 type ScanState = 'idle' | 'scanning' | 'confirming' | 'processing' | 'success' | 'error';
 @Component({
@@ -31,6 +32,7 @@ export class Studentscan implements OnInit, OnDestroy {
   private sellerService = inject(Seller);
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
+  private sharedService = inject(SharedService);
   studentId = '';
   constructor() {
     this.studentId = this.auth.getUserId();
@@ -44,6 +46,7 @@ export class Studentscan implements OnInit, OnDestroy {
   // ── Scanned seller data ────────────────
   scannedSellerId = '';
   scannedSellerName = '';
+  scannedSellerUsername = ''; // ← store username for API call
   isValidatingSeller = false;
   sellerValidError = '';
 
@@ -52,6 +55,19 @@ export class Studentscan implements OnInit, OnDestroy {
   payError = '';
   successMsg = '';
   currentBalance = 0;
+
+  // ── Confirm modal ─────────────────────
+  showConfirmModal = false;
+
+  // ── Success summary ───────────────────
+  paymentSummary: {
+    amount: number;
+    sellerName: string;
+    newBalance: number;
+    paidAt: Date;
+  } | null = null;
+  dismissCountdown = 10;
+  dismissTimer: any = null;
 
   // ── jsQR ──────────────────────────────
   private jsQR: any = null;
@@ -195,7 +211,8 @@ export class Studentscan implements OnInit, OnDestroy {
           if (totalCount === 1 && sellers.length > 0) {
             const seller = sellers[0];
             this.scannedSellerId = seller.s_id; // adjust to your actual field names
-            this.scannedSellerName = seller.username; // adjust to your actual field names
+            this.scannedSellerName = seller.s_name || seller.username;
+            this.scannedSellerUsername = seller.username; // ← store username
             this.isValidatingSeller = false;
             this.scanState = 'confirming';
           } else {
@@ -215,34 +232,91 @@ export class Studentscan implements OnInit, OnDestroy {
       });
   }
 
-  // ── Payment ───────────────────────────
-  confirmPayment(): void {
-    // console.log('seller id: ' + this.scannedSellerName + '' + 'student id: ' + this.studentId);
+  // // ── Payment ───────────────────────────
+  // confirmPayment(): void {
+  //   if (!this.payAmount || this.payAmount <= 0) {
+  //     this.payError = 'Please enter a valid amount.';
+  //     return;
+  //   }
+  //   // if (this.payAmount > this.currentBalance) {
+  //   //   this.payError = 'Insufficient balance.';
+  //   //   return;
+  //   // }
+  //   this.showConfirmModal = false;
+
+  //   this.scanState = 'processing';
+  //   this.payError = '';
+  //   this.cdr.markForCheck();
+
+  //   this.studentService
+  //     .studentPay(this.studentId, this.scannedSellerName, this.payAmount)
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe({
+  //       next: (res: any) => {
+  //         // console.log(res);
+  //         if (res?.success !== false) {
+  //           this.successMsg =
+  //             res?.message || `RM ${this.payAmount.toFixed(2)} paid to ${this.scannedSellerName}`;
+  //           // this.currentBalance -= this.payAmount;
+  //           this.ngOnInit();
+  //           this.scanState = 'success';
+  //         } else {
+  //           this.payError = res?.message || 'Payment failed.';
+  //           this.scanState = 'confirming';
+  //         }
+  //         this.cdr.markForCheck();
+  //       },
+  //       error: (err: any) => {
+  //         this.payError = err?.error?.message || 'Payment failed. Please try again.';
+  //         this.scanState = 'confirming';
+  //         this.cdr.markForCheck();
+  //       },
+  //     });
+  // }
+
+  // ── Open confirm modal ────────────────
+  openConfirmModal(): void {
     if (!this.payAmount || this.payAmount <= 0) {
       this.payError = 'Please enter a valid amount.';
       return;
     }
-    // if (this.payAmount > this.currentBalance) {
-    //   this.payError = 'Insufficient balance.';
-    //   return;
-    // }
-
-    this.scanState = 'processing';
+    if (this.payAmount > this.currentBalance) {
+      this.payError = 'Insufficient balance.';
+      return;
+    }
     this.payError = '';
+    this.showConfirmModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeConfirmModal(): void {
+    this.showConfirmModal = false;
+    this.cdr.markForCheck();
+  }
+
+  // ── Confirm and pay ───────────────────
+  confirmPayment(): void {
+    this.showConfirmModal = false;
+    this.scanState = 'processing';
     this.cdr.markForCheck();
 
     this.studentService
-      .studentPay(this.studentId, this.scannedSellerName, this.payAmount)
+      .studentPay(this.studentId, this.scannedSellerUsername, this.payAmount)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
-          // console.log(res);
-          if (res?.success !== false) {
-            this.successMsg =
-              res?.message || `RM ${this.payAmount.toFixed(2)} paid to ${this.scannedSellerName}`;
-            // this.currentBalance -= this.payAmount;
-            this.ngOnInit();
+          if (res?.success !== false && res?.success !== undefined ? res.success : res?.data) {
+            // Build payment summary
+            this.paymentSummary = {
+              amount: this.payAmount,
+              sellerName: this.scannedSellerName,
+              newBalance: res?.data?.balance ?? this.currentBalance - this.payAmount,
+              paidAt: new Date(),
+            };
+            this.currentBalance = this.paymentSummary.newBalance;
+            this.sharedService.trigger();
             this.scanState = 'success';
+            this.startDismissTimer();
           } else {
             this.payError = res?.message || 'Payment failed.';
             this.scanState = 'confirming';
@@ -257,17 +331,46 @@ export class Studentscan implements OnInit, OnDestroy {
       });
   }
 
+  // ── Auto-dismiss timer ────────────────
+  startDismissTimer(): void {
+    this.dismissCountdown = 10;
+    this.dismissTimer = setInterval(() => {
+      this.dismissCountdown--;
+      this.cdr.markForCheck();
+      if (this.dismissCountdown <= 0) {
+        this.clearDismissTimer();
+        this.resetScan();
+      }
+    }, 1000);
+  }
+
+  clearDismissTimer(): void {
+    if (this.dismissTimer) {
+      clearInterval(this.dismissTimer);
+      this.dismissTimer = null;
+    }
+  }
+
+  dismissSuccess(): void {
+    this.clearDismissTimer();
+    this.resetScan();
+  }
+
   // ── Reset ─────────────────────────────
   resetScan(): void {
     this.stopCamera();
+    this.clearDismissTimer();
     this.scanState = 'idle';
     this.scannedSellerId = '';
     this.scannedSellerName = '';
+    this.scannedSellerUsername = '';
     this.payAmount = 0;
     this.payError = '';
     this.sellerValidError = '';
-    this.successMsg = '';
+    this.paymentSummary = null;
+    this.showConfirmModal = false;
     this.isValidatingSeller = false;
+    this.loadBalance();
     this.cdr.markForCheck();
   }
 }

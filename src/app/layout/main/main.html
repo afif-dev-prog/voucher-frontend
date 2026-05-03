@@ -1,4 +1,4 @@
-<div class="layout">
+<div class="layout" appPullToRefresh (pullToRefresh)="onRefresh()">
   @if (showMenubar) {
     <!-- Only show the main card layout when NOT on login -->
     <div class="screen-container">
@@ -20,6 +20,8 @@
 @if (showMenubar) {
   <app-menubar></app-menubar>
 }
+
+<app-payment-approval></app-payment-approval>
 
 <!-- Global loading overlay
 @if (isNavigating) {
