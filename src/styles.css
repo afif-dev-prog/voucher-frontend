@@ -12,7 +12,7 @@ body {
   padding: 0;
   width: 100%;
   overflow: hidden;
-  overscroll-behavior: none;
+  overscroll-behavior-y: contain;
   padding-bottom: env(safe-area-inset-bottom);
 }
 

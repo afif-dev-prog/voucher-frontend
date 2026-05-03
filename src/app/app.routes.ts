@@ -88,6 +88,14 @@ export const routes: Routes = [
   },
 
   // ── Admin / Superadmin ────────────────
+
+  {
+    path: 'announcements',
+    canActivate: [authGuard],
+    data: { roles: ['SUPERADMIN'] },
+    loadComponent: () =>
+      import('./component/admin/announcement/announcement').then((m) => m.Announcement),
+  },
   {
     path: 'manageseller',
     canActivate: [authGuard],
