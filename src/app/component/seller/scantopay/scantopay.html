@@ -73,7 +73,7 @@
   @if (activeTab === 'scan') {
     <div class="scan-panel">
       <!-- Camera not yet opened -->
-      @if (!isCameraActive && !isCameraLoading && !cameraError) {
+      <!-- @if (!isCameraActive && !isCameraLoading && !cameraError) {
         <div class="camera-placeholder">
           <div class="camera-idle-icon">
             <svg
@@ -94,27 +94,27 @@
           <p>Ready to scan</p>
           <button class="btn-start-camera" (click)="startCamera()">Open Camera</button>
         </div>
-      }
+      } -->
 
       <!-- Camera loading -->
-      @if (isCameraLoading) {
+      <!-- @if (isCameraLoading) {
         <div class="camera-placeholder">
           <div class="camera-spinner"></div>
           <p>Starting camera...</p>
         </div>
-      }
+      } -->
 
       <!-- Camera error -->
-      @if (!isCameraActive && !isCameraLoading && cameraError) {
+      <!-- @if (!isCameraActive && !isCameraLoading && cameraError) {
         <div class="camera-placeholder camera-error">
           <div class="camera-error-icon">📷</div>
           <p>{{ cameraError }}</p>
           <button class="btn-retry" (click)="startCamera()">Retry</button>
         </div>
-      }
+      } -->
 
       <!-- Camera active -->
-      @if (isCameraActive) {
+      <!-- @if (isCameraActive) {
         <div class="camera-viewport">
           <video #videoElement autoplay playsinline muted class="camera-video"></video>
           <canvas #canvasElement class="camera-canvas-hidden"></canvas>
@@ -135,10 +135,9 @@
             Scanning...
           </div>
 
-          <!-- Close camera button -->
           <button class="btn-close-camera" (click)="stopCamera()">✕ Close Camera</button>
         </div>
-      }
+      } -->
 
       <!-- Manual entry fallback -->
       <div class="manual-entry" (click)="onScanPanelClick($event)">
@@ -395,3 +394,23 @@
     </div>
   </div>
 }
+<!-- @if (isWaitingApproval) {
+  <div class="waiting-approval">
+    <div class="waiting-spinner"></div>
+    <h3>Waiting for student approval...</h3>
+    <p>The student will receive a notification to approve this payment.</p>
+    <div class="countdown-bar-track">
+      <div
+        class="countdown-bar-fill"
+        [style.width.%]="(approvalCountdown / 60) * 100"
+        [class.urgent]="approvalCountdown <= 10"
+      ></div>
+    </div>
+    <p class="countdown-text" [class.urgent-text]="approvalCountdown <= 10">
+      {{ approvalCountdown }}s
+    </p>
+    <button class="btn-cancel-wait" (click)="stopPolling(); isWaitingApproval = false">
+      Cancel
+    </button>
+  </div>
+} -->

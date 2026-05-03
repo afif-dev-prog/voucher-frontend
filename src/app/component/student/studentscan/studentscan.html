@@ -176,7 +176,7 @@
           <button class="btn-rescan" (click)="resetScan()">Rescan</button>
           <button
             class="btn-pay"
-            (click)="confirmPayment()"
+            (click)="openConfirmModal()"
             [disabled]="!payAmount || payAmount <= 0"
           >
             <svg
@@ -209,7 +209,7 @@
   }
 
   <!-- ── SUCCESS state ── -->
-  @if (scanState === 'success') {
+  @if (scanState === 'success' && paymentSummary) {
     <div class="scan-success">
       <div class="success-ring">
         <div class="success-icon">
@@ -227,15 +227,41 @@
           </svg>
         </div>
       </div>
-      <h3 class="success-title">Payment Successful</h3>
-      <p class="success-msg">{{ successMsg }}</p>
 
-      <div class="success-balance-card">
-        <span class="success-balance-label">Remaining Balance</span>
-        <span class="success-balance-value"> RM {{ currentBalance | number: '1.2-2' }} </span>
+      <h3 class="success-title">Payment Successful</h3>
+
+      <!-- Payment summary card -->
+      <div class="payment-summary-card">
+        <div class="summary-row">
+          <span class="summary-label">Paid to</span>
+          <span class="summary-value">{{ paymentSummary.sellerName }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Amount</span>
+          <span class="summary-value summary-amount">
+            RM {{ paymentSummary.amount | number: '1.2-2' }}
+          </span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Date & Time</span>
+          <span class="summary-value">
+            {{ paymentSummary.paidAt | date: 'dd MMM yyyy, HH:mm' }}
+          </span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-row">
+          <span class="summary-label">Remaining Balance</span>
+          <span class="summary-value summary-balance">
+            RM {{ paymentSummary.newBalance | number: '1.2-2' }}
+          </span>
+        </div>
       </div>
 
-      <button class="btn-scan-again" (click)="resetScan()">Scan Again</button>
+      <!-- Auto-dismiss button with countdown -->
+      <button class="btn-dismiss" (click)="dismissSuccess()">
+        <div class="dismiss-progress" [style.width.%]="(dismissCountdown / 10) * 100"></div>
+        <span class="dismiss-text">Dismiss ({{ dismissCountdown }}s)</span>
+      </button>
     </div>
   }
 
@@ -262,3 +288,57 @@
     </div>
   }
 </div>
+<!-- ── CONFIRM PAYMENT MODAL ── -->
+@if (showConfirmModal) {
+  <div class="modal-backdrop" (click)="closeConfirmModal()">
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <div class="confirm-modal-header">
+        <h3 class="confirm-modal-title">Confirm Payment</h3>
+        <button class="confirm-modal-close" (click)="closeConfirmModal()">✕</button>
+      </div>
+
+      <div class="confirm-modal-body">
+        <!-- Seller info -->
+        <div class="confirm-seller-row">
+          <span class="confirm-label">Paying to</span>
+          <span class="confirm-val">{{ scannedSellerName }}</span>
+        </div>
+        <div class="confirm-seller-row">
+          <span class="confirm-label">Amount</span>
+          <span class="confirm-val confirm-amount-val"> RM {{ payAmount | number: '1.2-2' }} </span>
+        </div>
+        <div class="confirm-seller-row">
+          <span class="confirm-label">Current Balance</span>
+          <span class="confirm-val">RM {{ currentBalance | number: '1.2-2' }}</span>
+        </div>
+        <div class="confirm-seller-row">
+          <span class="confirm-label">Balance After</span>
+          <span
+            class="confirm-val"
+            [style.color]="currentBalance - payAmount < 0 ? '#dc2626' : '#16a34a'"
+          >
+            RM {{ currentBalance - payAmount | number: '1.2-2' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="confirm-modal-footer">
+        <button class="btn-modal-cancel" (click)="closeConfirmModal()">Cancel</button>
+        <button class="btn-modal-confirm" (click)="confirmPayment()">
+          <svg
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            viewBox="0 0 24 24"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          Confirm Payment
+        </button>
+      </div>
+    </div>
+  </div>
+}

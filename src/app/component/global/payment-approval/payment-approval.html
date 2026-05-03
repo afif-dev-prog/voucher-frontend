@@ -1,0 +1,65 @@
+@if (pendingPayment) {
+  <div class="approval-overlay">
+    <div class="approval-card">
+      <div class="approval-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="32"
+          height="32"
+          fill="#2563eb"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2.5 1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"
+          />
+        </svg>
+      </div>
+
+      <h3 class="approval-title">Payment Request</h3>
+      <p class="approval-seller">
+        from <strong>{{ pendingPayment.seller_name }}</strong>
+      </p>
+
+      <div class="approval-amount">RM {{ pendingPayment.amount | number: '1.2-2' }}</div>
+
+      <!-- Countdown -->
+      <div class="approval-timer">
+        <div class="timer-bar-track">
+          <div
+            class="timer-bar-fill"
+            [style.width.%]="(pendingPayment.seconds_remaining / 60) * 100"
+            [class.urgent]="pendingPayment.seconds_remaining <= 10"
+          ></div>
+        </div>
+        <span class="timer-label" [class.urgent-text]="pendingPayment.seconds_remaining <= 10">
+          {{ pendingPayment.seconds_remaining }}s remaining
+        </span>
+      </div>
+
+      @if (resultMsg) {
+        <div class="approval-result" [class.success]="isSuccess" [class.error]="!isSuccess">
+          {{ resultMsg }}
+        </div>
+      }
+
+      <div class="approval-actions">
+        <button class="btn-reject" (click)="reject()" [disabled]="isActing">
+          @if (isActing && lastAction === 'reject') {
+            <span class="spinner-sm"></span>
+          } @else {
+            ✕
+          }
+          Reject
+        </button>
+        <button class="btn-approve" (click)="approve()" [disabled]="isActing">
+          @if (isActing && lastAction === 'approve') {
+            <span class="spinner-sm"></span>
+          } @else {
+            ✓
+          }
+          Approve
+        </button>
+      </div>
+    </div>
+  </div>
+}

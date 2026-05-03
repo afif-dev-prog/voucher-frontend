@@ -77,7 +77,14 @@
   align-items: center;
   gap: 8px;
   padding: 14px 32px;
-  background: #2563eb;
+  /* background: #2563eb; */
+  background: linear-gradient(
+    90deg,
+    rgba(42, 155, 110, 1) 0%,
+    rgba(87, 199, 133, 1) 50%,
+    rgba(73, 140, 88, 1) 100%
+  );
+
   color: #fff;
   border: none;
   border-radius: 14px;
@@ -650,3 +657,203 @@
 }
 
 /* studentscan.css */
+/* Payment summary card */
+.payment-summary-card {
+  width: 100%;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.summary-row:last-child {
+  border-bottom: none;
+}
+.summary-label {
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+.summary-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #111827;
+}
+.summary-amount {
+  color: #dc2626;
+  font-size: 1rem;
+}
+.summary-balance {
+  color: #16a34a;
+  font-size: 1rem;
+}
+.summary-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 0;
+}
+
+/* Dismiss button with progress */
+.btn-dismiss {
+  position: relative;
+  width: 100%;
+  padding: 13px;
+  background: #1e3a5f;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background 0.15s;
+}
+.btn-dismiss:hover {
+  background: #0f2340;
+}
+.dismiss-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.15);
+  transition: width 1s linear;
+  border-radius: 12px;
+}
+.dismiss-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* Confirm modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+  padding: 0;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.confirm-modal {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.25s ease;
+  overflow: hidden;
+}
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.confirm-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.confirm-modal-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+.confirm-modal-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.confirm-modal-body {
+  padding: 4px 0;
+}
+.confirm-seller-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f9fafb;
+}
+.confirm-seller-row:last-child {
+  border-bottom: none;
+}
+.confirm-label {
+  font-size: 0.84rem;
+  color: #6b7280;
+}
+.confirm-val {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #111827;
+}
+.confirm-amount-val {
+  color: #2563eb;
+  font-size: 1.1rem;
+}
+
+.confirm-modal-footer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px 24px;
+  border-top: 1px solid #f1f5f9;
+}
+.btn-modal-cancel {
+  flex: 1;
+  padding: 13px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+}
+.btn-modal-cancel:hover {
+  background: #f3f4f6;
+}
+.btn-modal-confirm {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 13px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-modal-confirm:hover {
+  background: #1d4ed8;
+}

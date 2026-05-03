@@ -16,7 +16,14 @@
 
 /* ── Main card ── */
 .wallet-card {
-  background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #3b82f6 100%);
+  /* background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #3b82f6 100%); */
+  background: linear-gradient(
+    90deg,
+    rgba(42, 155, 110, 1) 0%,
+    rgba(87, 199, 133, 1) 50%,
+    rgba(73, 140, 88, 1) 100%
+  );
+
   border-radius: 20px;
   padding: 26px 22px;
   position: relative;
@@ -347,7 +354,14 @@
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #1e3a5f, #2563eb);
+  /* background: linear-gradient(135deg, #1e3a5f, #2563eb); */
+  background: linear-gradient(
+    90deg,
+    rgba(42, 155, 110, 1) 0%,
+    rgba(87, 199, 133, 1) 50%,
+    rgba(73, 140, 88, 1) 100%
+  );
+
   color: #fff;
   font-size: 16px;
   font-weight: 600;

@@ -223,7 +223,14 @@ table th {
   border-top: 1px solid #f1f5f9;
 }
 .btn-load-more {
-  background: #2563eb;
+  /* background: #2563eb; */
+  background: linear-gradient(
+    90deg,
+    rgba(42, 155, 110, 1) 0%,
+    rgba(87, 199, 133, 1) 50%,
+    rgba(73, 140, 88, 1) 100%
+  );
+
   color: #fff;
   border: none;
   padding: 10px 28px;

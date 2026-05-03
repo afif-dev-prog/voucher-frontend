@@ -2,6 +2,8 @@ import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit } from '@an
 import { Student } from '../../../services/student';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Auth } from '../../../services/auth';
+import { SharedService } from '../../../services/shared-service';
+import { Subject, takeUntil } from 'rxjs';
 interface PaginationMetadata {
   currentPage: number;
   totalPages: number;
@@ -44,6 +46,9 @@ export class Viewbalance implements OnInit, AfterViewInit {
   qrImageUrl = '';
   qrError = false;
   private auth = inject(Auth);
+  private destroy$ = new Subject<void>();
+
+  private sharedService = inject(SharedService);
   constructor(
     private studentService: Student,
     private cdr: ChangeDetectorRef,
@@ -53,6 +58,14 @@ export class Viewbalance implements OnInit, AfterViewInit {
   }
   ngAfterViewInit(): void {
     this.getBalance();
+
+    console.log(this.auth.getRole());
+
+    this.sharedService.refresh$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      // this.getBalance();
+      this.ngOnInit();
+      this.cdr.markForCheck();
+    });
   }
   private currentPage: number = 1;
   private readonly pageSize: number = 10;

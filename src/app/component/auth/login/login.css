@@ -155,7 +155,14 @@
 .btn-login {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, #1e5f38, #31a077);
+  /* background: linear-gradient(135deg, #1e5f38, #31a077); */
+  background: linear-gradient(
+    90deg,
+    rgba(42, 155, 110, 1) 0%,
+    rgba(87, 199, 133, 1) 50%,
+    rgba(73, 140, 88, 1) 100%
+  );
+
   color: #fff;
   border: none;
   border-radius: 10px;

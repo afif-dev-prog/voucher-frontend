@@ -13,6 +13,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import jsQR from 'jsqr';
 import { Auth } from '../../../services/auth';
+import { PaymentService } from '../../../services/payment-service';
+import { SharedService } from '../../../services/shared-service';
 
 @Component({
   selector: 'app-scantopay',
@@ -23,13 +25,20 @@ import { Auth } from '../../../services/auth';
 export class Scantopay implements OnInit, OnDestroy {
   private sellerService = inject(Seller);
   private auth = inject(Auth);
-
+  private trigger = inject(SharedService);
+  private paymentService = inject(PaymentService);
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
   sellerId: number = 0; // replace with actual seller ID from auth
 
   sellerUsername = '';
   sellerRes: any = [];
+
+  paymentId = '';
+  isWaitingApproval = false;
+  approvalCountdown = 60;
+  approvalTimer: any;
+  approvalStatus = '';
 
   readonly apiUrl = 'http://localhost:5094/api/voucher/seller';
 
@@ -82,6 +91,7 @@ export class Scantopay implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.sellerName = this.auth.getName();
+    console.log(this.auth.getUserId());
 
     this.loadSellerData();
     if (this.activeTab === 'scan') {
@@ -503,6 +513,7 @@ export class Scantopay implements OnInit, OnDestroy {
             this.paymentSuccess = true;
             this.paymentResult = res;
             this.isProcessing = false;
+            this.trigger.trigger();
           } else {
             // API returned failure
             this.paymentError = res.message || 'Payment failed. Please try again.';
@@ -519,6 +530,71 @@ export class Scantopay implements OnInit, OnDestroy {
         },
       });
   }
+
+  // ready for update bersion 2
+
+  // async submitPayment(): Promise<void> {
+  //   if (!this.paymentAmount || this.paymentAmount <= 0) {
+  //     this.paymentError = 'Please enter a valid amount.';
+  //     return;
+  //   }
+
+  //   this.isProcessing = true;
+  //   this.paymentError = '';
+
+  //   this.paymentService.initiatePayment(this.scannedStudentId, this.paymentAmount).subscribe({
+  //     next: (res: any) => {
+  //       if (res?.success) {
+  //         this.paymentId = res.paymentId;
+  //         this.isProcessing = false;
+  //         this.isWaitingApproval = true;
+  //         this.approvalCountdown = 60;
+  //         this.startPolling();
+  //       } else {
+  //         this.paymentError = res?.message || res.err || 'Failed to send payment request.';
+  //         this.isProcessing = false;
+  //       }
+  //       this.cdr.markForCheck();
+  //     },
+  //   });
+  // }
+
+  // startPolling(): void {
+  //   this.approvalTimer = setInterval(() => {
+  //     this.approvalCountdown--;
+
+  //     this.paymentService.getPaymentStatus(this.paymentId).subscribe({
+  //       next: (res: any) => {
+  //         const status = res?.data?.status;
+  //         if (status === 'approved') {
+  //           this.stopPolling();
+  //           this.paymentSuccess = true;
+  //           this.isWaitingApproval = false;
+  //           this.approvalStatus = 'approved';
+  //           this.cdr.markForCheck();
+  //         } else if (status === 'rejected' || status === 'expired') {
+  //           this.stopPolling();
+  //           this.isWaitingApproval = false;
+  //           this.approvalStatus = status;
+  //           this.paymentError =
+  //             status === 'rejected'
+  //               ? 'Student rejected the payment.'
+  //               : 'Payment request timed out.';
+  //           this.cdr.markForCheck();
+  //         }
+  //       },
+  //     });
+
+  //     if (this.approvalCountdown <= 0) this.stopPolling();
+  //   }, 1000);
+  // }
+
+  // stopPolling(): void {
+  //   if (this.approvalTimer) {
+  //     clearInterval(this.approvalTimer);
+  //     this.approvalTimer = null;
+  //   }
+  // }
 
   loadSellerData(): void {
     this.sellerService
