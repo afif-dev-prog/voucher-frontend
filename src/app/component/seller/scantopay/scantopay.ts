@@ -478,10 +478,10 @@ export class Scantopay implements OnInit, OnDestroy {
     this.paymentSuccess = false;
     this.isProcessing = false;
     // Restart camera after closing
-    if (this.activeTab === 'scan') {
-      setTimeout(() => this.startCamera(), 200);
-      this.focusManualInput();
-    }
+    // if (this.activeTab === 'scan') {
+    //   setTimeout(() => this.startCamera(), 200);
+    //   this.focusManualInput();
+    // }
     this.cdr.markForCheck();
   }
 
