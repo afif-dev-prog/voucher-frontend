@@ -67,3 +67,32 @@ export interface UpdateStudent {
   course_code: string;
   campus: string;
 }
+export interface StaffModel {
+  req_id: number;
+  staff_id: string;
+  s_name: string;
+  s_nickname: string;
+  s_email: string;
+  s_dept: string;
+  s_designation: string;
+  s_campus: string;
+  s_location: string;
+  lvl_access: string;
+  s_hiredate: number;
+  staff_status: string;
+  date_update: number;
+}
+
+export interface SubmitStaff {
+  staff_id: string;
+  s_name: string;
+  s_nickname: string;
+  s_email: string;
+  s_dept: string;
+  s_designation: string;
+  s_campus: string;
+  s_location: string;
+  lvl_access: string;
+  s_hiredate: number;
+  staff_status: string;
+}

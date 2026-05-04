@@ -112,6 +112,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./component/auth/permissions/permissions').then((m) => m.Permissions),
   },
+  {
+    path: 'managestaff',
+    canActivate: [authGuard],
+    data: { roles: ['SUPERADMIN'] },
+    loadComponent: () =>
+      import('./component/admin/managestaff/managestaff').then((m) => m.Managestaff),
+  },
 
   {
     path: 'change-password',

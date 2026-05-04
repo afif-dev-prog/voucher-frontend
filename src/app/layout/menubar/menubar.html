@@ -279,14 +279,35 @@
           </svg>
           <span>Students</span>
         </a>
-
+        <a
+          class="nav-item"
+          routerLink="/managestaff"
+          routerLinkActive
+          #saStudLink="routerLinkActive"
+          [class.active]="saStudLink.isActive"
+          (click)="setActive(1)"
+        >
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 9.05a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
+            <path
+              d="M1 1a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h.5a.5.5 0 0 0
+              .5-.5.5.5 0 0 1 1 0 .5.5 0 0 0 .5.5h9a.5.5 0 0 0
+              .5-.5.5.5 0 0 1 1 0 .5.5 0 0 0 .5.5h.5a1 1 0 0 0
+              1-1V3a1 1 0 0 0-1-1H6.707L6 1.293A1 1 0 0 0 5.293 1zm0
+              1h4.293L6 2.707A1 1 0 0 0 6.707 3H15v10h-.085a1.5 1.5 0 0
+              0-2.4-.63C11.885 11.223 10.554 10 8 10c-2.555
+              0-3.886 1.224-4.514 2.37a1.5 1.5 0 0 0-2.4.63H1z"
+            />
+          </svg>
+          <span>Staffs</span>
+        </a>
         <a
           class="nav-item"
           routerLink="/manageseller"
           routerLinkActive
           #saSelLink="routerLinkActive"
           [class.active]="saSelLink.isActive"
-          (click)="setActive(1)"
+          (click)="setActive(2)"
         >
           <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
             <path d="M10 9.05a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
@@ -306,7 +327,7 @@
           routerLinkActive
           #saFloatLink="routerLinkActive"
           [class.active]="saFloatLink.isActive"
-          (click)="setActive(2)"
+          (click)="setActive(3)"
         >
           <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
             <path
@@ -328,7 +349,7 @@
           routerLinkActive
           #saVouLink="routerLinkActive"
           [class.active]="saVouLink.isActive"
-          (click)="setActive(3)"
+          (click)="setActive(4)"
         >
           <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
             <path
@@ -346,7 +367,7 @@
           routerLinkActive
           #saPermLink="routerLinkActive"
           [class.active]="saPermLink.isActive"
-          (click)="setActive(4)"
+          (click)="setActive(5)"
         >
           <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
             <path
@@ -372,7 +393,7 @@
           routerLinkActive
           #saAnnLink="routerLinkActive"
           [class.active]="saAnnLink.isActive"
-          (click)="setActive(7)"
+          (click)="setActive(6)"
         >
           <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
             <path
@@ -387,7 +408,7 @@
           routerLinkActive
           #saLogLink="routerLinkActive"
           [class.active]="saLogLink.isActive"
-          (click)="setActive(5)"
+          (click)="setActive(7)"
         >
           <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
             <path
@@ -412,7 +433,7 @@
           routerLinkActive
           #saWcLink="routerLinkActive"
           [class.active]="saWcLink.isActive"
-          (click)="setActive(6)"
+          (click)="setActive(8)"
         >
           <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
