@@ -1,1 +1,733 @@
-<p>managestaff works!</p>
+<div class="staff-list-wrapper">
+  <!-- Header -->
+  <div class="list-header">
+    <div class="header-left">
+      <h2 class="list-title">Staff List</h2>
+      @if (!isLoading) {
+        <span class="total-badge"> {{ totalCount }} {{ searchQuery ? 'results' : 'staffs' }} </span>
+      }
+    </div>
+
+    <div class="header-right">
+      <!-- Search Bar -->
+      <div class="search-wrapper">
+        <svg
+          class="search-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="15"
+          height="15"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414zm-5.242 1.15a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"
+          />
+        </svg>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search by name or staff ID..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearchInput()"
+        />
+        @if (searchQuery) {
+          <button class="clear-btn" (click)="onClearSearch()">✕</button>
+        }
+      </div>
+
+      <!-- Add Staff Button -->
+      <button class="btn-add" (click)="openAddModal()">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="15"
+          height="15"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
+          />
+        </svg>
+        Add Staff
+      </button>
+    </div>
+  </div>
+  @if (totalPages > 1) {
+    <div class="pagination-wrapper mobile">
+      <span class="page-info">
+        {{ getRowNumber(0) }}–{{ getRowNumber(pagedStaffs.length - 1) }} of {{ totalCount }}
+      </span>
+      <div class="pagination-controls">
+        <button class="page-btn nav-btn" (click)="previousPage()" [disabled]="!hasPrevious">
+          ‹
+        </button>
+        <span style="font-size: 0.85rem; color: #374151; padding: 0 8px">
+          Page {{ currentPage }} / {{ totalPages }}
+        </span>
+        <button class="page-btn nav-btn" (click)="nextPage()" [disabled]="!hasNext">›</button>
+      </div>
+    </div>
+  }
+
+  <!-- Skeleton Loading -->
+  @if (isLoading) {
+    <div class="table-container">
+      <table class="staff-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Staff ID</th>
+            <th>Full Name</th>
+            <th>Nickname</th>
+            <th class="th-action">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track i) {
+            <tr class="table-row">
+              <td><div class="skeleton-block" style="width: 24px"></div></td>
+              <td><div class="skeleton-block" style="width: 100px"></div></td>
+              <td><div class="skeleton-block" style="width: 180px"></div></td>
+              <td><div class="skeleton-block" style="width: 120px"></div></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (!isLoading && errorMessage) {
+    <div class="error-state">⚠️ {{ errorMessage }}</div>
+  }
+
+  <!-- Empty -->
+  @if (!isLoading && !errorMessage && pagedStaffs.length === 0) {
+    <div class="empty-state">
+      @if (searchQuery) {
+        <p>
+          No results found for <strong>"{{ searchQuery }}"</strong>
+        </p>
+        <button class="btn-clear-search" (click)="onClearSearch()">Clear Search</button>
+      } @else {
+        <p>🎓 No staffs registered yet.</p>
+      }
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!isLoading && pagedStaffs.length > 0) {
+    <div class="table-container">
+      <table class="staff-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Staff ID</th>
+            <th>Full Name</th>
+            <th>Nickname</th>
+            <th class="th-action">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (staff of pagedStaffs; track staff.staff_id; let i = $index) {
+            <tr class="table-row">
+              <td class="row-num">{{ getRowNumber(i) }}</td>
+              <td class="row-id">{{ staff.staff_id }}</td>
+              <td class="row-name">{{ staff.s_name }}</td>
+              <td class="row-ic">{{ staff.s_nickname }}</td>
+              <td class="row-actions">
+                <!-- View Transactions -->
+
+                <button
+                  class="btn-icon btn-edit"
+                  (click)="openEditModal(staff.staff_id, staff)"
+                  title="Edit"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+                    />
+                  </svg>
+                </button>
+                <!-- Reset Password -->
+                <button
+                  class="btn-icon btn-reset"
+                  (click)="openResetModal(staff.staff_id)"
+                  title="Reset Password"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"
+                    />
+                  </svg>
+                </button>
+                <button class="btn-icon btn-delete" (click)="openDeleteModal(staff)" title="Delete">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"
+                    />
+                    <path
+                      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"
+                    />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      @if (totalPages > 1) {
+        <div class="pagination-wrapper desktop">
+          <span class="page-info">
+            Showing {{ getRowNumber(0) }}–{{ getRowNumber(pagedStaffs.length - 1) }} of
+            {{ totalCount }}
+          </span>
+
+          <div class="pagination-controls">
+            <button class="page-btn nav-btn" (click)="previousPage()" [disabled]="!hasPrevious">
+              ‹ Prev
+            </button>
+
+            @if (pageNumbers[0] > 1) {
+              <button class="page-btn" (click)="goToPage(1)">1</button>
+              @if (pageNumbers[0] > 2) {
+                <span class="ellipsis">…</span>
+              }
+            }
+
+            @for (page of pageNumbers; track page) {
+              <button
+                class="page-btn"
+                [class.active]="page === currentPage"
+                (click)="goToPage(page)"
+              >
+                {{ page }}
+              </button>
+            }
+
+            @if (pageNumbers[pageNumbers.length - 1] < totalPages) {
+              @if (pageNumbers[pageNumbers.length - 1] < totalPages - 1) {
+                <span class="ellipsis">…</span>
+              }
+              <button class="page-btn" (click)="goToPage(totalPages)">{{ totalPages }}</button>
+            }
+
+            <button class="page-btn nav-btn" (click)="nextPage()" [disabled]="!hasNext">
+              Next ›
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+  <!-- Card list (mobile) -->
+  @if (!isLoading && pagedStaffs.length > 0) {
+    <div class="staff-cards">
+      @for (staff of pagedStaffs; track staff.staff_id; let i = $index) {
+        <div class="staff-card">
+          <div class="card-top">
+            <span class="card-name">{{ staff.s_name }}</span>
+            <span class="card-id">{{ staff.staff_id }}</span>
+          </div>
+
+          <div class="card-meta">
+            <div class="card-meta-row">
+              <span class="card-meta-label">IC</span>
+              <span>{{ staff.s_nickname }}</span>
+            </div>
+            @if (staff.s_location) {
+              <div class="card-meta-row">
+                <span class="card-meta-label">Location</span>
+                <span>{{ staff.s_location }}</span>
+              </div>
+            }
+            @if (staff.s_campus) {
+              <div class="card-meta-row">
+                <span class="card-meta-label">Campus</span>
+                <span>{{ staff.s_campus }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="card-actions">
+            <button
+              class="btn-icon btn-edit"
+              (click)="openEditModal(staff.staff_id, staff)"
+              title="Edit"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+                />
+              </svg>
+              <span class="card-btn-label">Edit</span>
+            </button>
+            <button
+              class="btn-icon btn-reset"
+              (click)="openResetModal(staff.staff_id); $event.stopPropagation()"
+              title="Reset Password"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"
+                />
+              </svg>
+              <span class="card-btn-label">Reset</span>
+            </button>
+
+            <button class="btn-icon btn-delete" (click)="openDeleteModal(staff)" title="Delete">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"
+                />
+                <path
+                  d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"
+                />
+              </svg>
+              <span class="card-btn-label">Delete</span>
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Mobile pagination -->
+    </div>
+  }
+</div>
+@if (showAddModal) {
+  <div class="modal-backdrop" (click)="onBackdropClick($event)">
+    <div class="modal-box">
+      <!-- Header -->
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Add New Staff</h3>
+          <p class="modal-subtitle">Fill in all required fields marked with *</p>
+        </div>
+        <button class="modal-close" (click)="closeAddModal()">✕</button>
+      </div>
+
+      <!-- Scrollable Body -->
+      <div class="modal-body">
+        @if (addErrorMessage) {
+          <div class="alert alert-error">⚠️ {{ addErrorMessage }}</div>
+        }
+
+        <!-- Section: Personal Info -->
+        <div class="form-section">
+          <div class="section-label">Personal Information</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Staff ID <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. STU-2024-001"
+                [(ngModel)]="newStaffForm.staff_id"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">IC Number <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. 990101-14-1234"
+                [(ngModel)]="newStaffForm.nric"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. Ahmad bin Abdullah"
+                [(ngModel)]="newStaffForm.s_name"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="email"
+                placeholder="e.g. ahmad@sarawakskills.edu.my"
+                [(ngModel)]="newStaffForm.s_email"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Academic Info -->
+        <div class="form-section">
+          <div class="section-label">Academic Information</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Intake <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. SEP2024"
+                [(ngModel)]="newStaffForm.intake"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Hire Date <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="date"
+                [(ngModel)]="newStaffForm.s_hiredate"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Campus <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. Main Campus"
+                [(ngModel)]="newStaffForm.campus"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeAddModal()" [disabled]="isSubmitting">
+          Cancel
+        </button>
+        <button class="btn-submit" (click)="submitAddStaff()" [disabled]="isSubmitting">
+          @if (isSubmitting) {
+            <span class="spinner"></span> Saving...
+          } @else {
+            Save Staff
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Edit Staff Modal -->
+@if (showEditModal) {
+  <div class="modal-backdrop" (click)="onEditBackdropClick($event)">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Edit Staff</h3>
+          <p class="modal-subtitle">{{ editStaffForm.staff_id }}</p>
+        </div>
+        <button class="modal-close" (click)="closeEditModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        @if (editErrorMessage) {
+          <div class="alert alert-error">⚠️ {{ editErrorMessage }}</div>
+        }
+
+        <!-- Personal Information -->
+        <div class="form-section">
+          <div class="section-label">Personal Information</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Staff ID <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                [(ngModel)]="editStaffForm.staff_id"
+                (input)="editErrorMessage = ''"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nickname <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                [(ngModel)]="editStaffForm.s_nickname"
+                (input)="editErrorMessage = ''"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                [(ngModel)]="editStaffForm.s_name"
+                (input)="editErrorMessage = ''"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="email"
+                [(ngModel)]="editStaffForm.s_email"
+                (input)="editErrorMessage = ''"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Department <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                [(ngModel)]="editStaffForm.s_dept"
+                (input)="editErrorMessage = ''"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic Information -->
+        <div class="form-section">
+          <div class="section-label">Other Information</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Designation</label>
+              <input class="form-input" type="text" [(ngModel)]="editStaffForm.s_designation" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hire Date <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="date"
+                [(ngModel)]="editStaffForm.s_hiredate"
+                (input)="editErrorMessage = ''"
+              />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Campus</label>
+                <input class="form-input" type="text" [(ngModel)]="editStaffForm.s_campus" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Location</label>
+                <input class="form-input" type="text" [(ngModel)]="editStaffForm.s_location" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="form-section">
+          <div class="section-label">Account Settings</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select class="form-input form-select" [(ngModel)]="editStaffForm.staff_status">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Suspended">Suspended</option>
+                <option value="Graduated">Graduated</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Access level</label>
+              <select class="form-input form-select" [(ngModel)]="editStaffForm.lvl_access">
+                <option value="FINANCE">Finance</option>
+                <option value="ADMIN">Admin</option>
+                <option value="SUPERADMIN">Super Admin</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeEditModal()" [disabled]="isUpdating">
+          Cancel
+        </button>
+        <button class="btn-submit" (click)="submitEditStaff()" [disabled]="isUpdating">
+          @if (isUpdating) {
+            <span class="spinner"></span> Updating...
+          } @else {
+            Save Changes
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Delete Confirmation Modal -->
+@if (showDeleteModal) {
+  <div class="modal-backdrop" (click)="onDeleteBackdropClick($event)">
+    <div class="modal-box modal-box-sm">
+      <div class="modal-header">
+        <h3 class="modal-title">Delete Staff</h3>
+        <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="delete-icon-wrapper">
+          <div class="delete-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="28"
+              height="28"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"
+              />
+            </svg>
+          </div>
+        </div>
+        <p class="delete-title">Are you sure?</p>
+        <p class="delete-message">
+          You are about to delete
+          <strong>{{ staffToDelete?.s_name }}</strong>
+          ({{ staffToDelete?.staff_id }}). This action cannot be undone.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeDeleteModal()" [disabled]="isDeleting">
+          Cancel
+        </button>
+        <button class="btn-danger" (click)="confirmDelete()" [disabled]="isDeleting">
+          @if (isDeleting) {
+            <span class="spinner spinner-red"></span> Deleting...
+          } @else {
+            Yes, Delete
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showResetModal) {
+  <div class="modal-backdrop" (click)="closeResetModal()">
+    <div class="modal-box modal-box-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Reset Password</h3>
+        <button class="modal-close" (click)="closeResetModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        @if (!resetPasswordResult) {
+          <div class="delete-icon-wrapper">
+            <div class="delete-icon" style="background: #fef3c7; color: #d97706">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="26"
+                height="26"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"
+                />
+              </svg>
+            </div>
+          </div>
+          <p class="delete-title">
+            Reset password for <strong>{{ resetTargetId }}</strong
+            >?
+          </p>
+          <p class="delete-message">
+            A temporary password in the format <code>swk@{{ resetTargetId }}</code> will be set. The
+            user must change it on next login.
+          </p>
+          @if (resetError) {
+            <div class="alert alert-error">⚠️ {{ resetError }}</div>
+          }
+        } @else {
+          <!-- Success — show temp password -->
+          <div style="text-align: center; padding: 8px 0">
+            <div style="font-size: 2rem; margin-bottom: 8px">✅</div>
+            <p style="font-weight: 700; color: #111827; margin: 0 0 6px">Password Reset!</p>
+            <p style="font-size: 0.84rem; color: #6b7280; margin: 0 0 16px">
+              Share this temporary password with the user:
+            </p>
+            <div class="temp-password-box">
+              {{ resetPasswordResult.tempPassword }}
+            </div>
+            <p style="font-size: 0.78rem; color: #9ca3af; margin-top: 8px">
+              User will be forced to change this on next login.
+            </p>
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        @if (!resetPasswordResult) {
+          <button class="btn-cancel" (click)="closeResetModal()" [disabled]="isResetting">
+            Cancel
+          </button>
+          <button
+            class="btn-danger"
+            style="background: #d97706"
+            (click)="confirmReset(resetTargetId, staffUserType)"
+            [disabled]="isResetting"
+          >
+            @if (isResetting) {
+              <span class="spinner spinner-white"></span> Resetting...
+            } @else {
+              Yes, Reset Password
+            }
+          </button>
+        } @else {
+          <button class="btn-proceed" (click)="closeResetModal()">Done</button>
+        }
+      </div>
+    </div>
+  </div>
+}

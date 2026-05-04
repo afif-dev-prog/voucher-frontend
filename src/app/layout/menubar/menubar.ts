@@ -31,11 +31,14 @@ export class Menubar implements OnInit {
     FINANCE: { '/floatmoneylist': 0, '/creditvoucher': 1, '/managestudent': 2 },
     SUPERADMIN: {
       '/managestudent': 0,
-      '/manageseller': 1,
-      '/floatmoneylist': 2,
-      '/creditvoucher': 3,
-      '/permissions': 4,
-      '/authlog': 5,
+      '/managestaff': 1,
+      '/manageseller': 2,
+      '/floatmoneylist': 3,
+      '/creditvoucher': 4,
+      '/permissions': 5,
+      '/announcements': 6,
+      '/authlog': 7,
+      '/wrong-credit': 8,
     },
   };
 
