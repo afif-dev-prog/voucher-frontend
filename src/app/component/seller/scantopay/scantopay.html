@@ -277,8 +277,12 @@
 
 <!-- ── PAYMENT MODAL ── -->
 @if (showPaymentModal) {
-  <div class="modal-backdrop" (click)="onPaymentBackdropClick($event)">
-    <div class="modal-box modal-payment">
+  <div
+    class="modal-backdrop"
+    (click)="onPaymentBackdropClick($event)"
+    (keydown.escape)="closePaymentModal()"
+  >
+    <div class="modal-box modal-payment" (keydown.escape)="closePaymentModal()">
       <div class="modal-header">
         <div>
           <h3 class="modal-title">
@@ -297,10 +301,10 @@
 
       <div class="modal-body">
         @if (!paymentSuccess) {
-          <!-- Amount input -->
           <div class="amount-wrapper">
             <span class="amount-prefix">RM</span>
             <input
+              #amountInput
               class="amount-input"
               type="number"
               placeholder="0.00"
@@ -308,8 +312,9 @@
               step="0.01"
               [(ngModel)]="paymentAmount"
               (input)="paymentError = ''"
+              (keydown.enter)="submitPayment()"
+              (keydown.escape)="closePaymentModal()"
               [disabled]="isProcessing"
-              autofocus
             />
           </div>
 
@@ -317,12 +322,15 @@
             <div class="alert alert-error">⚠️ {{ paymentError }}</div>
           }
 
-          <!-- Quick amount buttons -->
           <div class="quick-amounts">
             <span class="quick-label">Quick Amount</span>
             <div class="quick-btns">
               @for (amt of [1, 2, 3, 5, 10, 20]; track amt) {
-                <button class="btn-quick" (click)="paymentAmount = amt" [disabled]="isProcessing">
+                <button
+                  class="btn-quick"
+                  (click)="paymentAmount = amt; focusAmountInput()"
+                  [disabled]="isProcessing"
+                >
                   RM {{ amt }}
                 </button>
               }
@@ -330,20 +338,11 @@
           </div>
         }
 
-        <!-- Success state -->
         @if (paymentSuccess) {
           <div class="payment-success">
             <div class="success-icon">✓</div>
             <p class="success-amount">RM {{ paymentAmount | number: '1.2-2' }}</p>
             <p class="success-msg">Payment processed successfully</p>
-
-            <!-- @if (paymentResult?.data?.balance !== undefined) {
-              <div class="balance-info">
-                Remaining Balance:
-                <strong>RM {{ paymentResult.data.balance | number: '1.2-2' }}</strong>
-              </div>
-            } -->
-
             @if (paymentResult?.message) {
               <div class="balance-info">{{ paymentResult?.message }}</div>
             }
@@ -368,13 +367,19 @@
             }
           </button>
         } @else {
-          <button class="btn-done" (click)="closePaymentModal()">Done</button>
+          <button
+            #doneButton
+            class="btn-done"
+            (click)="closePaymentModal()"
+            (keydown.enter)="closePaymentModal()"
+          >
+            Done
+          </button>
         }
       </div>
     </div>
   </div>
 }
-
 <!-- ── QR FULLSCREEN MODAL ── -->
 @if (showQrModal) {
   <div class="modal-backdrop" (click)="onQrBackdropClick($event)">

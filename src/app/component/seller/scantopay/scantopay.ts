@@ -59,6 +59,8 @@ export class Scantopay implements OnInit, OnDestroy {
   private stream: MediaStream | null = null;
   private scanInterval: any = null;
   @ViewChild('canvasElement') canvasElement!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('amountInput') amountInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('doneButton') doneButton!: ElementRef<HTMLButtonElement>;
 
   // Seller info (get from auth/session)
 
@@ -105,7 +107,11 @@ export class Scantopay implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
-
+  focusAmountInput(): void {
+    setTimeout(() => {
+      this.amountInput?.nativeElement?.focus();
+    }, 50);
+  }
   // submitPaymentDirect(studentId: string): void {
   //   this.scannedStudentId = studentId;
   //   this.showInlineAmount = true; // show a quick inline amount bar
@@ -469,20 +475,32 @@ export class Scantopay implements OnInit, OnDestroy {
     this.paymentResult = null;
     this.showPaymentModal = true;
     this.cdr.markForCheck();
+
+    // Auto-focus amount input after modal renders
+    setTimeout(() => {
+      this.amountInput?.nativeElement?.focus();
+    }, 100);
   }
 
   closePaymentModal(): void {
+    if (this.isProcessing) return; // ← don't close while processing
+
+    // Clear student ID if payment was successful
+    if (this.paymentSuccess) {
+      this.scannedStudentId = '';
+      this.showInlineAmount = false;
+    }
+
     this.showPaymentModal = false;
     this.paymentAmount = null;
     this.paymentError = '';
     this.paymentSuccess = false;
     this.isProcessing = false;
-    // Restart camera after closing
-    // if (this.activeTab === 'scan') {
-    //   setTimeout(() => this.startCamera(), 200);
-    //   this.focusManualInput();
-    // }
+    this.paymentResult = null;
     this.cdr.markForCheck();
+
+    // Refocus manual input so seller can scan next student
+    this.focusManualInput();
   }
 
   onPaymentBackdropClick(event: MouseEvent): void {
@@ -494,8 +512,11 @@ export class Scantopay implements OnInit, OnDestroy {
   submitPayment(): void {
     if (!this.paymentAmount || this.paymentAmount <= 0) {
       this.paymentError = 'Please enter a valid amount.';
+      this.focusAmountInput(); // refocus so user can type
       return;
     }
+
+    if (this.isProcessing) return; // ← prevent double submit on rapid Enter
 
     this.isProcessing = true;
     this.paymentError = '';
@@ -506,31 +527,29 @@ export class Scantopay implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
-          // console.log('✅ Payment response:', res);
-
           if (res.success !== false) {
-            // Success — show success state inside modal
             this.paymentSuccess = true;
             this.paymentResult = res;
             this.isProcessing = false;
             this.trigger.trigger();
+            setTimeout(() => {
+              this.doneButton?.nativeElement?.focus();
+            }, 50);
           } else {
-            // API returned failure
             this.paymentError = res.message || 'Payment failed. Please try again.';
             this.isProcessing = false;
-            console.error('❌ Payment failed:', res.message);
+            this.focusAmountInput(); // refocus so user can correct
           }
           this.cdr.markForCheck();
         },
         error: (err: any) => {
-          // console.error('❌ Payment error:', err);
           this.paymentError = err?.error?.message || 'Something went wrong. Please try again.';
           this.isProcessing = false;
+          this.focusAmountInput();
           this.cdr.markForCheck();
         },
       });
   }
-
   // ready for update bersion 2
 
   // async submitPayment(): Promise<void> {
