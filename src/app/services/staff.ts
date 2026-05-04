@@ -1,14 +1,14 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { catchError, Observable, of } from 'rxjs';
-import { AddStudent, StudentModel, SubmitStudent } from '../model/student';
+import { AddStudent, StaffModel, StudentModel, SubmitStaff, SubmitStudent } from '../model/student';
 
 @Injectable({
   providedIn: 'root',
 })
 export class Staff {
   readonly apiUrl = 'https://glossary.sarawakskills.edu.my/gateway/fvs';
-  // readonly apiUrl = 'http://localhost:5094/api/voucher';
+  readonly apiUrl2 = 'http://localhost:5094/api/voucher';
 
   private http = inject(HttpClient);
 
@@ -153,5 +153,56 @@ export class Staff {
         { headers: headers },
       )
       .pipe(catchError((err) => of(err.error)));
+  }
+
+  //manage staff
+
+  getStaffListPaginated(pageNumber: number, pageSize: number, search: string) {
+    const params = new HttpParams()
+      .set('pageNumber', pageNumber)
+      .set('pageSize', pageSize)
+      .set('search', search); // ← added, empty string by default
+
+    return this.http.get<any>(`${this.apiUrl}/staff/paginated`, { params }).pipe(
+      catchError((error) => {
+        return of(error.status);
+      }),
+    );
+  }
+  addStaff(staff: SubmitStaff): Observable<any> {
+    const headers = { 'content-type': 'application/json' };
+    return this.http
+      .post<any>(`${this.apiUrl}/staff/addstaff`, JSON.stringify(staff), {
+        headers: headers,
+      })
+      .pipe(
+        catchError((error) => {
+          console.error('Error adding staff:', error);
+          return of(error.status);
+        }),
+      );
+  }
+
+  updateStaff(staff: StaffModel) {
+    const headers = { 'content-type': 'application/json' };
+    return this.http
+      .put<any>(`${this.apiUrl}/staff/updatedata/${staff.staff_id}`, JSON.stringify(staff), {
+        headers: headers,
+      })
+      .pipe(
+        catchError((error) => {
+          console.error('Error updating staff:', error);
+          return of(error.status);
+        }),
+      );
+  }
+
+  deleteStaff(staffId: number) {
+    return this.http.delete<any>(`${this.apiUrl}/staff/deletedata/${staffId}`).pipe(
+      catchError((error) => {
+        console.error('Error deleting staff:', error);
+        return of(error.status);
+      }),
+    );
   }
 }
