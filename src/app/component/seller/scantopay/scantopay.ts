@@ -61,6 +61,7 @@ export class Scantopay implements OnInit, OnDestroy {
   @ViewChild('canvasElement') canvasElement!: ElementRef<HTMLCanvasElement>;
   @ViewChild('amountInput') amountInput!: ElementRef<HTMLInputElement>;
   @ViewChild('doneButton') doneButton!: ElementRef<HTMLButtonElement>;
+  @ViewChild('inlineAmountInput') inlineAmountInput!: ElementRef<HTMLInputElement>;
 
   // Seller info (get from auth/session)
 
@@ -112,6 +113,69 @@ export class Scantopay implements OnInit, OnDestroy {
       this.amountInput?.nativeElement?.focus();
     }, 50);
   }
+
+  // ── Inline amount cents state ─────────
+  private inlineAmountCents = 0;
+
+  get formattedInlineAmount(): string {
+    if (this.inlineAmountCents === 0) return '';
+    return (this.inlineAmountCents / 100).toFixed(2);
+  }
+
+  onInlineAmountKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === 'Escape') return;
+
+    event.preventDefault();
+
+    if (event.key >= '0' && event.key <= '9') {
+      if (this.inlineAmountCents < 999999) {
+        this.inlineAmountCents = this.inlineAmountCents * 10 + parseInt(event.key);
+        this.inlineAmount = this.inlineAmountCents / 100;
+      }
+    } else if (event.key === 'Backspace') {
+      this.inlineAmountCents = Math.floor(this.inlineAmountCents / 10);
+      this.inlineAmount = this.inlineAmountCents > 0 ? this.inlineAmountCents / 100 : null;
+    }
+
+    this.inlineError = '';
+    this.cdr.markForCheck();
+  }
+
+  setInlineQuickAmount(amt: number): void {
+    this.inlineAmountCents = amt * 100;
+    this.inlineAmount = amt;
+    this.inlineError = '';
+    setTimeout(() => this.inlineAmountInput?.nativeElement?.focus(), 50);
+    this.cdr.markForCheck();
+  }
+  // ── Amount input state ────────────────
+  private amountCents = 0; // stores value in cents e.g. 150 = RM 1.50
+
+  get formattedAmount(): string {
+    if (this.amountCents === 0) return '';
+    return (this.amountCents / 100).toFixed(2);
+  }
+
+  onAmountKeydown(event: KeyboardEvent): void {
+    // Allow Enter and Escape to bubble up to their handlers
+    if (event.key === 'Enter' || event.key === 'Escape') return;
+
+    event.preventDefault(); // block default input behaviour
+
+    if (event.key >= '0' && event.key <= '9') {
+      // Max 6 digits = RM 9999.99
+      if (this.amountCents < 999999) {
+        this.amountCents = this.amountCents * 10 + parseInt(event.key);
+        this.paymentAmount = this.amountCents / 100;
+      }
+    } else if (event.key === 'Backspace') {
+      this.amountCents = Math.floor(this.amountCents / 10);
+      this.paymentAmount = this.amountCents > 0 ? this.amountCents / 100 : null;
+    }
+
+    this.paymentError = '';
+    this.cdr.markForCheck();
+  }
   // submitPaymentDirect(studentId: string): void {
   //   this.scannedStudentId = studentId;
   //   this.showInlineAmount = true; // show a quick inline amount bar
@@ -138,12 +202,13 @@ export class Scantopay implements OnInit, OnDestroy {
       .subscribe({
         next: (res: any) => {
           if (res.success !== false) {
-            const charged = this.inlineAmount; // ← save BEFORE resetting
-            const studentId = this.scannedStudentId; // ← save BEFORE resetting
+            const charged = this.inlineAmount;
+            const studentId = this.scannedStudentId;
 
             this.showInlineAmount = false;
             this.scannedStudentId = '';
             this.inlineAmount = null;
+            this.inlineAmountCents = 0; // ← reset
             this.isInlineProcessing = false;
 
             this.lastScanSuccess = `✓ RM ${Number(charged).toFixed(2)} charged to ${studentId}`;
@@ -170,6 +235,7 @@ export class Scantopay implements OnInit, OnDestroy {
     this.showInlineAmount = false;
     this.scannedStudentId = '';
     this.inlineAmount = null;
+    this.inlineAmountCents = 0; // ← reset
     this.inlineError = '';
     this.focusManualInput();
     this.cdr.markForCheck();
@@ -223,6 +289,7 @@ export class Scantopay implements OnInit, OnDestroy {
     // Open modal normally — scanner flow still needs an amount
     // But if your use case is fixed amount, replace with direct API call
     this.openPaymentModal(studentId);
+    // Wherever you trigger showInlineAmount
 
     // If you want FULLY automatic with a preset amount (e.g. RM 1.00):
     // this.scannedStudentId = studentId;
@@ -470,22 +537,20 @@ export class Scantopay implements OnInit, OnDestroy {
     }
     this.scannedStudentId = studentId;
     this.paymentAmount = null;
+    this.amountCents = 0; // ← reset cents
     this.paymentError = '';
     this.paymentSuccess = false;
     this.paymentResult = null;
     this.showPaymentModal = true;
     this.cdr.markForCheck();
 
-    // Auto-focus amount input after modal renders
     setTimeout(() => {
       this.amountInput?.nativeElement?.focus();
     }, 100);
   }
-
   closePaymentModal(): void {
-    if (this.isProcessing) return; // ← don't close while processing
+    if (this.isProcessing) return;
 
-    // Clear student ID if payment was successful
     if (this.paymentSuccess) {
       this.scannedStudentId = '';
       this.showInlineAmount = false;
@@ -493,16 +558,22 @@ export class Scantopay implements OnInit, OnDestroy {
 
     this.showPaymentModal = false;
     this.paymentAmount = null;
+    this.amountCents = 0; // ← reset cents
     this.paymentError = '';
     this.paymentSuccess = false;
     this.isProcessing = false;
     this.paymentResult = null;
     this.cdr.markForCheck();
 
-    // Refocus manual input so seller can scan next student
     this.focusManualInput();
   }
-
+  setQuickAmount(amt: number): void {
+    this.amountCents = amt * 100;
+    this.paymentAmount = amt;
+    this.paymentError = '';
+    this.focusAmountInput();
+    this.cdr.markForCheck();
+  }
   onPaymentBackdropClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('modal-backdrop')) {
       if (!this.isProcessing) this.closePaymentModal();
