@@ -68,21 +68,21 @@ export const routes: Routes = [
   {
     path: 'creditvoucher',
     canActivate: [authGuard],
-    data: { roles: ['FINANCE', 'SUPERADMIN'] },
+    data: { roles: ['FINANCE', 'SUPERADMIN', 'ADMIN'] },
     loadComponent: () =>
       import('./component/staff/creditvoucher/creditvoucher').then((m) => m.Creditvoucher),
   },
   {
     path: 'floatmoneylist',
     canActivate: [authGuard],
-    data: { roles: ['FINANCE', 'SUPERADMIN'] },
+    data: { roles: ['FINANCE', 'SUPERADMIN', 'ADMIN'] },
     loadComponent: () =>
       import('./component/staff/floatmoneylist/floatmoneylist').then((m) => m.Floatmoneylist),
   },
   {
     path: 'managestudent',
     canActivate: [authGuard],
-    data: { roles: ['FINANCE', 'SUPERADMIN'] },
+    data: { roles: ['FINANCE', 'SUPERADMIN', 'ADMIN'] },
     loadComponent: () =>
       import('./component/staff/managestudent/managestudent').then((m) => m.Managestudent),
   },
@@ -99,7 +99,7 @@ export const routes: Routes = [
   {
     path: 'manageseller',
     canActivate: [authGuard],
-    data: { roles: ['SUPERADMIN'] },
+    data: { roles: ['SUPERADMIN', 'ADMIN'] },
     loadComponent: () =>
       import('./component/admin/manageseller/manageseller').then((m) => m.Manageseller),
   },
