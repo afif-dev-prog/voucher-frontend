@@ -14,6 +14,71 @@
   font-family: 'Segoe UI', sans-serif;
 }
 
+/* preview print */
+
+.a4-paper {
+  height: 297mm;
+  width: 210mm;
+  margin: 20px;
+  background: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+#previewSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  page-break-after: always !important;
+  box-sizing: border-box;
+}
+
+#printSection {
+  display: none;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .a4-paper {
+    box-shadow: none;
+    margin: 0;
+    /* padding: 20px; */
+  }
+
+  #previewSection {
+    display: none;
+  }
+
+  #printSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    page-break-after: always !important;
+    box-sizing: border-box;
+  }
+  app-main {
+    display: none !important;
+  }
+  .preview {
+    display: none !important;
+  }
+
+  body,
+  html {
+    width: 297mm;
+    height: 210mm;
+    margin: 0;
+    padding: 0;
+  }
+
+  @page {
+    size: A4 potrait;
+    margin: 0 !important;
+  }
+}
+
 /* Page Header */
 .claim-page-header {
   display: flex;
@@ -920,4 +985,66 @@
   font-size: 16px;
   font-weight: 700;
   color: #15803d;
+}
+
+.preview-confirm-box {
+  max-width: 580px !important;
+  height: auto !important;
+  max-height: 80vh;
+}
+.preview-confirm-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+.preview-confirm-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+.preview-confirm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  margin-bottom: 14px;
+}
+.preview-confirm-table thead tr {
+  background: #9ea3a1;
+}
+.preview-confirm-table thead th {
+  padding: 8px 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fff;
+  text-align: left;
+}
+.preview-confirm-table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+.preview-confirm-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+.preview-confirm-table tfoot tr {
+  background: #f1f5f9;
+  border-top: 2px solid #cbd5e1;
+}
+.preview-confirm-table tfoot td {
+  padding: 9px 12px;
+  font-weight: 700;
+}
+.preview-confirm-note {
+  font-size: 0.78rem;
+  color: #6b7280;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0;
 }

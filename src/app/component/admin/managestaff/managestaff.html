@@ -366,12 +366,12 @@
               />
             </div>
             <div class="form-group">
-              <label class="form-label">IC Number <span class="required">*</span></label>
+              <label class="form-label">Nickname <span class="required">*</span></label>
               <input
                 class="form-input"
                 type="text"
-                placeholder="e.g. 990101-14-1234"
-                [(ngModel)]="newStaffForm.nric"
+                placeholder="e.g. Jemat"
+                [(ngModel)]="newStaffForm.s_nickname"
                 (input)="addErrorMessage = ''"
               />
             </div>
@@ -399,26 +399,34 @@
               />
             </div>
           </div>
-        </div>
-
-        <!-- Section: Academic Info -->
-        <div class="form-section">
-          <div class="section-label">Academic Information</div>
-
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Intake <span class="required">*</span></label>
+              <label class="form-label">Department <span class="required">*</span></label>
               <input
                 class="form-input"
                 type="text"
-                placeholder="e.g. SEP2024"
-                [(ngModel)]="newStaffForm.intake"
+                placeholder="e.g. Finance"
+                [(ngModel)]="newStaffForm.s_dept"
                 (input)="addErrorMessage = ''"
               />
             </div>
           </div>
+        </div>
 
+        <!-- Section: Academic Info -->
+        <div class="form-section">
+          <div class="section-label">Other Information</div>
           <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Designation <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. IT Exec"
+                [(ngModel)]="newStaffForm.s_designation"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
             <div class="form-group">
               <label class="form-label">Hire Date <span class="required">*</span></label>
               <input
@@ -429,7 +437,6 @@
               />
             </div>
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Campus <span class="required">*</span></label>
@@ -437,9 +444,32 @@
                 class="form-input"
                 type="text"
                 placeholder="e.g. Main Campus"
-                [(ngModel)]="newStaffForm.campus"
+                [(ngModel)]="newStaffForm.s_campus"
                 (input)="addErrorMessage = ''"
               />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Location <span class="required">*</span></label>
+              <input
+                class="form-input"
+                type="text"
+                placeholder="e.g. SSKUCHING"
+                [(ngModel)]="newStaffForm.s_location"
+                (input)="addErrorMessage = ''"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="section-label">Account Settings</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Access level</label>
+              <select class="form-input form-select" [(ngModel)]="editStaffForm.lvl_access">
+                <option value="FINANCE">Finance</option>
+                <option value="ADMIN">Admin</option>
+                <option value="SUPERADMIN">Super Admin</option>
+              </select>
             </div>
           </div>
         </div>
@@ -684,8 +714,8 @@
             >?
           </p>
           <p class="delete-message">
-            A temporary password in the format <code>swk@{{ resetTargetId }}</code> will be set. The
-            user must change it on next login.
+            A temporary password in the format <code>Skills@{{ resetTargetId }}</code> will be set.
+            The user must change it on next login.
           </p>
           @if (resetError) {
             <div class="alert alert-error">⚠️ {{ resetError }}</div>
