@@ -30,6 +30,12 @@ export class Menubar implements OnInit {
     STUDENT: { '/balance': 0, '/scan': 1, '/history': 2 },
     SELLER: { '/scantopay': 0, '/sellerhistory': 1, '/claimvoucher': 2 },
     FINANCE: { '/floatmoneylist': 0, '/creditvoucher': 1, '/managestudent': 2 },
+    ADMIN: {
+      '/managestudent': 0,
+      '/manageseller': 1,
+      '/floatmoneylist': 2,
+      '/creditvoucher': 3,
+    },
     SUPERADMIN: {
       '/managestudent': 0,
       '/managestaff': 1,
