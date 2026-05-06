@@ -68,6 +68,9 @@ export class Login {
               case 'SUPERADMIN':
                 this.router.navigate(['/managestudent']);
                 break;
+              case 'ADMIN':
+                this.router.navigate(['/managestudent']);
+                break;
               default:
                 this.router.navigate(['/login']);
                 break;

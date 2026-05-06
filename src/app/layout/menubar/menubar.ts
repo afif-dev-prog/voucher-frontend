@@ -23,6 +23,7 @@ export class Menubar implements OnInit {
   isSeller = false;
   isFinance = false;
   isSuperAdmin = false;
+  isAdmin = false;
 
   // ── Route → index maps per role ───────
   private readonly routeIndexMap: Record<string, Record<string, number>> = {
@@ -55,6 +56,7 @@ export class Menubar implements OnInit {
     this.isSeller = this.role === 'SELLER';
     this.isFinance = this.role === 'FINANCE';
     this.isSuperAdmin = this.role === 'SUPERADMIN';
+    this.isAdmin = this.role === 'ADMIN';
 
     // Set initial active index from current URL
     this.syncGliderFromUrl(this.router.url);
