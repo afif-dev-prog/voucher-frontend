@@ -306,15 +306,15 @@
             <input
               #amountInput
               class="amount-input"
-              type="number"
+              type="text"
+              inputmode="numeric"
               placeholder="0.00"
-              min="0.01"
-              step="0.01"
-              [(ngModel)]="paymentAmount"
-              (input)="paymentError = ''"
+              [value]="formattedAmount"
+              (keydown)="onAmountKeydown($event)"
               (keydown.enter)="submitPayment()"
               (keydown.escape)="closePaymentModal()"
               [disabled]="isProcessing"
+              readonly
             />
           </div>
 
@@ -326,11 +326,7 @@
             <span class="quick-label">Quick Amount</span>
             <div class="quick-btns">
               @for (amt of [1, 2, 3, 5, 10, 20]; track amt) {
-                <button
-                  class="btn-quick"
-                  (click)="paymentAmount = amt; focusAmountInput()"
-                  [disabled]="isProcessing"
-                >
+                <button class="btn-quick" (click)="setQuickAmount(amt)" [disabled]="isProcessing">
                   RM {{ amt }}
                 </button>
               }

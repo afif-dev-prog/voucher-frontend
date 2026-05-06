@@ -26,6 +26,7 @@ type ScanState = 'idle' | 'scanning' | 'confirming' | 'processing' | 'success' |
 export class Studentscan implements OnInit, OnDestroy {
   @ViewChild('videoEl') videoRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('canvasEl') canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('amountInput') amountInput!: ElementRef<HTMLInputElement>;
 
   private auth = inject(Auth);
   private studentService = inject(Student);
@@ -34,6 +35,7 @@ export class Studentscan implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private sharedService = inject(SharedService);
   studentId = '';
+  private payAmountCents = 0;
   constructor() {
     this.studentId = this.auth.getUserId();
   }
@@ -82,6 +84,36 @@ export class Studentscan implements OnInit, OnDestroy {
     this.stopCamera();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  get formattedPayAmount(): string {
+    if (this.payAmountCents === 0) return '';
+    return (this.payAmountCents / 100).toFixed(2);
+  }
+
+  onPayAmountKeydown(event: KeyboardEvent): void {
+    event.preventDefault();
+
+    if (event.key >= '0' && event.key <= '9') {
+      if (this.payAmountCents < 999999) {
+        this.payAmountCents = this.payAmountCents * 10 + parseInt(event.key);
+        this.payAmount = this.payAmountCents / 100;
+      }
+    } else if (event.key === 'Backspace') {
+      this.payAmountCents = Math.floor(this.payAmountCents / 10);
+      this.payAmount = this.payAmountCents > 0 ? this.payAmountCents / 100 : 0;
+    }
+
+    this.payError = '';
+    this.cdr.markForCheck();
+  }
+
+  setPayQuickAmount(amt: number): void {
+    this.payAmountCents = amt * 100;
+    this.payAmount = amt;
+    this.payError = '';
+    setTimeout(() => this.amountInput?.nativeElement?.focus(), 50);
+    this.cdr.markForCheck();
   }
 
   // ── Load jsQR dynamically ─────────────
@@ -198,6 +230,8 @@ export class Studentscan implements OnInit, OnDestroy {
     this.stopCamera();
     this.isValidatingSeller = true;
     this.scanState = 'confirming';
+    this.payAmountCents = 0; // ← reset on new scan
+    this.payAmount = 0;
     this.cdr.markForCheck();
 
     this.sellerService
@@ -215,6 +249,10 @@ export class Studentscan implements OnInit, OnDestroy {
             this.scannedSellerUsername = seller.username; // ← store username
             this.isValidatingSeller = false;
             this.scanState = 'confirming';
+
+            // Auto-focus amount input after render
+            setTimeout(() => this.amountInput?.nativeElement?.focus(), 150);
+            this.cdr.markForCheck();
           } else {
             // No seller found — show error
             this.sellerValidError = 'This QR code does not belong to a registered seller.';
@@ -365,6 +403,7 @@ export class Studentscan implements OnInit, OnDestroy {
     this.scannedSellerName = '';
     this.scannedSellerUsername = '';
     this.payAmount = 0;
+    this.payAmountCents = 0; // ← add this
     this.payError = '';
     this.sellerValidError = '';
     this.paymentSummary = null;

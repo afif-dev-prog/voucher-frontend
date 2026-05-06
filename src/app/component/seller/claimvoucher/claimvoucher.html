@@ -152,7 +152,7 @@
             </div>
           </div>
 
-          <button
+          <!-- <button
             class="btn-generate-pdf"
             (click)="generatePdf()"
             [disabled]="isGenerating || transactions.length === 0"
@@ -172,6 +172,30 @@
                 />
               </svg>
               Preview & Generate Claim PDF
+            }
+          </button> -->
+
+          <!-- Replace btn-generate-pdf click -->
+          <button
+            class="btn-generate-pdf"
+            (click)="generatePdf()"
+            [disabled]="isGenerating || transactions.length === 0"
+          >
+            @if (isGenerating) {
+              <span class="spinner spinner-white"></span> Preparing...
+            } @else {
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="15"
+                height="15"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1L14 5.5z"
+                />
+              </svg>
+              Preview & Print Claim Report
             }
           </button>
 
@@ -359,7 +383,7 @@
 </div>
 
 <!-- PDF Preview Modal -->
-@if (showPreview) {
+<!-- @if (showPreview) {
   <div class="modal-backdrop pdf-preview-backdrop" (click)="closePreview()">
     <div class="pdf-preview-box" (click)="$event.stopPropagation()">
       <div class="pdf-preview-header">
@@ -438,6 +462,118 @@
               />
             </svg>
             Download PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+} -->
+@if (showPreview) {
+  <div class="modal-backdrop pdf-preview-backdrop" (click)="closePreview()">
+    <div class="pdf-preview-box preview-confirm-box" (click)="$event.stopPropagation()">
+      <div class="pdf-preview-header">
+        <div class="pdf-preview-title-group">
+          <div class="pdf-preview-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1L14 5.5z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 class="pdf-preview-title">Print Claim Report</h3>
+            <p class="pdf-preview-subtitle">{{ seller.name }} · @{{ seller.username }}</p>
+          </div>
+        </div>
+        <button class="pdf-close-btn" (click)="closePreview()">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            viewBox="0 0 16 16"
+          >
+            <path
+              d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div class="preview-confirm-body">
+        <div class="preview-confirm-label">Daily Summary Preview</div>
+        <table class="preview-confirm-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Transactions</th>
+              <th>Total Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of dailySummary; track d.date; let i = $index) {
+              <tr>
+                <td class="col-num">{{ i + 1 }}</td>
+                <td>{{ d.unix * 1000 | date: 'EEEE, dd MMM yyyy' }}</td>
+                <td style="text-align: center">{{ d.count }}</td>
+                <td style="text-align: right; color: #16a34a; font-weight: 700">
+                  RM {{ d.total | number: '1.2-2' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <td></td>
+              <td
+                style="
+                  font-size: 0.72rem;
+                  color: #6b7280;
+                  text-transform: uppercase;
+                  font-weight: 700;
+                "
+              >
+                Total
+              </td>
+              <td style="text-align: center; font-weight: 700">{{ totalTxCount }}</td>
+              <td style="text-align: right; font-weight: 700; color: #16a34a">
+                RM {{ netAmount | number: '1.2-2' }}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+        <p class="preview-confirm-note">
+          📄 The printed report will show this daily summary — one row per day.
+        </p>
+      </div>
+
+      <div class="pdf-preview-footer">
+        <span class="pdf-preview-note"
+          >{{ dailySummary.length }} days · {{ transactions.length }} total transactions</span
+        >
+        <div class="pdf-footer-btns">
+          <button class="btn-cancel" (click)="closePreview()">Cancel</button>
+          <button class="btn-preview-download" (click)="printReport()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="13"
+              height="13"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1" />
+              <path
+                d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zm4 1v2H7V2zm1 2H6V2h-.5A.5.5 0 0 0 5 2.5V4H3a1 1 0 0 0-1 1v.5h12V5a1 1 0 0 0-1-1h-2V2.5a.5.5 0 0 0-.5-.5z"
+              />
+            </svg>
+            Print Report
           </button>
         </div>
       </div>

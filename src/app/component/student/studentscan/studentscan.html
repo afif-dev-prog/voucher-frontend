@@ -134,13 +134,14 @@
           <div class="amount-input-wrapper">
             <span class="amount-prefix">RM</span>
             <input
+              #amountInput
               class="amount-input"
-              type="number"
-              min="0.01"
-              step="0.01"
+              type="text"
+              inputmode="numeric"
               placeholder="0.00"
-              [(ngModel)]="payAmount"
-              (input)="payError = ''"
+              [value]="formattedPayAmount"
+              (keydown)="onPayAmountKeydown($event)"
+              readonly
             />
           </div>
 
@@ -150,7 +151,7 @@
               <button
                 class="quick-amt-chip"
                 [class.selected]="payAmount === amt"
-                (click)="payAmount = amt; payError = ''"
+                (click)="setPayQuickAmount(amt)"
               >
                 RM {{ amt }}
               </button>
