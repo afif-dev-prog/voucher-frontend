@@ -42,7 +42,7 @@ export const appConfig: ApplicationConfig = {
       deps: [Auth],
       multi: true,
     },
-    provideServiceWorker('sw-push-handler.js', {
+    provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
     }),
