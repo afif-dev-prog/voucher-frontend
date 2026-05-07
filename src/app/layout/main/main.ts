@@ -8,16 +8,26 @@ import { SwPush } from '@angular/service-worker';
 import { PaymentService } from '../../services/payment-service';
 import { PaymentApproval } from '../../component/global/payment-approval/payment-approval';
 import { PullToRefreshDirective } from '../../services/pull-to-refresh.directive';
+import { UpdateBanner } from '../../component/global/update-banner/update-banner';
+import { AppUpdateService } from '../../services/app-update-service';
 
 @Component({
   selector: 'app-main',
-  imports: [Menubar, RouterModule, CommonModule, PaymentApproval, PullToRefreshDirective],
+  imports: [
+    Menubar,
+    RouterModule,
+    CommonModule,
+    PaymentApproval,
+    PullToRefreshDirective,
+    UpdateBanner,
+  ],
   templateUrl: './main.html',
   styleUrl: './main.css',
 })
 export class Main implements OnInit {
   title: string = 'Voucher';
   private router = inject(Router);
+  private updateService = inject(AppUpdateService);
   private auth = inject(Auth);
   private swPush = inject(SwPush);
   private paymentService = inject(PaymentService);
@@ -38,6 +48,7 @@ export class Main implements OnInit {
     });
   }
   ngOnInit(): void {
+    this.updateService.checkForUpdates();
     // ── On refresh: if logged in, redirect to correct dashboard ──
     const currentUrl = this.router.url;
     if (currentUrl === '/' || currentUrl === '/login') {
