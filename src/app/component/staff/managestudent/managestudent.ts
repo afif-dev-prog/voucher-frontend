@@ -39,7 +39,7 @@ interface BulkProgress {
 export class Managestudent {
   private staffService = inject(Staff);
   private studentService = inject(Student);
-  private auth = inject(Auth);
+  auth = inject(Auth);
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
@@ -84,6 +84,9 @@ export class Managestudent {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+  canView(permission: string): boolean {
+    return this.auth.hasPermission(permission);
   }
 
   loadStudentList(): void {

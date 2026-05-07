@@ -31,6 +31,10 @@ export class Manageseller {
   totalPages = 0;
   hasPrevious = false;
   hasNext = false;
+  // Transactions
+  transactions: any[] = [];
+  hasFetched = false;
+  fetchError = '';
 
   // Add modal
   showAddModal = false;
@@ -58,7 +62,6 @@ export class Manageseller {
   isLoadingTx = false;
   isLoadingMoreTx = false;
   selectedSeller: any = null;
-  transactions: any[] = [];
   txPage = 1;
   readonly txPageSize = 10;
   txTotalCount = 0;
@@ -318,13 +321,18 @@ export class Manageseller {
     this.txTotalCount = 0;
     this.txHasNext = false;
     this.showTxModal = true;
-    this.loadTx();
+    // this.loadTx();
   }
 
   closeTxModal(): void {
     this.showTxModal = false;
     this.selectedSeller = null;
     this.transactions = [];
+    // this.clearDateFilter();
+    this.txTotalCount = 0;
+    this.txEndDate = '';
+    this.txStartDate = '';
+    this.txHasNext = false;
   }
 
   onTxBackdrop(e: MouseEvent): void {
@@ -432,7 +440,7 @@ export class Manageseller {
     this.txEndDate = '';
     this.txPage = 1;
     this.transactions = [];
-    this.loadTx();
+    // this.loadTx();
   }
 
   getStatusClass(status: string): string {
@@ -1086,5 +1094,42 @@ export class Manageseller {
   get totalTxCount(): number {
     return this.dailySummary.reduce((sum, d) => sum + d.count, 0);
   }
-  // ── Export CSV ──
+
+  fetchTransactions(): void {
+    this.isLoading = true;
+    this.hasFetched = false;
+    this.fetchError = '';
+    this.transactions = [];
+    this.cdr.markForCheck();
+    // console.log(this.loggedSeller);
+    // const start = this.dateToUnix(this.startDate);
+    // const end = this.dateToUnix(this.endDate);
+    const cleanSellerName = this.selectedSeller.s_name || '';
+    this.sellerService
+      .getSellerTransactions(
+        cleanSellerName,
+        1,
+        9999,
+        this.dateToUnix(this.txStartDate),
+        this.dateToUnixEndOfDay(this.txEndDate),
+      )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.transactions = res.data || [];
+          // console.log(this.transactions);
+          // this.txTotalCount = res.pagination?.totalCount || 0;
+          // this.txHasNext = res.pagination?.hasNext ?? false;
+          // this.txPage = 1;
+          this.calcTotals();
+          this.isLoading = false;
+          this.hasFetched = true;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+      });
+  }
 }

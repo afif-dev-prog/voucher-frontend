@@ -71,7 +71,7 @@ export class Managestaff {
       .subscribe({
         next: (response: any) => {
           this.pagedStaffs = response.data; // show directly
-          console.log(this.pagedStaffs);
+          // console.log(this.pagedStaffs);
           this.totalCount = response.pagination.totalCount;
           this.totalPages = response.pagination.totalPages;
           this.hasPrevious = response.pagination.hasPrevious; // ← this is what
