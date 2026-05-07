@@ -18,6 +18,7 @@ body {
 
 .screen-content {
   overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .scrollbar::-webkit-scrollbar {
