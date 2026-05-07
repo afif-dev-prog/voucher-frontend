@@ -7,10 +7,11 @@ import { Auth } from '../../services/auth';
 import { SwPush } from '@angular/service-worker';
 import { PaymentService } from '../../services/payment-service';
 import { PaymentApproval } from '../../component/global/payment-approval/payment-approval';
+import { PullToRefreshDirective } from '../../services/pull-to-refresh.directive';
 
 @Component({
   selector: 'app-main',
-  imports: [Menubar, RouterModule, CommonModule, PaymentApproval],
+  imports: [Menubar, RouterModule, CommonModule, PaymentApproval, PullToRefreshDirective],
   templateUrl: './main.html',
   styleUrl: './main.css',
 })
