@@ -36,7 +36,7 @@ export class PaymentApproval implements OnInit, OnDestroy {
     const studentId = this.auth.getUserId();
 
     // Poll every 3 seconds for pending payments (iOS fallback + backup)
-    interval(1000)
+    interval(3000)
       .pipe(
         takeUntil(this.destroy$),
         switchMap(() => this.paymentService.getPendingPayments(studentId)),
