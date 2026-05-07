@@ -597,24 +597,59 @@ export class Scantopay implements OnInit, OnDestroy {
       .scantoPay(this.scannedStudentId, this.sellerId, this.paymentAmount)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
+        // next: (res: any) => {
+        //   if (res.success !== false) {
+        //     this.paymentSuccess = true;
+        //     this.paymentResult = res;
+        //     this.isProcessing = false;
+        //     this.trigger.trigger();
+        //     setTimeout(() => {
+        //       this.doneButton?.nativeElement?.focus();
+        //     }, 50);
+        //   } else {
+        //     this.paymentError = res.message || 'Payment failed. Please try again.';
+        //     this.isProcessing = false;
+        //     this.focusAmountInput(); // refocus so user can correct
+        //   }
+        //   this.cdr.markForCheck();
+        // },
+        // error: (err: any) => {
+        //   this.paymentError = err?.error?.message || 'Something went wrong. Please try again.';
+        //   this.isProcessing = false;
+        //   this.focusAmountInput();
+        //   this.cdr.markForCheck();
+        // },
         next: (res: any) => {
+          // Check if approval is required
+          if (res?.success && res?.message?.startsWith('APPROVAL_REQUIRED:')) {
+            const paymentId = res.message.split(':')[1];
+            this.isProcessing = false;
+            this.showPaymentModal = false;
+            // Show waiting state
+            this.paymentId = paymentId;
+            this.isWaitingApproval = true;
+            this.approvalCountdown = 60;
+            this.approvalStatus = '';
+            this.startPolling();
+            this.cdr.markForCheck();
+            return;
+          }
+
           if (res.success !== false) {
             this.paymentSuccess = true;
             this.paymentResult = res;
             this.isProcessing = false;
             this.trigger.trigger();
-            setTimeout(() => {
-              this.doneButton?.nativeElement?.focus();
-            }, 50);
+            setTimeout(() => this.doneButton?.nativeElement?.focus(), 50);
           } else {
-            this.paymentError = res.message || 'Payment failed. Please try again.';
+            this.paymentError = res.message || 'Payment failed.';
             this.isProcessing = false;
-            this.focusAmountInput(); // refocus so user can correct
+            this.focusAmountInput();
           }
           this.cdr.markForCheck();
         },
         error: (err: any) => {
-          this.paymentError = err?.error?.message || 'Something went wrong. Please try again.';
+          this.paymentError = err?.error?.message || 'Something went wrong.';
           this.isProcessing = false;
           this.focusAmountInput();
           this.cdr.markForCheck();
@@ -649,42 +684,42 @@ export class Scantopay implements OnInit, OnDestroy {
   //   });
   // }
 
-  // startPolling(): void {
-  //   this.approvalTimer = setInterval(() => {
-  //     this.approvalCountdown--;
+  startPolling(): void {
+    this.approvalTimer = setInterval(() => {
+      this.approvalCountdown--;
 
-  //     this.paymentService.getPaymentStatus(this.paymentId).subscribe({
-  //       next: (res: any) => {
-  //         const status = res?.data?.status;
-  //         if (status === 'approved') {
-  //           this.stopPolling();
-  //           this.paymentSuccess = true;
-  //           this.isWaitingApproval = false;
-  //           this.approvalStatus = 'approved';
-  //           this.cdr.markForCheck();
-  //         } else if (status === 'rejected' || status === 'expired') {
-  //           this.stopPolling();
-  //           this.isWaitingApproval = false;
-  //           this.approvalStatus = status;
-  //           this.paymentError =
-  //             status === 'rejected'
-  //               ? 'Student rejected the payment.'
-  //               : 'Payment request timed out.';
-  //           this.cdr.markForCheck();
-  //         }
-  //       },
-  //     });
+      this.paymentService.getPaymentStatus(this.paymentId).subscribe({
+        next: (res: any) => {
+          const status = res?.data?.status;
+          if (status === 'approved') {
+            this.stopPolling();
+            this.paymentSuccess = true;
+            this.isWaitingApproval = false;
+            this.approvalStatus = 'approved';
+            this.cdr.markForCheck();
+          } else if (status === 'rejected' || status === 'expired') {
+            this.stopPolling();
+            this.isWaitingApproval = false;
+            this.approvalStatus = status;
+            this.paymentError =
+              status === 'rejected'
+                ? 'Student rejected the payment.'
+                : 'Payment request timed out.';
+            this.cdr.markForCheck();
+          }
+        },
+      });
 
-  //     if (this.approvalCountdown <= 0) this.stopPolling();
-  //   }, 1000);
-  // }
+      if (this.approvalCountdown <= 0) this.stopPolling();
+    }, 1000);
+  }
 
-  // stopPolling(): void {
-  //   if (this.approvalTimer) {
-  //     clearInterval(this.approvalTimer);
-  //     this.approvalTimer = null;
-  //   }
-  // }
+  stopPolling(): void {
+    if (this.approvalTimer) {
+      clearInterval(this.approvalTimer);
+      this.approvalTimer = null;
+    }
+  }
 
   loadSellerData(): void {
     this.sellerService
