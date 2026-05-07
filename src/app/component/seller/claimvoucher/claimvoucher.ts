@@ -99,60 +99,7 @@ export class Claimvoucher implements OnInit, OnDestroy {
   }
   legacyOpeningBalance: number | null = null;
   cutoverDate: number | null = null;
-  // ── Fetch transactions ────────────────────
-  // fetchTransactions(): void {
-  //   console.log(this.startDate, this.endDate);
-  //   this.dateError = '';
-  //   if (!this.startDate) {
-  //     this.dateError = 'Please select a start date.';
-  //     return;
-  //   }
-  //   if (!this.endDate) {
-  //     this.dateError = 'Please select an end date.';
-  //     return;
-  //   }
-  //   if (this.startDate > this.endDate) {
-  //     this.dateError = 'Start date cannot be after end date.';
-  //     return;
-  //   }
 
-  //   const start = this.dateToUnix(this.startDate);
-  //   const end = this.dateToUnix(this.endDate);
-  //   const endOfDay = end ? end + 86399 : undefined; // +23h 59m 59s
-
-  //   this.isLoading = true;
-  //   this.hasFetched = false;
-  //   this.fetchError = '';
-  //   this.transactions = [];
-  //   this.cdr.markForCheck();
-
-  //   console.log(start, endOfDay);
-
-  //   // Fetch ALL (pageSize 9999) for the selected range
-  //   // this.sellerService
-  //   //   .getSellerTransactions('SOCC Sribima Offshore Catering Co', 1, 20, start, endOfDay)
-  //   //   .pipe(takeUntil(this.destroy$))
-  //   //   .subscribe({
-  //   //     next: (res: any) => {
-  //   //       this.transactions = res.data || [];
-  //   //       this.calcTotals();
-  //   //       this.isLoading = false;
-  //   //       this.hasFetched = true;
-  //   //       this.cdr.markForCheck();
-  //   //     },
-  //   //     error: () => {
-  //   //       this.fetchError = 'Failed to load transactions. Please try again.';
-  //   //       this.isLoading = false;
-  //   //       this.cdr.markForCheck();
-  //   //     },
-  //   //   });
-  //   this.sellerService
-  //     .getSellerTransactions('SOCC Sribima Offshore Catering Co', 1, 20, start, endOfDay)
-  //     .pipe(takeUntil(this.destroy$))
-  //     .subscribe((res) => {
-  //       console.log(res.data);
-  //     });
-  // }
   fetchTransactions(): void {
     this.isLoading = true;
     this.hasFetched = false;
@@ -212,12 +159,6 @@ export class Claimvoucher implements OnInit, OnDestroy {
     const isLegacy = !tx.transaction_id || tx.transaction_id === 'No Value';
     return isLegacy ? tx.debit || 0 : tx.credit || 0;
   }
-
-  // calcTotals(): void {
-  //   this.totalCredit = this.transactions.reduce((s, t) => s + this.getIncome(t), 0);
-  //   this.totalDebit = 0;
-  //   this.netAmount = this.totalCredit;
-  // }
 
   formatDate(dateStr: string): string {
     if (!dateStr) return '';
