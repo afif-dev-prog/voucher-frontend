@@ -67,6 +67,12 @@ export class Main implements OnInit {
       this.paymentService
         .subscribeToPush()
         .catch((e) => console.error('[Push] Subscribe failed in main:', e));
+
+      // In PaymentReceived component or main.ts
+      this.swPush.messages.subscribe((msg: any) => {
+        console.log('[Push] Message received:', msg);
+        // handle toast
+      });
     }
 
     // Listen for push notification clicks from SwPush
