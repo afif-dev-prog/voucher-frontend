@@ -10,6 +10,7 @@ import { PaymentApproval } from '../../component/global/payment-approval/payment
 import { PullToRefreshDirective } from '../../services/pull-to-refresh.directive';
 import { UpdateBanner } from '../../component/global/update-banner/update-banner';
 import { AppUpdateService } from '../../services/app-update-service';
+import { PaymentReceived } from '../../component/global/payment-received/payment-received';
 
 @Component({
   selector: 'app-main',
@@ -20,6 +21,7 @@ import { AppUpdateService } from '../../services/app-update-service';
     PaymentApproval,
     PullToRefreshDirective,
     UpdateBanner,
+    PaymentReceived,
   ],
   templateUrl: './main.html',
   styleUrl: './main.css',
