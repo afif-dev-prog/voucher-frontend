@@ -1,3 +1,12 @@
-@if (showPaymentReceived) {
-  <p>payment-received works!</p>
+@if (toast) {
+  <div class="toast-wrapper">
+    <div class="toast-card">
+      <div class="toast-icon">💰</div>
+      <div class="toast-body">
+        <p class="toast-title">{{ toast.title }}</p>
+        <p class="toast-msg">{{ toast.message }}</p>
+      </div>
+      <button class="toast-close" (click)="dismiss()">✕</button>
+    </div>
+  </div>
 }
