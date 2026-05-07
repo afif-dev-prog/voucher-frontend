@@ -34,6 +34,7 @@
   overflow-y: auto;
   flex: 1;
   padding: 1rem;
+  overscroll-behavior-y: auto;
 }
 
 .screen-container-login {
