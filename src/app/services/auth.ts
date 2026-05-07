@@ -11,6 +11,7 @@ interface JwtPayload {
   permissions: string;
   exp: number;
   jti: string;
+  location?: string;
   must_change_password?: string; // ← add this
 }
 @Injectable({
@@ -99,6 +100,10 @@ export class Auth {
   // ── User info ──────────────────────────
   getRole(): string {
     return this.getPayload()?.role || '';
+  }
+
+  getLocation(): string | null {
+    return this.getPayload()?.location ?? null;
   }
 
   getUserId(): string {
