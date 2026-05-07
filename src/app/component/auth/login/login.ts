@@ -51,29 +51,27 @@ export class Login {
 
           // ── Check for returnUrl first ──
           const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+          // login/login.ts — update all navigation after successful login
           if (returnUrl) {
-            this.router.navigateByUrl(returnUrl);
+            this.router.navigateByUrl(returnUrl, { replaceUrl: true });
           } else {
             const role = res.user?.role;
             switch (role) {
               case 'STUDENT':
-                this.router.navigate(['/balance']);
+                this.router.navigate(['/balance'], { replaceUrl: true });
                 break;
               case 'SELLER':
-                this.router.navigate(['/scantopay']);
+                this.router.navigate(['/scantopay'], { replaceUrl: true });
                 break;
               case 'FINANCE':
-                this.router.navigate(['/floatmoneylist']);
+                this.router.navigate(['/floatmoneylist'], { replaceUrl: true });
                 break;
               case 'SUPERADMIN':
-                this.router.navigate(['/managestudent']);
-                break;
               case 'ADMIN':
-                this.router.navigate(['/managestudent']);
+                this.router.navigate(['/managestudent'], { replaceUrl: true });
                 break;
               default:
-                this.router.navigate(['/login']);
-                break;
+                this.router.navigate(['/login'], { replaceUrl: true });
             }
           }
         } else {
