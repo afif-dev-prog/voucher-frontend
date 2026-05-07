@@ -6,7 +6,7 @@
   align-items: center;
   flex-direction: column;
   overflow: hidden;
-  /* touch-action: pan-y; */
+  touch-action: pan-y;
   /* height: 100vh; */
   height: 100%;
   width: 100%;
