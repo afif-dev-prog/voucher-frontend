@@ -17,6 +17,9 @@ export class PaymentService {
 
   // ── Push subscription ──────────────────
   async subscribeToPush(): Promise<boolean> {
+    console.log('[Push] Token present:', !!this.auth.getToken());
+    console.log('[Push] User ID:', this.auth.getUserId());
+    console.log('[Push] Role:', this.auth.getRole());
     if (!this.swPush.isEnabled) {
       console.warn('[Push] SwPush is NOT enabled — are you in production build?');
       return false;
@@ -33,7 +36,7 @@ export class PaymentService {
       const keys = sub.toJSON().keys as any;
       const res = await this.http
         .post(`${this.apiUrl}/subscribe`, {
-          userId,
+          studentId: userId,
           endpoint: sub.endpoint,
           p256dh: keys.p256dh,
           auth: keys.auth,
