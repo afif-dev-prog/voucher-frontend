@@ -31,7 +31,11 @@ export class Main implements OnInit {
     });
   }
   onRefresh() {
-    window.location.reload(); // or re-fetch your voucher data
+    // Instead of window.location.reload(), just re-navigate to current route
+    const currentUrl = this.router.url;
+    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+      this.router.navigateByUrl(currentUrl);
+    });
   }
   ngOnInit(): void {
     // ── On refresh: if logged in, redirect to correct dashboard ──

@@ -161,23 +161,22 @@ export class Auth {
     const role = this.getRole();
     switch (role) {
       case 'STUDENT':
-        this.router.navigate(['/balance']);
+        this.router.navigate(['/balance'], { replaceUrl: true });
         break;
       case 'SELLER':
-        this.router.navigate(['/scantopay']);
+        this.router.navigate(['/scantopay'], { replaceUrl: true });
         break;
       case 'FINANCE':
-        this.router.navigate(['/floatmoneylist']);
+        this.router.navigate(['/floatmoneylist'], { replaceUrl: true });
         break;
       case 'SUPERADMIN':
-        this.router.navigate(['/managestudent']);
+        this.router.navigate(['/managestudent'], { replaceUrl: true });
         break;
       case 'ADMIN':
-        this.router.navigate(['/managestudent']);
+        this.router.navigate(['/managestudent'], { replaceUrl: true });
         break;
       default:
-        this.router.navigate(['/login']);
-        break;
+        this.router.navigate(['/login'], { replaceUrl: true });
     }
   }
   changePassword(
