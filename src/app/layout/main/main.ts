@@ -64,7 +64,9 @@ export class Main implements OnInit {
       this.auth.isLoggedIn() &&
       (this.auth.getRole() === 'STUDENT' || this.auth.getRole() === 'SELLER')
     ) {
-      this.paymentService.subscribeToPush().catch();
+      this.paymentService
+        .subscribeToPush()
+        .catch((e) => console.error('[Push] Subscribe failed in main:', e));
     }
 
     // Listen for push notification clicks from SwPush

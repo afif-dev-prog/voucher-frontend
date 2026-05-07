@@ -17,35 +17,40 @@ export class PaymentService {
 
   // ── Push subscription ──────────────────
   async subscribeToPush(): Promise<boolean> {
-    console.log('[Push] Token present:', !!this.auth.getToken());
-    console.log('[Push] User ID:', this.auth.getUserId());
-    console.log('[Push] Role:', this.auth.getRole());
     if (!this.swPush.isEnabled) {
-      console.warn('[Push] SwPush is NOT enabled — are you in production build?');
+      console.warn('[Push] SwPush is NOT enabled');
       return false;
     }
     try {
       const keyRes: any = await this.http.get(`${this.apiUrl}/vapid-public-key`).toPromise();
       console.log('[Push] VAPID key fetched:', keyRes.publicKey?.substring(0, 20) + '...');
+
+      console.log('[Push] Requesting subscription...');
       const sub = await this.swPush.requestSubscription({
         serverPublicKey: keyRes.publicKey,
       });
       console.log('[Push] Subscription created:', sub.endpoint);
+
       const userId = this.auth.getUserId();
-      console.log('[Push] Subscribing as userId:', userId, '| role:', this.auth.getRole());
+      console.log('[Push] Saving subscription for:', userId);
       const keys = sub.toJSON().keys as any;
-      const res = await this.http
+
+      const res: any = await this.http
         .post(`${this.apiUrl}/subscribe`, {
-          studentId: userId,
+          studentId: userId, // ← fixed from userId to studentId
           endpoint: sub.endpoint,
           p256dh: keys.p256dh,
           auth: keys.auth,
         })
         .toPromise();
-      console.log('[Push] Subscription saved to backend:', res);
+
+      console.log('[Push] Backend response:', res);
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      // Log the full error details
       console.error('[Push] Subscription failed:', e);
+      console.error('[Push] Error name:', e?.name);
+      console.error('[Push] Error message:', e?.message);
       return false;
     }
   }
