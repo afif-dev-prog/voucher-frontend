@@ -36,11 +36,12 @@ export class PaymentService {
       const keys = sub.toJSON().keys as any;
 
       const res: any = await this.http
-        .post(`${this.apiUrl}/subscribe`, {
-          studentId: userId, // ← fixed from userId to studentId
+        .post('/api/voucher/payment/subscribe', {
           endpoint: sub.endpoint,
-          p256dh: keys.p256dh,
-          auth: keys.auth,
+          p256dh: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh')!))),
+          auth: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth')!))),
+          userId: this.auth.getUserId(), // works for both student ID and seller username
+          userType: this.auth.getRole(), // "STUDENT" or "SELLER"
         })
         .toPromise();
 
