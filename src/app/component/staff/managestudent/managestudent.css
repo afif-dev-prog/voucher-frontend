@@ -7,7 +7,7 @@
   max-width: 960px;
   margin: 0 auto;
   padding: 24px 16px;
-  margin-top: 150px;
+  /* margin-top: 150px; */
   font-family: 'Segoe UI', sans-serif;
 }
 
@@ -990,7 +990,7 @@ table th {
 } */
 
 /* Show cards on mobile, hide table */
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 768px) {
   .table-container {
     display: none;
   }
@@ -1023,6 +1023,20 @@ table th {
   }
   .btn-add {
     justify-content: center;
+  }
+}
+
+@media screen and (max-width: 1280px) {
+  .student-table th,
+  .student-table td {
+    padding: 10px 10px;
+    font-size: 0.84rem;
+  }
+  .search-input {
+    width: 220px;
+  }
+  .student-list-wrapper {
+    padding: 16px 12px;
   }
 }
 .temp-password-box {
@@ -1469,4 +1483,23 @@ table th {
 }
 .btn-template-dl:hover {
   background: #1d4ed8;
+}
+
+@media screen and (max-height: 700px) {
+  .modal-box {
+    max-height: 95vh;
+  }
+  .modal-body {
+    padding: 14px 20px;
+    gap: 14px;
+  }
+  .modal-header {
+    padding: 14px 20px 12px;
+  }
+  .modal-footer {
+    padding: 12px 20px;
+  }
+  .form-section {
+    gap: 8px;
+  }
 }

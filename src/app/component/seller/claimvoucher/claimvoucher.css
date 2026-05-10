@@ -8,8 +8,8 @@
   flex-direction: column;
   max-width: 1100px;
   margin: 0 auto;
-  height: auto;
-  margin-top: 120px;
+  height: 100%;
+  /* margin-top: 120px; */
   /* padding: 24px 16px; */
   font-family: 'Segoe UI', sans-serif;
 }
