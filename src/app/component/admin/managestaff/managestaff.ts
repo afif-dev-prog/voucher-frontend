@@ -188,6 +188,7 @@ export class Managestaff {
     s_email: '',
     s_location: '',
     s_designation: '',
+    s_dept: '',
     lvl_access: '',
     s_hiredate: 0,
     date_update: 0,
@@ -261,16 +262,24 @@ export class Managestaff {
       this.addErrorMessage = 'Email is required.';
       return;
     }
-    if (!this.newStaffForm.intake.trim()) {
-      this.addErrorMessage = 'Intake is required.';
+    if (!this.newStaffForm.s_dept.trim()) {
+      this.addErrorMessage = 'Department is required.';
       return;
     }
-    if (!this.newStaffForm.course_code.trim()) {
-      this.addErrorMessage = 'Course Code is required.';
+    if (!this.newStaffForm.s_designation.trim()) {
+      this.addErrorMessage = 'Designation is required.';
       return;
     }
     if (!this.newStaffForm.s_campus.trim()) {
       this.addErrorMessage = 'Campus is required.';
+      return;
+    }
+    if (!this.newStaffForm.s_location.trim()) {
+      this.addErrorMessage = 'Location is required.';
+      return;
+    }
+    if (!this.newStaffForm.lvl_access.trim()) {
+      this.addErrorMessage = 'Access level is required.';
       return;
     }
     if (!this.newStaffForm.s_hiredate) {
