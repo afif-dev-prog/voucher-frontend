@@ -188,13 +188,19 @@ export class Studentscan implements OnInit, OnDestroy {
 
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
       });
       // Wait for DOM
       setTimeout(() => {
         if (this.videoRef?.nativeElement) {
-          this.videoRef.nativeElement.srcObject = this.stream;
-          this.videoRef.nativeElement.play();
+          const video = this.videoRef.nativeElement;
+          video.srcObject = this.stream;
+          video.setAttribute('playsinline', 'true'); // ✅ ensure attribute is set
+          video.setAttribute('muted', 'true'); // ✅ required for autoplay on iOS
+          video.play().catch(() => {
+            // iOS sometimes needs a second attempt
+            setTimeout(() => video.play(), 200);
+          });
           this.scanLoop();
         }
       }, 100);
