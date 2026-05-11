@@ -1,0 +1,65 @@
+@if (svc.selectedNotif()) {
+  <div class="detail-backdrop" (click)="svc.close()">
+    <div class="detail-modal" (click)="$event.stopPropagation()">
+      <div class="detail-modal-header">
+        <div
+          class="detail-icon-wrap"
+          [class]="'notif-icon-' + getIconType(svc.selectedNotif()!.type)"
+        >
+          {{ getIcon(svc.selectedNotif()!.type) }}
+        </div>
+        <button class="detail-close" (click)="svc.close()">✕</button>
+      </div>
+      <div class="detail-modal-body">
+        <p class="detail-title">{{ svc.selectedNotif()!.title }}</p>
+        <p class="detail-msg">{{ svc.selectedNotif()!.message }}</p>
+        <div class="detail-rows">
+          @if (parseAmount(svc.selectedNotif()!.message); as amount) {
+            <div class="detail-row">
+              <span class="detail-row-label">Amount</span>
+              <span
+                class="detail-row-value detail-amount"
+                [class.credit]="svc.selectedNotif()!.type === 'PAYMENT_RECEIVED'"
+                [class.debit]="svc.selectedNotif()!.type === 'PAYMENT_DEDUCTED'"
+              >
+                {{ svc.selectedNotif()!.type === 'PAYMENT_RECEIVED' ? '+' : '-' }}{{ amount }}
+              </span>
+            </div>
+          }
+          @if (parseSeller(svc.selectedNotif()!.message); as party) {
+            <div class="detail-row">
+              <span class="detail-row-label">
+                {{ svc.selectedNotif()!.type === 'PAYMENT_RECEIVED' ? 'From' : 'To' }}
+              </span>
+              <span class="detail-row-value detail-party">{{ party }}</span>
+            </div>
+          }
+          <div class="detail-row">
+            <span class="detail-row-label">Date</span>
+            <span class="detail-row-value">
+              {{ svc.selectedNotif()!.created_at * 1000 | date: 'EEEE, dd MMMM yyyy' }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-row-label">Time</span>
+            <span class="detail-row-value">
+              {{ svc.selectedNotif()!.created_at * 1000 | date: 'hh:mm a' }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-row-label">Type</span>
+            <span
+              class="detail-type-badge"
+              [class]="'badge-' + getIconType(svc.selectedNotif()!.type)"
+            >
+              {{ svc.selectedNotif()!.type.replace('_', ' ') | titlecase }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-modal-footer">
+        <button class="btn-detail-close" (click)="svc.close()">Close</button>
+      </div>
+    </div>
+  </div>
+}

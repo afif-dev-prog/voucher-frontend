@@ -137,23 +137,23 @@
               #amountInput
               class="amount-input"
               type="text"
-              inputmode="numeric"
+              inputmode="decimal"
               placeholder="0.00"
               [value]="formattedPayAmount"
-              (keydown)="onPayAmountKeydown($event)"
-              readonly
+              (input)="onPayAmountInput($event)"
             />
           </div>
 
           <!-- Quick amount chips -->
           <div class="quick-amounts">
-            @for (amt of [2, 3, 4, 5, 8, 10]; track amt) {
+            @for (amt of quickAmounts; track amt.label) {
               <button
                 class="quick-amt-chip"
-                [class.selected]="payAmount === amt"
-                (click)="setPayQuickAmount(amt)"
+                [class.cents-chip]="amt.value < 1"
+                [class.selected]="payAmount === amt.value"
+                (click)="setPayQuickAmount(amt.value)"
               >
-                RM {{ amt }}
+                {{ amt.label }}
               </button>
             }
           </div>

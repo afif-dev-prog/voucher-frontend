@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { catchError, Observable, of } from 'rxjs';
 
 @Injectable({
@@ -9,7 +9,15 @@ export class NotificationService {
   private http = inject(HttpClient);
   readonly apiUrl = 'http://localhost:5094/api/voucher/announcements';
   // readonly apiUrl = 'https://glossary.sarawakskills.edu.my/gateway/fvs/announcements';
+  selectedNotif = signal<any | null>(null);
 
+  open(notif: any): void {
+    this.selectedNotif.set(notif);
+  }
+
+  close(): void {
+    this.selectedNotif.set(null);
+  }
   getMyNotifications(page = 1, pageSize = 20): Observable<any> {
     return this.http
       .get(`${this.apiUrl}/my?pageNumber=${page}&pageSize=${pageSize}`)

@@ -15,6 +15,7 @@ import jsQR from 'jsqr';
 import { Auth } from '../../../services/auth';
 import { PaymentService } from '../../../services/payment-service';
 import { SharedService } from '../../../services/shared-service';
+import { Student } from '../../../services/student';
 
 @Component({
   selector: 'app-scantopay',
@@ -27,6 +28,7 @@ export class Scantopay implements OnInit, OnDestroy {
   private auth = inject(Auth);
   private trigger = inject(SharedService);
   private paymentService = inject(PaymentService);
+  private studentService = inject(Student);
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
   sellerId: number = 0; // replace with actual seller ID from auth
@@ -86,6 +88,22 @@ export class Scantopay implements OnInit, OnDestroy {
 
   sellerName = '';
 
+  quickAmounts = [
+    { label: '10¢', value: 0.1 },
+    { label: '20¢', value: 0.2 },
+    { label: '50¢', value: 0.5 },
+    { label: 'RM 1', value: 1 },
+    { label: 'RM 2', value: 2 },
+    { label: 'RM 3', value: 3 },
+    { label: 'RM 5', value: 5 },
+    { label: 'RM 10', value: 10 },
+    { label: 'RM 20', value: 20 },
+  ];
+
+  studentInfo: { name: string; id: string } | null = null;
+  isLookingUpStudent = false;
+  studentLookupError = '';
+
   // Add this state
   showInlineAmount = false;
   inlineAmount: number | null = null;
@@ -113,6 +131,36 @@ export class Scantopay implements OnInit, OnDestroy {
       this.amountInput?.nativeElement?.focus();
     }, 50);
   }
+  lookupStudent(studentId: string): void {
+    const id = studentId?.trim();
+    if (!id) return;
+
+    this.isLookingUpStudent = true;
+    this.studentLookupError = '';
+    this.studentInfo = null;
+    this.cdr.markForCheck();
+
+    this.studentService.getStudentById(id).subscribe({
+      next: (res: any) => {
+        const student = res?.data || res;
+        if (student?.student_name || student?.name) {
+          this.studentInfo = {
+            name: student.student_name || student.name,
+            id: student.student_id || id,
+          };
+        } else {
+          this.studentLookupError = 'Student not found.';
+        }
+        this.isLookingUpStudent = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.studentLookupError = 'Could not verify student.';
+        this.isLookingUpStudent = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
 
   // ── Inline amount cents state ─────────
   private inlineAmountCents = 0;
@@ -122,32 +170,87 @@ export class Scantopay implements OnInit, OnDestroy {
     return (this.inlineAmountCents / 100).toFixed(2);
   }
 
-  onInlineAmountKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter' || event.key === 'Escape') return;
+  // onInlineAmountKeydown(event: KeyboardEvent): void {
+  //   if (event.key === 'Enter' || event.key === 'Escape') return;
 
-    event.preventDefault();
+  //   event.preventDefault();
 
-    if (event.key >= '0' && event.key <= '9') {
-      if (this.inlineAmountCents < 999999) {
-        this.inlineAmountCents = this.inlineAmountCents * 10 + parseInt(event.key);
-        this.inlineAmount = this.inlineAmountCents / 100;
+  //   if (event.key >= '0' && event.key <= '9') {
+  //     if (this.inlineAmountCents < 999999) {
+  //       this.inlineAmountCents = this.inlineAmountCents * 10 + parseInt(event.key);
+  //       this.inlineAmount = this.inlineAmountCents / 100;
+  //     }
+  //   } else if (event.key === 'Backspace') {
+  //     this.inlineAmountCents = Math.floor(this.inlineAmountCents / 10);
+  //     this.inlineAmount = this.inlineAmountCents > 0 ? this.inlineAmountCents / 100 : null;
+  //   }
+
+  //   this.inlineError = '';
+  //   this.cdr.markForCheck();
+  // }
+
+  onInlineAmountInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    // Strip anything that isn't a digit
+    const digitsOnly = input.value.replace(/\D/g, '');
+
+    if (digitsOnly === '') {
+      this.inlineAmountCents = 0;
+      this.inlineAmount = null;
+    } else {
+      const cents = parseInt(digitsOnly, 10);
+      if (cents <= 999999) {
+        this.inlineAmountCents = cents;
+        this.inlineAmount = cents / 100;
       }
-    } else if (event.key === 'Backspace') {
-      this.inlineAmountCents = Math.floor(this.inlineAmountCents / 10);
-      this.inlineAmount = this.inlineAmountCents > 0 ? this.inlineAmountCents / 100 : null;
     }
-
+    // Keep display in sync — show formatted value
+    input.value = this.inlineAmountCents > 0 ? (this.inlineAmountCents / 100).toFixed(2) : '';
     this.inlineError = '';
     this.cdr.markForCheck();
   }
 
-  setInlineQuickAmount(amt: number): void {
-    this.inlineAmountCents = amt * 100;
-    this.inlineAmount = amt;
-    this.inlineError = '';
-    setTimeout(() => this.inlineAmountInput?.nativeElement?.focus(), 50);
+  onPaymentAmountInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = input.value.replace(/\D/g, '');
+
+    if (digitsOnly === '') {
+      this.amountCents = 0;
+      this.paymentAmount = null;
+    } else {
+      const cents = parseInt(digitsOnly, 10);
+      if (cents <= 999999) {
+        this.amountCents = cents;
+        this.paymentAmount = cents / 100;
+      }
+    }
+    input.value = this.amountCents > 0 ? (this.amountCents / 100).toFixed(2) : '';
+    this.paymentError = '';
     this.cdr.markForCheck();
   }
+
+  // Update setQuickAmount to use cents too
+  setQuickAmount(amt: number): void {
+    this.amountCents = Math.round(amt * 100);
+    this.paymentAmount = amt;
+    this.paymentError = '';
+    this.cdr.markForCheck();
+  }
+
+  setInlineQuickAmountVal(val: number): void {
+    this.inlineAmountCents = Math.round(val * 100);
+    this.inlineAmount = val;
+    this.inlineError = '';
+    this.cdr.markForCheck();
+  }
+
+  // setInlineQuickAmount(amt: number): void {
+  //   this.inlineAmountCents = amt * 100;
+  //   this.inlineAmount = amt;
+  //   this.inlineError = '';
+  //   setTimeout(() => this.inlineAmountInput?.nativeElement?.focus(), 50);
+  //   this.cdr.markForCheck();
+  // }
   // ── Amount input state ────────────────
   private amountCents = 0; // stores value in cents e.g. 150 = RM 1.50
 
@@ -514,6 +617,13 @@ export class Scantopay implements OnInit, OnDestroy {
     }
   }
 
+  setQuickAmountVal(val: number): void {
+    this.amountCents = Math.round(val * 100);
+    this.paymentAmount = val;
+    this.paymentError = '';
+    this.cdr.markForCheck();
+  }
+
   onQrDetected(value: string): void {
     // console.log('🚀 onQrDetected called with:', value);
 
@@ -537,43 +647,49 @@ export class Scantopay implements OnInit, OnDestroy {
     }
     this.scannedStudentId = studentId;
     this.paymentAmount = null;
-    this.amountCents = 0; // ← reset cents
+    this.amountCents = 0;
     this.paymentError = '';
     this.paymentSuccess = false;
     this.paymentResult = null;
+    this.studentInfo = null; // ✅ reset
+    this.studentLookupError = ''; // ✅ reset
     this.showPaymentModal = true;
     this.cdr.markForCheck();
+
+    // ✅ fetch student info when modal opens
+    this.lookupStudent(studentId);
 
     setTimeout(() => {
       this.amountInput?.nativeElement?.focus();
     }, 100);
   }
+
+  // Update closePaymentModal to reset student info
   closePaymentModal(): void {
     if (this.isProcessing) return;
-
     if (this.paymentSuccess) {
       this.scannedStudentId = '';
       this.showInlineAmount = false;
     }
-
     this.showPaymentModal = false;
     this.paymentAmount = null;
-    this.amountCents = 0; // ← reset cents
+    this.amountCents = 0;
     this.paymentError = '';
     this.paymentSuccess = false;
     this.isProcessing = false;
     this.paymentResult = null;
+    this.studentInfo = null; // ✅ reset
+    this.studentLookupError = ''; // ✅ reset
     this.cdr.markForCheck();
-
     this.focusManualInput();
   }
-  setQuickAmount(amt: number): void {
-    this.amountCents = amt * 100;
-    this.paymentAmount = amt;
-    this.paymentError = '';
-    this.focusAmountInput();
-    this.cdr.markForCheck();
-  }
+  // setQuickAmount(amt: number): void {
+  //   this.amountCents = amt * 100;
+  //   this.paymentAmount = amt;
+  //   this.paymentError = '';
+  //   this.focusAmountInput();
+  //   this.cdr.markForCheck();
+  // }
   onPaymentBackdropClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('modal-backdrop')) {
       if (!this.isProcessing) this.closePaymentModal();

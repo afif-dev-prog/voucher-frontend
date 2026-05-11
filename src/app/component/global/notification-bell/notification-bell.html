@@ -1,61 +1,67 @@
 <div class="notif-wrapper">
-      <button class="notif-btn" (click)="togglePanel()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-          fill="currentColor" viewBox="0 0 16 16">
-          <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4
-            4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376
-            1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134
-            8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78
-            1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6a5 5 0 0 1
-            10 0c0 .88.32 4.2 1.22 6"/>
-        </svg>
+  <button class="notif-btn" (click)="togglePanel()">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      fill="currentColor"
+      viewBox="0 0 16 16"
+    >
+      <path
+        d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4
+        4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376
+        1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134
+        8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78
+        1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6a5 5 0 0 1
+        10 0c0 .88.32 4.2 1.22 6"
+      />
+    </svg>
+    @if (unreadCount > 0) {
+      <span class="notif-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+    }
+  </button>
+
+  @if (showPanel) {
+    <!-- ✅ backdrop BEFORE panel in DOM but higher z-index via CSS -->
+    <div class="notif-backdrop" (click)="closePanel()"></div>
+
+    <div class="notif-panel">
+      <div class="notif-panel-header">
+        <span class="notif-panel-title">Notifications</span>
         @if (unreadCount > 0) {
-          <span class="notif-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+          <button class="notif-mark-all" (click)="markAllRead()">Mark all read</button>
         }
-      </button>
+      </div>
 
-      @if (showPanel) {
-        <div class="notif-panel">
-          <div class="notif-panel-header">
-            <span class="notif-panel-title">Notifications</span>
-            @if (unreadCount > 0) {
-              <button class="notif-mark-all" (click)="markAllRead()">
-                Mark all read
-              </button>
-            }
-          </div>
-
-          @if (isLoading) {
-            <div class="notif-loading">
-              <span class="spinner-notif"></span>
-            </div>
-          } @else if (notifications.length === 0) {
-            <div class="notif-empty">
-              <p>No notifications yet</p>
-            </div>
-          } @else {
-            <div class="notif-list">
-              @for (n of notifications; track n.id) {
-                <div class="notif-item" [class.unread]="!n.is_read"
-                  (click)="markRead(n)">
-                  <div class="notif-item-icon" [class]="'notif-icon-' + getIconType(n.type)">
-                    {{ getIcon(n.type) }}
-                  </div>
-                  <div class="notif-item-content">
-                    <p class="notif-item-title">{{ n.title }}</p>
-                    <p class="notif-item-msg">{{ n.message }}</p>
-                    <span class="notif-item-time">
-                      {{ n.created_at * 1000 | date: 'dd MMM, HH:mm' }}
-                    </span>
-                  </div>
-                  @if (!n.is_read) {
-                    <div class="notif-unread-dot"></div>
-                  }
-                </div>
+      @if (isLoading) {
+        <div class="notif-loading">
+          <span class="spinner-notif"></span>
+        </div>
+      } @else if (notifications.length === 0) {
+        <div class="notif-empty">
+          <p>No notifications yet</p>
+        </div>
+      } @else {
+        <div class="notif-list">
+          @for (n of notifications; track n.id) {
+            <div class="notif-item" [class.unread]="!n.is_read" (click)="openDetail(n)">
+              <div class="notif-item-icon" [class]="'notif-icon-' + getIconType(n.type)">
+                {{ getIcon(n.type) }}
+              </div>
+              <div class="notif-item-content">
+                <p class="notif-item-title">{{ n.title }}</p>
+                <p class="notif-item-msg">{{ n.message }}</p>
+                <span class="notif-item-time">
+                  {{ n.created_at * 1000 | date: 'dd MMM yyyy, HH:mm' }}
+                </span>
+              </div>
+              @if (!n.is_read) {
+                <div class="notif-unread-dot"></div>
               }
             </div>
           }
         </div>
-        <div class="notif-backdrop" (click)="showPanel = false"></div>
       }
     </div>
+  }
+</div>
