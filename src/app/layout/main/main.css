@@ -16,7 +16,8 @@
   margin-left: calc(65px + 40px);
   padding: 1rem 0;
   width: calc(100% - 150px);
-  background-color: white;
+  /* background-color: white; */
+  background-color: transparent;
   border-radius: 20px;
   display: flex;
   flex: 1;
@@ -27,9 +28,9 @@
   /* max-height: 950px; */
   max-height: calc(100vh - 120px);
   overflow: hidden;
-  box-shadow:
+  /* box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    0 2px 4px -1px rgba(0, 0, 0, 0.06); */
 }
 
 @media screen and (max-width: 1280px) {
@@ -89,19 +90,7 @@
 }
 
 .screen-content-side {
-  background-color: #323232;
-  padding: 10px;
-  text-orientation: upright;
-  writing-mode: sideways-lr;
-  border-top-right-radius: 20px;
-  border-bottom-right-radius: 20px;
-  color: white;
-  font-weight: bold;
-  text-orientation: mixed; /* Adjusts text orientation */
-  white-space: nowrap; /* Prevents header text from wrapping */
-  display: flex; /* Center content within the side header */
-  align-items: center; /* Vertically center content */
-  justify-content: center; /* Horizontally center content */
+  display: none;
   /* min-width: 50px;  */
 }
 
