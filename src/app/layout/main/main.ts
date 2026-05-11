@@ -11,6 +11,7 @@ import { PullToRefreshDirective } from '../../services/pull-to-refresh.directive
 import { UpdateBanner } from '../../component/global/update-banner/update-banner';
 import { AppUpdateService } from '../../services/app-update-service';
 import { PaymentReceived } from '../../component/global/payment-received/payment-received';
+import { NotificationDetailModal } from '../../component/global/notification-detail-modal/notification-detail-modal';
 
 @Component({
   selector: 'app-main',
@@ -22,6 +23,7 @@ import { PaymentReceived } from '../../component/global/payment-received/payment
     PullToRefreshDirective,
     UpdateBanner,
     PaymentReceived,
+    NotificationDetailModal,
   ],
   templateUrl: './main.html',
   styleUrl: './main.css',

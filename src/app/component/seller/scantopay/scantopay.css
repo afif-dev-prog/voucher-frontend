@@ -536,6 +536,7 @@
   color: #2563eb;
   border-right: 2px solid #2563eb;
   height: 58px;
+  /* width: 50px; */
   display: flex;
   align-items: center;
 }
@@ -887,4 +888,70 @@
   font-size: 0.88rem;
   cursor: pointer;
   color: #374151;
+}
+/* Smaller pill for cent amounts */
+.btn-quick[class*='¢'],
+.quick-amt-chip:nth-child(-n + 3) {
+  font-size: 0.78rem;
+  padding: 5px 10px;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+.student-verify-block {
+  margin-top: 6px;
+}
+
+.student-verifying {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.spinner-sm {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.student-verified {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.student-name {
+  font-weight: 700;
+  color: #15803d;
+}
+
+.student-matric {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.student-not-found {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: #dc2626;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 6px 10px;
 }
