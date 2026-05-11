@@ -3,12 +3,22 @@
   display: block;
   width: 100%;
 }
-.scan-wrapper {
+/* .scan-wrapper {
   max-width: 480px;
   margin: 0 auto;
   padding: 24px 16px 60px;
   font-family: 'Segoe UI', sans-serif;
   min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+} */
+
+.scan-wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+  font-family: 'Segoe UI', sans-serif;
+  /* ✅ remove min-height, let content size naturally */
   display: flex;
   flex-direction: column;
 }
@@ -99,15 +109,24 @@
 }
 
 /* ── CAMERA ── */
+/* .scan-camera-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+} */
+
 .scan-camera-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
   flex: 1;
+  width: 100%; /* ✅ add this */
 }
 
-.scan-viewfinder {
+/* .scan-viewfinder {
   position: relative;
   width: 100%;
   max-width: 320px;
@@ -115,13 +134,33 @@
   border-radius: 20px;
   overflow: hidden;
   background: #000;
+} */
+
+.scan-viewfinder {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  /* ✅ Replace aspect-ratio with explicit height for iOS compatibility */
+  height: 320px; /* same value as max-width for square */
+  border-radius: 20px;
+  overflow: hidden;
+  background: #000;
 }
+/* .scan-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+} */
 
 .scan-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  /* ✅ iOS Safari needs this for video to render correctly */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 .scan-canvas-hidden {
@@ -819,10 +858,19 @@
   font-size: 1.1rem;
 }
 
-.confirm-modal-footer {
+/* .confirm-modal-footer {
   display: flex;
   gap: 10px;
   padding: 14px 20px 24px;
+  border-top: 1px solid #f1f5f9;
+} */
+
+.confirm-modal-footer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px;
+  /* ✅ add safe area inset for iOS home bar */
+  padding-bottom: calc(14px + env(safe-area-inset-bottom) + 90px);
   border-top: 1px solid #f1f5f9;
 }
 .btn-modal-cancel {
