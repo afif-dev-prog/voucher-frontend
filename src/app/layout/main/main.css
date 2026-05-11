@@ -1,6 +1,7 @@
 .layout {
   display: flex;
-  margin-top: 50px;
+  /* margin-top: 50px; */
+  margin-top: calc(50px + env(safe-area-inset-top));
   justify-content: center;
   flex: 1;
   align-items: center;
@@ -51,6 +52,12 @@
     width: 100%;
     margin-top: 60px;
     max-height: 100vh;
+  }
+  .screen-content {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
+    height: 100vh;
+    margin-top: 65px;
+    overflow-y: auto;
   }
 }
 
