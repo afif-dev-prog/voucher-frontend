@@ -1,7 +1,6 @@
 .layout {
   display: flex;
-  /* margin-top: 50px; */
-  margin-top: calc(50px + env(safe-area-inset-top));
+  margin-top: 50px;
   justify-content: center;
   flex: 1;
   align-items: center;
@@ -29,7 +28,7 @@
   margin-top: 20px;
   /* max-height: 950px; */
   max-height: calc(100vh - 50px);
-  overflow: auto;
+  /* overflow: auto; */
   /* box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06); */
@@ -58,6 +57,9 @@
     height: 100vh;
     margin-top: 65px;
     overflow-y: auto;
+  }
+  .layout {
+    margin-top: calc(50px + env(safe-area-inset-top));
   }
 }
 
@@ -124,7 +126,8 @@
   }
   .layout {
     /* z-index: 1; */
-    margin-top: 0;
+    /* margin-top: 0; */
+    margin-top: env(safe-area-inset-top);
   }
 }
 
@@ -179,7 +182,8 @@
 
   .layout {
     z-index: 1;
-    margin-top: 0;
+    margin-top: env(safe-area-inset-top);
+    /* margin-top: 0; */
     /* display: flex; */
     /* justify-content: center; */
     align-items: center;
