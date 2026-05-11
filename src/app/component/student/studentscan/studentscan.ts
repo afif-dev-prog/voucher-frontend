@@ -45,6 +45,18 @@ export class Studentscan implements OnInit, OnDestroy {
   stream: MediaStream | null = null;
   animFrame: number | null = null;
 
+  quickAmounts = [
+    { label: '10¢', value: 0.1 },
+    { label: '20¢', value: 0.2 },
+    { label: '50¢', value: 0.5 },
+    { label: 'RM 2', value: 2 },
+    { label: 'RM 3', value: 3 },
+    { label: 'RM 4', value: 4 },
+    { label: 'RM 5', value: 5 },
+    { label: 'RM 8', value: 8 },
+    { label: 'RM 10', value: 10 },
+  ];
+
   // ── Scanned seller data ────────────────
   scannedSellerId = '';
   scannedSellerName = '';
@@ -91,26 +103,53 @@ export class Studentscan implements OnInit, OnDestroy {
     return (this.payAmountCents / 100).toFixed(2);
   }
 
-  onPayAmountKeydown(event: KeyboardEvent): void {
-    event.preventDefault();
+  // onPayAmountKeydown(event: KeyboardEvent): void {
+  //   event.preventDefault();
 
-    if (event.key >= '0' && event.key <= '9') {
-      if (this.payAmountCents < 999999) {
-        this.payAmountCents = this.payAmountCents * 10 + parseInt(event.key);
-        this.payAmount = this.payAmountCents / 100;
+  //   if (event.key >= '0' && event.key <= '9') {
+  //     if (this.payAmountCents < 999999) {
+  //       this.payAmountCents = this.payAmountCents * 10 + parseInt(event.key);
+  //       this.payAmount = this.payAmountCents / 100;
+  //     }
+  //   } else if (event.key === 'Backspace') {
+  //     this.payAmountCents = Math.floor(this.payAmountCents / 10);
+  //     this.payAmount = this.payAmountCents > 0 ? this.payAmountCents / 100 : 0;
+  //   }
+
+  //   this.payError = '';
+  //   this.cdr.markForCheck();
+  // }
+
+  onPayAmountInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = input.value.replace(/\D/g, '');
+
+    if (digitsOnly === '') {
+      this.payAmountCents = 0;
+      this.payAmount = 0;
+    } else {
+      const cents = parseInt(digitsOnly, 10);
+      if (cents <= 999999) {
+        this.payAmountCents = cents;
+        this.payAmount = cents / 100;
       }
-    } else if (event.key === 'Backspace') {
-      this.payAmountCents = Math.floor(this.payAmountCents / 10);
-      this.payAmount = this.payAmountCents > 0 ? this.payAmountCents / 100 : 0;
     }
-
+    input.value = this.payAmountCents > 0 ? (this.payAmountCents / 100).toFixed(2) : '';
     this.payError = '';
     this.cdr.markForCheck();
   }
 
-  setPayQuickAmount(amt: number): void {
-    this.payAmountCents = amt * 100;
-    this.payAmount = amt;
+  // setPayQuickAmount(amt: number): void {
+  //   this.payAmountCents = amt * 100;
+  //   this.payAmount = amt;
+  //   this.payError = '';
+  //   setTimeout(() => this.amountInput?.nativeElement?.focus(), 50);
+  //   this.cdr.markForCheck();
+  // }
+
+  setPayQuickAmount(val: number): void {
+    this.payAmountCents = Math.round(val * 100);
+    this.payAmount = val;
     this.payError = '';
     setTimeout(() => this.amountInput?.nativeElement?.focus(), 50);
     this.cdr.markForCheck();

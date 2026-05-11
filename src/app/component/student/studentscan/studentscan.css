@@ -857,3 +857,29 @@
 .btn-modal-confirm:hover {
   background: #1d4ed8;
 }
+
+/* Smaller pill for cent amounts */
+
+.btn-quick[class*='¢'],
+.quick-amt-chip:nth-child(-n + 3) {
+  font-size: 0.78rem;
+  padding: 5px 10px;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+.btn-quick-cents {
+  font-size: 0.78rem;
+  padding: 5px 10px;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+.quick-amt-chip.cents-chip {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+  font-size: 0.78rem;
+  padding: 5px 10px;
+}

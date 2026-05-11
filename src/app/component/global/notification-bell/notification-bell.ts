@@ -32,8 +32,6 @@ export class NotificationBell implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (!this.auth.isLoggedIn()) return;
     this.loadNotifications();
-
-    // Poll every 30 seconds for new notifications
     interval(30000)
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.loadNotifications());
@@ -60,19 +58,48 @@ export class NotificationBell implements OnInit, OnDestroy {
     if (this.showPanel) this.loadNotifications();
   }
 
-  markRead(n: NotificationItem): void {
-    if (n.is_read) return;
-    n.is_read = true;
-    this.unreadCount = Math.max(0, this.unreadCount - 1);
-    this.notifService.markRead(n.id).subscribe();
+  closePanel(): void {
+    this.showPanel = false;
     this.cdr.markForCheck();
   }
 
+  // ── Open detail modal instead of just marking read ──
+  openDetail(n: NotificationItem): void {
+    this.showPanel = false;
+    if (!n.is_read) {
+      n.is_read = true;
+      this.unreadCount = Math.max(0, this.unreadCount - 1);
+      this.notifService.markRead(n.id).subscribe();
+    }
+    this.notifService.open(n); // ✅ delegate to service
+    this.cdr.markForCheck();
+  }
+
+  // closeDetail(): void {
+  //   this.showDetailModal = false;
+  //   this.selectedNotif = null;
+  //   document.body.style.overflow = ''; // ✅ restore scroll
+  //   this.cdr.markForCheck();
+  // }
   markAllRead(): void {
     this.notifications.forEach((n) => (n.is_read = true));
     this.unreadCount = 0;
     this.notifService.markAllRead().subscribe();
     this.cdr.markForCheck();
+  }
+
+  // ── Parse seller/amount from message string ──
+  // Assumes message format like: "Payment of RM 5.00 received from student 3511050633."
+  // or "You paid RM 3.00 to seller digitalnexus."
+  parseAmount(message: string): string | null {
+    const match = message.match(/RM\s?([\d.]+)/i);
+    return match ? `RM ${parseFloat(match[1]).toFixed(2)}` : null;
+  }
+
+  parseSeller(message: string): string | null {
+    const toMatch = message.match(/to\s+(?:seller\s+)?(\S+)/i);
+    const fromMatch = message.match(/from\s+(?:seller\s+)?(\S+)/i);
+    return toMatch?.[1] || fromMatch?.[1] || null;
   }
 
   getIcon(type: string): string {
@@ -90,6 +117,7 @@ export class NotificationBell implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    document.body.style.overflow = '';
     this.destroy$.next();
     this.destroy$.complete();
   }
