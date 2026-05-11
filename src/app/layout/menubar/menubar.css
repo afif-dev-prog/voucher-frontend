@@ -6,6 +6,7 @@
 .topbar {
   width: 100%;
   padding: 8px 24px;
+  padding-top: calc(8px + env(safe-area-inset-top));
   position: fixed;
   top: 0;
   left: 0;
@@ -146,6 +147,7 @@
     transform: translateX(-50%);
     width: auto;
     max-width: calc(100vw - 32px);
+    bottom: calc(16px + env(safe-area-inset-bottom));
   }
 
   /* Switch pill to horizontal */
