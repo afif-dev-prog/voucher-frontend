@@ -1,6 +1,7 @@
 :host {
   display: block;
   width: 100%;
+  height: 100vh;
 }
 .scroll-area {
   max-height: 400px;
@@ -647,7 +648,10 @@
   border-radius: 6px 6px 0 0;
   transition: all 0.15s;
 }
-.wc-tab:hover { color: #2563eb; background: #eff6ff; }
+.wc-tab:hover {
+  color: #2563eb;
+  background: #eff6ff;
+}
 .wc-tab-active {
   color: #2563eb;
   font-weight: 700;

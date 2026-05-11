@@ -2,6 +2,7 @@
 :host {
   display: block;
   width: 100%;
+  height: 100vh;
 }
 .staff-list-wrapper {
   max-width: 960px;
