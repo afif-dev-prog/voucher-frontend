@@ -14,6 +14,7 @@ body {
   overflow: hidden;
   overscroll-behavior-y: none;
   font-size: clamp(13px, 1.05vw, 15px);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 .confirm-modal {
   padding-bottom: env(safe-area-inset-bottom);
