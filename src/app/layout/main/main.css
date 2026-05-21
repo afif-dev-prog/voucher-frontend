@@ -141,9 +141,9 @@
     max-height: 100vh;
   }
   .screen-content {
-    height: 100vh;
+    /* height: 100vh; */
     margin-top: 65px;
-    overflow-y: auto;
+    /* overflow-y: auto; */
     padding: 1rem;
   }
   .layout {
@@ -173,11 +173,11 @@
   }
 
   .screen-content {
-    padding-bottom: 100px;
+    padding-bottom: 10px;
     /* padding: 100px 100px 100px 60px; */
-    height: 100vh;
+    /* height: 100vh; */
     margin-top: 65px;
-    overflow-y: auto;
+    /* overflow-y: auto; */
   }
 
   .layout {
