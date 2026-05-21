@@ -2,34 +2,36 @@
 :host {
   display: block;
   width: 100%;
-  height: 100vh;
 }
 
 .wallet-wrapper {
   max-width: 480px;
   margin: 0 auto;
-  /* padding: 20px 16px 40px; */
+  padding: 16px 16px 100px;
   font-family: 'Segoe UI', sans-serif;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  overflow-y: auto;
+  height: 100vh;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Main card ── */
 .wallet-card {
-  /* background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #3b82f6 100%); */
   background: linear-gradient(
     90deg,
     rgba(42, 155, 110, 1) 0%,
     rgba(87, 199, 133, 1) 50%,
     rgba(73, 140, 88, 1) 100%
   );
-
   border-radius: 20px;
   padding: 26px 22px;
   position: relative;
   overflow: hidden;
   color: #fff;
+  flex-shrink: 0;
 }
 
 .wallet-card::before {
@@ -146,6 +148,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .stat-card {
@@ -200,6 +203,7 @@
   border: 1px solid #e5e7eb;
   border-radius: 16px;
   padding: 18px 16px;
+  flex-shrink: 0;
 }
 
 .activity-title {
@@ -282,7 +286,6 @@
   color: #c2410c;
 }
 
-/* View all link */
 .activity-view-all {
   display: block;
   text-align: center;
@@ -295,55 +298,21 @@
   text-decoration: none;
   transition: background 0.15s;
 }
-
 .activity-view-all:hover {
   background: #f9fafb;
   color: #374151;
 }
 
-/* ── Responsive ── */
-@media screen and (max-width: 400px) {
-  .wallet-balance {
-    font-size: 28px;
-  }
-  .wallet-card {
-    padding: 20px 18px;
-  }
-  .stat-value {
-    font-size: 15px;
-  }
-  .wallet-wrapper {
-    padding: 0;
-  }
-}
-
-@media screen and (max-width: 700px) {
-  .wallet-wrapper {
-    /* padding: 0; */
-    padding-bottom: 40px;
-    margin-top: 30px;
-    overflow-y: auto;
-  }
-}
-
-@media screen and (max-height: 850px) {
-  .wallet-wrapper {
-    /* padding-bottom: 40px; */
-    margin-top: 80px;
-  }
-}
 /* ── Profile Card ── */
 .profile-card {
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
-  position: sticky;
-  top: 0;
-  max-height: 300px;
-  overflow: hidden;
+  position: relative;
+  overflow: visible;
+  flex-shrink: 0;
 }
 
-/* Header — avatar + name */
 .profile-card-header {
   display: flex;
   align-items: center;
@@ -355,14 +324,12 @@
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  /* background: linear-gradient(135deg, #1e3a5f, #2563eb); */
   background: linear-gradient(
     90deg,
     rgba(42, 155, 110, 1) 0%,
     rgba(87, 199, 133, 1) 50%,
     rgba(73, 140, 88, 1) 100%
   );
-
   color: #fff;
   font-size: 16px;
   font-weight: 600;
@@ -390,7 +357,6 @@
   text-overflow: ellipsis;
 }
 
-/* Status badge */
 .profile-status {
   display: inline-block;
   font-size: 10px;
@@ -414,21 +380,19 @@
   color: #a16207;
 }
 
-/* Divider */
 .profile-divider {
   height: 1px;
   background: #f1f5f9;
 }
 
-/* Fields grid */
 .profile-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
   padding: 4px 0;
   margin-bottom: 20px;
-  overflow: auto;
-  max-height: 200px;
+  max-height: none;
+  overflow: visible;
 }
 
 .profile-field {
@@ -443,12 +407,10 @@
   background: #fafafa;
 }
 
-/* Remove bottom border on last two fields */
 .profile-field:nth-last-child(-n + 2) {
   border-bottom: none;
 }
 
-/* Icon */
 .profile-field-icon {
   width: 28px;
   height: 28px;
@@ -462,7 +424,6 @@
   margin-top: 1px;
 }
 
-/* Content */
 .profile-field-content {
   display: flex;
   flex-direction: column;
@@ -502,7 +463,6 @@
   border-radius: 20px;
 }
 
-/* Credit month row */
 .profile-credit-month {
   display: flex;
   align-items: center;
@@ -526,35 +486,7 @@
   letter-spacing: 0.04em;
 }
 
-/* ── Responsive ── */
-@media (max-width: 400px) {
-  /* Stack fields to single column on very small screens */
-  .profile-fields {
-    grid-template-columns: 1fr;
-  }
-
-  /* Restore bottom border for single column */
-  .profile-field:nth-last-child(-n + 2) {
-    border-bottom: 1px solid #f8fafc;
-  }
-
-  .profile-field:last-child {
-    border-bottom: none;
-  }
-
-  .profile-avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    font-size: 14px;
-  }
-
-  .profile-name {
-    font-size: 13px;
-  }
-}
-
-/* ── Show QR button (inside wallet card) ── */
+/* ── Show QR button ── */
 .btn-show-qr {
   display: flex;
   align-items: center;
@@ -599,7 +531,7 @@
   }
 }
 
-/* ── QR Modal (bottom sheet style) ── */
+/* ── QR Modal ── */
 .qr-modal {
   background: #fff;
   border-radius: 24px 24px 0 0;
@@ -611,6 +543,8 @@
   align-items: center;
   gap: 16px;
   animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 @keyframes slideUp {
@@ -622,7 +556,6 @@
   }
 }
 
-/* Handle bar */
 .qr-handle {
   width: 40px;
   height: 4px;
@@ -632,7 +565,6 @@
   flex-shrink: 0;
 }
 
-/* Header */
 .qr-modal-header {
   display: flex;
   align-items: center;
@@ -673,7 +605,6 @@
   letter-spacing: 0.06em;
 }
 
-/* QR canvas */
 .qr-canvas-wrapper {
   position: relative;
   width: 220px;
@@ -686,9 +617,9 @@
   border: 1px solid #e5e7eb;
   padding: 12px;
   box-sizing: content-box;
+  flex-shrink: 0;
 }
 
-/* ADD: */
 .qr-img {
   width: 220px;
   height: 220px;
@@ -697,7 +628,6 @@
   transition: opacity 0.3s ease;
   display: block;
 }
-
 .qr-img.qr-visible {
   opacity: 1;
 }
@@ -708,18 +638,15 @@
   align-items: center;
   gap: 6px;
 }
-
 .qr-error-icon {
   font-size: 1.8rem;
   margin: 0;
 }
-
 .qr-error-text {
   font-size: 12px;
   color: #9ca3af;
   margin: 0;
 }
-
 .qr-retry-btn {
   padding: 6px 16px;
   background: #2563eb;
@@ -730,6 +657,7 @@
   font-weight: 600;
   cursor: pointer;
 }
+
 .qr-loading {
   position: absolute;
   inset: 0;
@@ -739,14 +667,12 @@
   justify-content: center;
   gap: 10px;
 }
-
 .qr-loading p {
   font-size: 12px;
   color: #9ca3af;
   margin: 0;
 }
 
-/* Info section */
 .qr-info {
   display: flex;
   flex-direction: column;
@@ -754,14 +680,12 @@
   gap: 8px;
   width: 100%;
 }
-
 .qr-info-label {
   font-size: 12px;
   color: #9ca3af;
   margin: 0;
   text-align: center;
 }
-
 .qr-matric-chip {
   display: flex;
   align-items: center;
@@ -777,7 +701,6 @@
   border: 1px solid #bfdbfe;
 }
 
-/* Balance row */
 .qr-balance-row {
   display: flex;
   justify-content: space-between;
@@ -788,19 +711,16 @@
   border-radius: 12px;
   border: 1px solid #e5e7eb;
 }
-
 .qr-balance-label {
   font-size: 12px;
   color: #6b7280;
 }
-
 .qr-balance-value {
   font-size: 16px;
   font-weight: 700;
   color: #111827;
 }
 
-/* Close button */
 .qr-close-btn {
   width: 100%;
   padding: 13px;
@@ -836,6 +756,72 @@
 }
 
 /* ── Responsive ── */
+@media screen and (max-width: 400px) {
+  .wallet-wrapper {
+    gap: 10px;
+    padding: 12px 12px 100px;
+  }
+  .wallet-balance {
+    font-size: 26px;
+  }
+  .wallet-card {
+    padding: 20px 16px;
+  }
+  .stat-value {
+    font-size: 15px;
+  }
+  .profile-fields {
+    grid-template-columns: 1fr;
+  }
+  .profile-field:nth-last-child(-n + 2) {
+    border-bottom: 1px solid #f8fafc;
+  }
+  .profile-field:last-child {
+    border-bottom: none;
+  }
+  .profile-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+  .profile-name {
+    font-size: 13px;
+  }
+}
+
+@media screen and (max-width: 700px) {
+  .wallet-wrapper {
+    margin-top: 0;
+    padding-bottom: 100px;
+  }
+}
+
+@media screen and (max-height: 700px) {
+  .wallet-wrapper {
+    gap: 10px;
+    padding: 10px 16px 100px;
+  }
+  .wallet-card {
+    padding: 18px 18px;
+  }
+  .wallet-balance {
+    font-size: 28px;
+  }
+  .wallet-balance-section {
+    margin-bottom: 16px;
+  }
+  .wallet-card-top {
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    padding: 12px;
+  }
+  .stat-value {
+    font-size: 16px;
+  }
+}
+
 @media (min-width: 480px) {
   .qr-modal {
     border-radius: 24px;
