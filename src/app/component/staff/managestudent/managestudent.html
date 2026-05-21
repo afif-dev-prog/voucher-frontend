@@ -760,35 +760,110 @@
 
       <!-- Body -->
       <div class="modal-body modal-body-tx">
+        <!-- Balance card -->
+        <div class="tx-balance-card">
+          <div class="tx-balance-left">
+            <span class="tx-balance-label">Current Balance</span>
+            <span class="tx-balance-amount">
+              RM {{ selectedStudent?.balance | number: '1.2-2' }}
+            </span>
+          </div>
+          <div class="tx-balance-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="22"
+              height="22"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1H0zm0 3v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7zm3 2h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Date filter -->
+        <div class="tx-filter-bar">
+          <div class="tx-filter-fields">
+            <div class="tx-filter-field">
+              <label class="tx-filter-label">From</label>
+              <input class="tx-filter-input" type="date" [(ngModel)]="txDateFrom" />
+            </div>
+            <div class="tx-filter-field">
+              <label class="tx-filter-label">To</label>
+              <input class="tx-filter-input" type="date" [(ngModel)]="txDateTo" />
+            </div>
+          </div>
+          <div class="tx-filter-actions">
+            <button
+              class="btn-tx-filter"
+              (click)="applyTxFilter()"
+              [disabled]="!txDateFrom && !txDateTo"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="13"
+                height="13"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5"
+                />
+              </svg>
+              Filter
+            </button>
+            @if (txFiltered) {
+              <button class="btn-tx-clear" (click)="clearTxFilter()">Clear</button>
+            }
+          </div>
+        </div>
+
+        @if (txFiltered) {
+          <div class="tx-filter-badge">
+            📅 Showing results from
+            <strong>{{ txDateFrom }}</strong>
+            @if (txDateTo) {
+              to <strong>{{ txDateTo }}</strong>
+            }
+          </div>
+        }
+
         <!-- Skeleton -->
         @if (isLoadingTransactions) {
           <div class="tx-skeleton">
             @for (i of [1, 2, 3, 4, 5]; track i) {
-              <div class="tx-skeleton-row">
-                <div class="skeleton-block" style="width: 120px"></div>
-                <div class="skeleton-block" style="flex: 1"></div>
-                <div class="skeleton-block" style="width: 80px"></div>
-                <div class="skeleton-block" style="width: 70px"></div>
+              <div class="tx-card-skeleton">
+                <div class="skeleton-block" style="width: 60%; height: 14px"></div>
+                <div class="skeleton-block" style="width: 40%; height: 12px; margin-top: 6px"></div>
               </div>
             }
           </div>
         }
 
         <!-- Empty -->
-        @if (!isLoadingTransactions && transactions?.length == null) {
+        @if (!isLoadingTransactions && (!transactions || transactions.length === 0)) {
           <div class="tx-empty">
             <div class="tx-empty-icon">🧾</div>
-            <p>No transactions found for this student.</p>
+            <p>
+              {{
+                txFiltered
+                  ? 'No transactions found for this date range.'
+                  : 'No transactions found for this student.'
+              }}
+            </p>
           </div>
         }
 
-        <!-- Transaction List -->
-        @if (!isLoadingTransactions && transactions?.length != null) {
+        <!-- Transaction list -->
+        @if (!isLoadingTransactions && transactions.length > 0) {
           <div class="tx-summary">
-            Showing <strong>{{ transactions?.length }}</strong> of
+            Showing <strong>{{ transactions.length }}</strong> of
             <strong>{{ transactionTotalCount }}</strong> transactions
           </div>
 
+          <!-- Desktop table -->
           <div class="tx-table-wrapper">
             <table class="tx-table">
               <thead>
@@ -803,27 +878,92 @@
                 @for (tx of transactions; track tx.pay_id; let i = $index) {
                   <tr class="tx-row">
                     <td class="tx-num">{{ i + 1 }}</td>
-                    <td class="tx-date">
-                      {{ tx.pay_date * 1000 | date: 'HH:mm:ss a, dd/MM/yyyy' }}
-                    </td>
+                    <td class="tx-date">{{ tx.pay_date * 1000 | date: 'dd/MM/yyyy, HH:mm' }}</td>
                     <td class="tx-desc">{{ tx.remark || '—' }}</td>
-                    @if (tx.credit != 0) {
-                      <td class="row-amount credit">
-                        <span class="badge text-bg-success">+ RM {{ tx.credit }}</span>
-                      </td>
-                    }
-                    @if (tx.debit != 0) {
-                      <td class="row-amount debit">
-                        <span class="badge text-bg-warning">- RM {{ tx.debit }}</span>
-                      </td>
-                    }
+                    <td>
+                      @if (tx.credit != 0) {
+                        <span class="tx-amount-badge credit"
+                          >+ RM {{ tx.credit | number: '1.2-2' }}</span
+                        >
+                      }
+                      @if (tx.debit != 0) {
+                        <span class="tx-amount-badge debit"
+                          >- RM {{ tx.debit | number: '1.2-2' }}</span
+                        >
+                      }
+                    </td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
 
-          <!-- Load More -->
+          <!-- Mobile cards -->
+          <div class="tx-cards">
+            @for (tx of transactions; track tx.pay_id; let i = $index) {
+              <div
+                class="tx-card"
+                [class.tx-card-credit]="tx.credit != 0"
+                [class.tx-card-debit]="tx.debit != 0"
+              >
+                <div class="tx-card-left">
+                  <div
+                    class="tx-card-icon"
+                    [class.icon-credit]="tx.credit != 0"
+                    [class.icon-debit]="tx.debit != 0"
+                  >
+                    @if (tx.credit != 0) {
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"
+                        />
+                      </svg>
+                    } @else {
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"
+                        />
+                      </svg>
+                    }
+                  </div>
+                  <div class="tx-card-info">
+                    <span class="tx-card-desc">{{ tx.remark || 'Transaction' }}</span>
+                    <span class="tx-card-date">{{
+                      tx.pay_date * 1000 | date: 'dd/MM/yyyy, HH:mm'
+                    }}</span>
+                  </div>
+                </div>
+                <div
+                  class="tx-card-amount"
+                  [class.amount-credit]="tx.credit != 0"
+                  [class.amount-debit]="tx.debit != 0"
+                >
+                  @if (tx.credit != 0) {
+                    + RM {{ tx.credit | number: '1.2-2' }}
+                  }
+                  @if (tx.debit != 0) {
+                    - RM {{ tx.debit | number: '1.2-2' }}
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- See More -->
           @if (transactionHasNext) {
             <div class="tx-load-more">
               <button
@@ -835,22 +975,20 @@
                   <span class="spinner"></span> Loading...
                 } @else {
                   See More
-                  <span class="tx-remaining">
-                    ({{ transactionTotalCount - transactions.length }} remaining)
-                  </span>
+                  <span class="tx-remaining"
+                    >({{ transactionTotalCount - transactions.length }} remaining)</span
+                  >
                 }
               </button>
             </div>
           }
 
-          <!-- End of records -->
           @if (!transactionHasNext) {
             <div class="tx-end">— End of transactions —</div>
           }
         }
       </div>
 
-      <!-- Footer -->
       <div class="modal-footer">
         <button class="btn-cancel" (click)="closeTransactionModal()">Close</button>
       </div>

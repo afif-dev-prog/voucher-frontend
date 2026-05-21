@@ -52,6 +52,12 @@ export class Managestudent {
   errorMessage = '';
   searchQuery = '';
 
+  // ── Transaction date filter ────────────────────
+  txDateFrom = '';
+  txDateTo = '';
+  txFiltered = false;
+  allTransactions: any[] = [];
+
   // Pagination
   currentPage = 1;
   readonly pageSize = 10;
@@ -166,6 +172,37 @@ export class Managestudent {
     this.currentPage = 1;
     // this.applyFilterAndPaginate();
     this.loadStudentList();
+  }
+
+  applyTxFilter(): void {
+    this.txFiltered = !!(this.txDateFrom || this.txDateTo);
+
+    if (!this.txFiltered) {
+      this.transactions = [...this.allTransactions];
+      return;
+    }
+
+    const from = this.txDateFrom ? Math.floor(new Date(this.txDateFrom).getTime() / 1000) : null;
+    const to = this.txDateTo
+      ? Math.floor(new Date(this.txDateTo + 'T23:59:59').getTime() / 1000)
+      : null;
+
+    this.transactions = this.allTransactions.filter((tx) => {
+      const ts = tx.pay_date; // already unix
+      if (from && ts < from) return false;
+      if (to && ts > to) return false;
+      return true;
+    });
+
+    this.cdr.markForCheck();
+  }
+
+  clearTxFilter(): void {
+    this.txDateFrom = '';
+    this.txDateTo = '';
+    this.txFiltered = false;
+    this.transactions = [...this.allTransactions];
+    this.cdr.markForCheck();
   }
 
   // Pagination
@@ -502,6 +539,9 @@ export class Managestudent {
     this.transactionPage = 1;
     this.transactionTotalCount = 0;
     this.transactionHasNext = false;
+    this.txDateFrom = '';
+    this.txDateTo = '';
+    this.txFiltered = false;
     this.showTransactionModal = true;
     this.loadTransactions();
   }
@@ -528,11 +568,11 @@ export class Managestudent {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          this.transactions = response?.data;
-          // console.log(this.transactions);
+          this.allTransactions = response?.data ?? [];
           this.transactionTotalCount = response?.pagination?.totalCount;
           this.transactionHasNext = response?.pagination?.hasNext;
           this.transactionPage = 1;
+          this.applyTxFilter(); // apply filter after load
           this.isLoadingTransactions = false;
           this.cdr.markForCheck();
         },
@@ -542,10 +582,8 @@ export class Managestudent {
         },
       });
   }
-
   loadMoreTransactions(): void {
     if (!this.transactionHasNext || this.isLoadingMoreTransactions) return;
-
     this.isLoadingMoreTransactions = true;
     const nextPage = this.transactionPage + 1;
 
@@ -554,9 +592,10 @@ export class Managestudent {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          this.transactions = [...this.transactions, ...response.data]; // append
+          this.allTransactions = [...this.allTransactions, ...response.data];
           this.transactionHasNext = response.pagination.hasNext;
           this.transactionPage = nextPage;
+          this.applyTxFilter(); // re-apply filter on new batch
           this.isLoadingMoreTransactions = false;
           this.cdr.markForCheck();
         },
