@@ -278,6 +278,7 @@ export class Studentscan implements OnInit, OnDestroy {
     this.payAmountCents = 0; // ← reset on new scan
     this.payAmount = 0;
     this.cdr.markForCheck();
+    console.log(data);
 
     this.sellerService
       .getSellerList(1, 10, data)
@@ -286,10 +287,12 @@ export class Studentscan implements OnInit, OnDestroy {
         next: (res: any) => {
           const sellers = res?.pagination?.data || res?.data || [];
           const totalCount = res?.pagination?.totalCount;
+          console.log(sellers);
 
           if (totalCount === 1 && sellers.length > 0) {
             const seller = sellers[0];
             this.scannedSellerId = seller.s_id; // adjust to your actual field names
+            console.log(this.scannedSellerId);
             this.scannedSellerName = seller.s_name || seller.username;
             this.scannedSellerUsername = seller.username; // ← store username
             this.isValidatingSeller = false;

@@ -1,8 +1,9 @@
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { Staff } from '../../../services/staff';
-import { Subject, takeUntil } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Seller } from '../../../services/seller';
 
 interface CorrectionRow {
   student_id: string;
@@ -22,6 +23,7 @@ interface CorrectionRow {
 })
 export class WrongCredit {
   private staffService = inject(Staff);
+  private sellerService = inject(Seller);
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
@@ -34,6 +36,15 @@ export class WrongCredit {
   // ── Bulk ID input ──────────────────────
   bulkIdInput = '';
   rows: CorrectionRow[] = [];
+
+  // ── Seller dropdown ────────────────────
+  sellerDropdownOpen = false;
+  sellerSearch = '';
+  sellerList: any[] = [];
+  sellerLoading = false;
+  selectedSellerDisplay = '';
+  private sellerSearchSubject = new Subject<string>();
+  private sellerDropdownEl: any = null;
 
   // ── Submission ─────────────────────────
   isProcessing = false;
@@ -240,10 +251,79 @@ export class WrongCredit {
     this.failCount = 0;
     this.globalError = '';
     this.cdr.markForCheck();
+    this.selectedSellerDisplay = '';
+    this.sellerDropdownOpen = false;
+    this.sellerSearch = '';
+    this.sellerList = [];
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+  ngOnInit(): void {
+    this.sellerSearchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((search) => {
+        this.fetchSellers(search);
+      });
+  }
+
+  openSellerDropdown(): void {
+    this.sellerDropdownOpen = true;
+    this.sellerSearch = '';
+    this.fetchSellers('');
+    this.cdr.markForCheck();
+  }
+
+  closeSellerDropdown(): void {
+    this.sellerDropdownOpen = false;
+    this.cdr.markForCheck();
+  }
+
+  onSellerSearchInput(value: string): void {
+    this.sellerSearch = value;
+    this.sellerSearchSubject.next(value);
+  }
+
+  fetchSellers(search: string): void {
+    this.sellerLoading = true;
+    this.cdr.markForCheck();
+
+    const call =
+      this.activeTab === 'finance'
+        ? this.staffService.getStaffListPaginated(1, 20, search)
+        : this.sellerService.getSellerList(1, 20, search);
+
+    call.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res: any) => {
+        this.sellerList = res?.data ?? [];
+        this.sellerLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.sellerList = [];
+        this.sellerLoading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  selectSeller(item: any): void {
+    if (this.activeTab === 'finance') {
+      this.sharedSellerName = item.staff_id; // payload
+      this.selectedSellerDisplay = item.s_name; // display
+    } else {
+      this.sharedSellerName = item.username; // payload
+      this.selectedSellerDisplay = item.s_name; // display
+    }
+    this.sellerDropdownOpen = false;
+    this.cdr.markForCheck();
+  }
+
+  clearSeller(): void {
+    this.sharedSellerName = '';
+    this.selectedSellerDisplay = '';
+    this.cdr.markForCheck();
   }
 }
