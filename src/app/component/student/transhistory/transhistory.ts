@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { Student } from '../../../services/student';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Auth } from '../../../services/auth';
+import { FormsModule } from '@angular/forms';
 
 interface PaginationMetadata {
   currentPage: number;
@@ -32,7 +33,7 @@ interface PagedResult<T> {
 }
 @Component({
   selector: 'app-transhistory',
-  imports: [DatePipe, CommonModule],
+  imports: [DatePipe, CommonModule, FormsModule],
   templateUrl: './transhistory.html',
   styleUrl: './transhistory.css',
 })
@@ -46,6 +47,17 @@ export class Transhistory implements OnInit {
   isLoadingMore: boolean = false;
   errorMessage: string = '';
   studentId: string = ''; // replace with actual student ID logic
+
+  // ── Date filter ────────────────────
+  txDateFrom = '';
+  txDateTo = '';
+  txFiltered = false;
+  allTransactions: PayHistory[] = [];
+  filteredTransactions: PayHistory[] = [];
+
+  // ── Detail sheet ────────────────────
+  selectedTx: PayHistory | null = null;
+  showDetail = false;
   private cdr = inject(ChangeDetectorRef);
   constructor() {
     this.studentId = this.auth.getUserId();
@@ -62,33 +74,32 @@ export class Transhistory implements OnInit {
   loadTransactions(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    // console.log(this.studentId);
 
     this.studentService
       .getTransactionsPaginated(this.studentId, this.currentPage, this.pageSize)
       .subscribe({
         next: (res) => {
           if (res.success) {
-            this.transactions = res.data;
-            // console.log(this.transactions);
-            this.cdr.markForCheck();
+            this.allTransactions = res.data;
             this.pagination = res.pagination;
             this.currentPage = 1;
+            this.applyFilter();
           } else {
             this.errorMessage = res.message;
           }
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
-        error: (err) => {
+        error: () => {
           this.errorMessage = 'Failed to load transactions.';
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
       });
   }
 
   loadMore(): void {
     if (!this.pagination?.hasNext || this.isLoadingMore) return;
-
     this.isLoadingMore = true;
     const nextPage = this.currentPage + 1;
 
@@ -97,17 +108,62 @@ export class Transhistory implements OnInit {
       .subscribe({
         next: (res) => {
           if (res.success) {
-            this.transactions = [...this.transactions, ...res.data]; // append, not replace
+            this.allTransactions = [...this.allTransactions, ...res.data];
             this.pagination = res.pagination;
-            this.cdr.markForCheck();
             this.currentPage = nextPage;
+            this.applyFilter();
           }
           this.isLoadingMore = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.isLoadingMore = false;
+          this.cdr.markForCheck();
         },
       });
+  }
+
+  applyFilter(): void {
+    this.txFiltered = !!(this.txDateFrom || this.txDateTo);
+
+    if (!this.txFiltered) {
+      this.filteredTransactions = [...this.allTransactions];
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const from = this.txDateFrom ? Math.floor(new Date(this.txDateFrom).getTime() / 1000) : null;
+    const to = this.txDateTo
+      ? Math.floor(new Date(this.txDateTo + 'T23:59:59').getTime() / 1000)
+      : null;
+
+    this.filteredTransactions = this.allTransactions.filter((tx) => {
+      if (from && tx.pay_date < from) return false;
+      if (to && tx.pay_date > to) return false;
+      return true;
+    });
+
+    this.cdr.markForCheck();
+  }
+
+  clearFilter(): void {
+    this.txDateFrom = '';
+    this.txDateTo = '';
+    this.txFiltered = false;
+    this.filteredTransactions = [...this.allTransactions];
+    this.cdr.markForCheck();
+  }
+
+  openDetail(tx: PayHistory): void {
+    this.selectedTx = tx;
+    this.showDetail = true;
+    this.cdr.markForCheck();
+  }
+
+  closeDetail(): void {
+    this.showDetail = false;
+    this.selectedTx = null;
+    this.cdr.markForCheck();
   }
 
   // For double-entry: credit = admin top-up received
