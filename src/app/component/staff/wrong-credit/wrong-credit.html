@@ -154,12 +154,103 @@
                 }
                 <span class="wc-req">*</span>
               </label>
-              <input
-                class="wc-input"
-                type="text"
-                [placeholder]="activeTab === 'finance' ? 'e.g. Siti Khadijah' : 'e.g. Kantin A'"
-                [(ngModel)]="sharedSellerName"
-              />
+
+              <div class="seller-dropdown-wrapper">
+                <!-- Trigger button -->
+                @if (!selectedSellerDisplay) {
+                  <button class="seller-trigger" (click)="openSellerDropdown()">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="13"
+                      height="13"
+                      fill="#9ca3af"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"
+                      />
+                    </svg>
+                    <span class="seller-trigger-placeholder">Search seller...</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="12"
+                      fill="#9ca3af"
+                      viewBox="0 0 16 16"
+                      style="margin-left: auto"
+                    >
+                      <path
+                        d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
+                      />
+                    </svg>
+                  </button>
+                } @else {
+                  <div class="seller-selected">
+                    <div class="seller-selected-info">
+                      <span class="seller-selected-name">{{ selectedSellerDisplay }}</span>
+                      <span class="seller-selected-username">
+                        @if (activeTab === 'finance') {
+                          {{ sharedSellerName }}
+                        } @else {
+                          @{{ sharedSellerName }}
+                        }
+                      </span>
+                    </div>
+                    <button class="seller-clear" (click)="clearSeller()">✕</button>
+                  </div>
+                }
+
+                <!-- Dropdown panel -->
+                @if (sellerDropdownOpen) {
+                  <div class="modal-backdrop seller-backdrop" (click)="closeSellerDropdown()"></div>
+                  <div class="seller-panel">
+                    <div class="seller-search-wrap">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="13"
+                        height="13"
+                        fill="#9ca3af"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"
+                        />
+                      </svg>
+                      <input
+                        class="seller-search-input"
+                        type="text"
+                        placeholder="Type to search..."
+                        [value]="sellerSearch"
+                        (input)="onSellerSearchInput($any($event.target).value)"
+                        autofocus
+                      />
+                    </div>
+                    <div class="seller-list">
+                      @if (sellerLoading) {
+                        <div class="seller-empty">
+                          <span class="spinner spinner-sm spinner-blue"></span>
+                          Loading...
+                        </div>
+                      } @else if (sellerList.length === 0) {
+                        <div class="seller-empty">No sellers found</div>
+                      } @else {
+                        @for (item of sellerList; track $index) {
+                          <button class="seller-item" (click)="selectSeller(item)">
+                            <span class="seller-item-name">{{ item.s_name }}</span>
+                            @if (activeTab === 'finance') {
+                              <span class="seller-item-username"
+                                >{{ item.staff_id }} · {{ item.s_designation }}</span
+                              >
+                            } @else {
+                              <span class="seller-item-username">@{{ item.username }}</span>
+                            }
+                          </button>
+                        }
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
           </div>
 
@@ -269,9 +360,104 @@
         </div>
       </div>
 
-      <!-- Preview table — same for both tabs -->
       @if (rows.length > 0) {
-        <!-- ... your existing preview table unchanged ... -->
+        <div class="wc-card preview">
+          <div class="wc-card-header">
+            <h3 class="wc-card-title">
+              Preview
+              <span class="wc-count-badge">{{ rows.length }} students</span>
+            </h3>
+            <button class="btn-proceed" [disabled]="!canSubmit" (click)="openConfirm()">
+              Submit Corrections
+            </button>
+          </div>
+          <div class="wc-table-wrapper">
+            <table class="wc-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Student ID</th>
+                  <th>Wrong Amt</th>
+                  <th>Correct Amt</th>
+                  <th>{{ activeTab === 'finance' ? 'Finance Staff' : 'Seller' }}</th>
+                  <th>Net Change</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of rows; track $index) {
+                  <tr>
+                    <td class="wc-row-num">{{ $index + 1 }}</td>
+                    <td class="wc-row-id">{{ row.student_id }}</td>
+                    <td>
+                      @if (useSharedValues) {
+                        RM {{ row.wrong_amount | number: '1.2-2' }}
+                      } @else {
+                        <div class="wc-input-prefix sm">
+                          <span class="prefix">RM</span>
+                          <input
+                            class="wc-input sm"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            [(ngModel)]="row.wrong_amount"
+                            (ngModelChange)="updateRowDiff(row)"
+                          />
+                        </div>
+                      }
+                    </td>
+                    <td>
+                      @if (useSharedValues) {
+                        RM {{ row.exact_amount | number: '1.2-2' }}
+                      } @else {
+                        <div class="wc-input-prefix sm">
+                          <span class="prefix">RM</span>
+                          <input
+                            class="wc-input sm"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            [(ngModel)]="row.exact_amount"
+                            (ngModelChange)="updateRowDiff(row)"
+                          />
+                        </div>
+                      }
+                    </td>
+                    <td>
+                      @if (useSharedValues) {
+                        {{ row.seller_name }}
+                      } @else {
+                        <input
+                          class="wc-input"
+                          type="text"
+                          style="padding-left: 10px"
+                          [(ngModel)]="row.seller_name"
+                        />
+                      }
+                    </td>
+                    <td>
+                      @if (row.difference != null) {
+                        <span
+                          class="wc-diff-chip"
+                          [class.positive]="row.difference >= 0"
+                          [class.negative]="row.difference < 0"
+                        >
+                          {{ row.difference >= 0 ? '+' : '' }}RM
+                          {{ row.difference | number: '1.2-2' }}
+                        </span>
+                      } @else {
+                        <span class="wc-dash">—</span>
+                      }
+                    </td>
+                    <td>
+                      <button class="btn-remove-row" (click)="removeRow($index)">✕</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
       }
     </div>
   }

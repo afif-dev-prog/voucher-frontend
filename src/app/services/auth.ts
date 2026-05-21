@@ -136,27 +136,6 @@ export class Auth {
     return this.http.post(`${this.apiUrl}/validate`, {});
   }
 
-  // ── Redirect after login ───────────────
-  // redirectByRole(): void {
-  //   const role = this.getRole();
-  //   switch (role) {
-  //     case 'STUDENT':
-  //       this.router.navigate(['/student']);
-  //       break;
-  //     case 'SELLER':
-  //       this.router.navigate(['/seller']);
-  //       break;
-  //     case 'FINANCE':
-  //       this.router.navigate(['/finance']);
-  //       break;
-  //     case 'SUPERADMIN':
-  //       this.router.navigate(['/admin']);
-  //       break;
-  //     default:
-  //       this.router.navigate(['/login']);
-  //       break;
-  //   }
-  // }
   redirectByRole(): void {
     const role = this.getRole();
     switch (role) {
