@@ -2,13 +2,17 @@
 :host {
   display: block;
   width: 100%;
-  height: 100vh;
+  /* height: 100vh;s */
 }
 .student-list-wrapper {
+  display: flex;
+  flex-direction: column;
   max-width: 960px;
   margin: 0 auto;
   padding: 24px 16px;
   margin-top: 40px;
+  height: calc(100vh - 90px);
+
   font-family: 'Segoe UI', sans-serif;
 }
 
@@ -996,21 +1000,22 @@ table th {
     display: none;
   }
 
-  .student-list-wrapper {
+  /* .student-list-wrapper {
     margin-top: 0;
-  }
+  } */
   .student-cards {
     display: flex;
-    height: 420px;
-    padding-bottom: 40px;
-    overflow-y: scroll;
+    height: calc(100vh - 90px);
+    padding-bottom: 100px;
+    padding-top: 10px;
+    overflow-y: auto;
   }
-  .student-list-wrapper {
+  /* .student-list-wrapper {
     padding: 16px 12px;
     max-height: 700px;
     margin-top: 10px;
     margin-bottom: 40px;
-  }
+  } */
   .header-right {
     width: 100%;
     flex-direction: column;
@@ -1033,11 +1038,12 @@ table th {
     padding: 10px 10px;
     font-size: 0.84rem;
   }
-  .search-input {
-    width: 220px;
-  }
+
   .student-list-wrapper {
     padding: 16px 12px;
+  }
+  .search-input {
+    width: 100%;
   }
 }
 .temp-password-box {
@@ -1576,7 +1582,7 @@ table th {
 }
 .tx-filter-input:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 .tx-filter-actions {
   display: flex;
@@ -1597,8 +1603,13 @@ table th {
   cursor: pointer;
   white-space: nowrap;
 }
-.btn-tx-filter:hover:not(:disabled) { background: #1d4ed8; }
-.btn-tx-filter:disabled { background: #93c5fd; cursor: not-allowed; }
+.btn-tx-filter:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+.btn-tx-filter:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+}
 .btn-tx-clear {
   padding: 7px 14px;
   background: #fee2e2;
@@ -1609,7 +1620,9 @@ table th {
   font-weight: 600;
   cursor: pointer;
 }
-.btn-tx-clear:hover { background: #fecaca; }
+.btn-tx-clear:hover {
+  background: #fecaca;
+}
 
 .tx-filter-badge {
   font-size: 0.8rem;
@@ -1655,8 +1668,12 @@ table th {
   background: #fff;
   gap: 10px;
 }
-.tx-card-credit { border-left: 3px solid #16a34a; }
-.tx-card-debit  { border-left: 3px solid #d97706; }
+.tx-card-credit {
+  border-left: 3px solid #16a34a;
+}
+.tx-card-debit {
+  border-left: 3px solid #d97706;
+}
 
 .tx-card-left {
   display: flex;
@@ -1674,8 +1691,14 @@ table th {
   justify-content: center;
   flex-shrink: 0;
 }
-.icon-credit { background: #dcfce7; color: #16a34a; }
-.icon-debit  { background: #fef3c7; color: #d97706; }
+.icon-credit {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.icon-debit {
+  background: #fef3c7;
+  color: #d97706;
+}
 
 .tx-card-info {
   display: flex;
@@ -1701,8 +1724,12 @@ table th {
   white-space: nowrap;
   flex-shrink: 0;
 }
-.amount-credit { color: #16a34a; }
-.amount-debit  { color: #d97706; }
+.amount-credit {
+  color: #16a34a;
+}
+.amount-debit {
+  color: #d97706;
+}
 
 /* Skeleton card */
 .tx-card-skeleton {
@@ -1714,8 +1741,16 @@ table th {
 
 /* Responsive — swap table → cards on mobile */
 @media screen and (max-width: 600px) {
-  .tx-table-wrapper { display: none; }
-  .tx-cards { display: flex; }
-  .tx-balance-amount { font-size: 1.25rem; }
-  .modal-box-lg { max-width: 100%; }
+  .tx-table-wrapper {
+    display: none;
+  }
+  .tx-cards {
+    display: flex;
+  }
+  .tx-balance-amount {
+    font-size: 1.25rem;
+  }
+  .modal-box-lg {
+    max-width: 100%;
+  }
 }
