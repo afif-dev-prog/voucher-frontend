@@ -46,7 +46,8 @@ export class Scantopay implements OnInit, OnDestroy {
 
   constructor() {
     this.sellerUsername = this.auth.getUserId();
-    // console.log(this.sellerUsername);
+
+    console.log(this.sellerUsername);
   }
 
   // Tabs
@@ -112,7 +113,8 @@ export class Scantopay implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.sellerName = this.auth.getName();
-    console.log(this.auth.getUserId());
+    // console.log(this.auth.getUserId());
+    console.log(this.sellerName);
 
     this.loadSellerData();
     if (this.activeTab === 'scan') {
@@ -839,14 +841,14 @@ export class Scantopay implements OnInit, OnDestroy {
 
   loadSellerData(): void {
     this.sellerService
-      .getSellerList(1, 10, this.sellerName)
+      .getSellerList(1, 10, this.sellerUsername)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
           if (res?.data?.length > 0) {
             this.sellerRes = res.data[0];
             this.sellerId = this.sellerRes.s_id;
-            // console.log('✅ Seller ID:', this.sellerId);
+            console.log('✅ Seller ID:', this.sellerId);
             this.loadSellerQr(); // ← only called AFTER sellerId is set
           } else {
             // console.warn('⚠️ No seller found for name:', this.sellerName);
