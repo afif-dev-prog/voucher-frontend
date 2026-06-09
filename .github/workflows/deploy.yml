@@ -9,9 +9,6 @@ jobs:
   build-and-deploy:
     runs-on: self-hosted
 
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,7 +16,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '26'
 
       - name: Install dependencies
         run: npm install
@@ -29,5 +26,5 @@ jobs:
 
       - name: Deploy
         run: |
-          cp -r dist/voucher_webapp2.0/* /usr/share/nginx/html/fvs
+          cp -r dist/voucher_webapp2.0_refresh/* /usr/share/nginx/html/fvs
           sudo systemctl reload nginx
