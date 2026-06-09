@@ -57,4 +57,42 @@ export class PermissionsService {
       .post<any>(`${this.apiUrl}/seed`, {})
       .pipe(catchError(() => of({ success: false })));
   }
+
+  getAllRoles(): Observable<any> {
+    return this.http
+      .get<any>(`${this.apiUrl}/roles`)
+      .pipe(catchError(() => of({ success: false, data: [] })));
+  }
+
+  addPermission(data: {
+    code: string;
+    label: string;
+    module: string;
+    description: string;
+  }): Observable<any> {
+    return this.http
+      .post<any>(`${this.apiUrl}`, data)
+      .pipe(catchError((err) => of({ success: false, message: err?.error?.message })));
+  }
+
+  editPermission(
+    id: string,
+    data: { label: string; module: string; description: string },
+  ): Observable<any> {
+    return this.http
+      .put<any>(`${this.apiUrl}/${id}`, data)
+      .pipe(catchError((err) => of({ success: false, message: err?.error?.message })));
+  }
+
+  deletePermission(id: string): Observable<any> {
+    return this.http
+      .delete<any>(`${this.apiUrl}/${id}`)
+      .pipe(catchError((err) => of({ success: false, message: err?.error?.message })));
+  }
+
+  deleteRole(role: string): Observable<any> {
+    return this.http
+      .delete<any>(`${this.apiUrl}/role/${role}`)
+      .pipe(catchError((err) => of({ success: false, message: err?.error?.message })));
+  }
 }

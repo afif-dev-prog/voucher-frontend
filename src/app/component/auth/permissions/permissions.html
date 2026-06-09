@@ -44,6 +44,13 @@
       <button class="perm-tab" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
         👤 User Overrides
       </button>
+      <button
+        class="perm-tab"
+        [class.active]="activeTab === 'manage'"
+        (click)="activeTab = 'manage'"
+      >
+        🔧 Manage Permissions
+      </button>
     </div>
 
     <!-- ══ ROLE TAB ══ -->
@@ -297,6 +304,162 @@
             </div>
           }
         }
+      </div>
+    }
+    @if (activeTab === 'manage') {
+      <div class="perm-content">
+        <!-- Permissions CRUD -->
+        <div class="manage-section">
+          <div class="manage-section-header">
+            <div>
+              <h3 class="manage-title">Permissions</h3>
+              <p class="manage-sub">Add, edit, or remove individual permissions</p>
+            </div>
+            <button
+              class="btn-add"
+              (click)="
+                isAddingPerm = !isAddingPerm;
+                editingPerm = null;
+                newPerm = { code: '', label: '', module: '', description: '' }
+              "
+            >
+              + New Permission
+            </button>
+          </div>
+
+          @if (permSaveSuccess) {
+            <span class="save-success">✅ {{ permSaveSuccess }}</span>
+          }
+
+          @if (isAddingPerm) {
+            <div class="perm-form-card">
+              <div class="perm-form-grid">
+                <div class="form-field">
+                  <label>Code</label>
+                  <input
+                    class="user-search-input"
+                    [(ngModel)]="newPerm.code"
+                    [disabled]="!!editingPerm"
+                    placeholder="e.g. VIEW_REPORTS"
+                    style="text-transform: uppercase"
+                  />
+                </div>
+                <div class="form-field">
+                  <label>Label</label>
+                  <input
+                    class="user-search-input"
+                    [(ngModel)]="newPerm.label"
+                    placeholder="Display name"
+                  />
+                </div>
+                <div class="form-field">
+                  <label>Module</label>
+                  <input
+                    class="user-search-input"
+                    [(ngModel)]="newPerm.module"
+                    placeholder="e.g. REPORTS"
+                    style="text-transform: uppercase"
+                  />
+                </div>
+                <div class="form-field">
+                  <label>Description</label>
+                  <input
+                    class="user-search-input"
+                    [(ngModel)]="newPerm.description"
+                    placeholder="Optional"
+                  />
+                </div>
+              </div>
+              @if (permSaveError) {
+                <p class="save-error">⚠️ {{ permSaveError }}</p>
+              }
+              <div style="display: flex; gap: 8px; margin-top: 12px">
+                <button class="btn-save-perms" (click)="savePerm()" [disabled]="isSavingPerm">
+                  @if (isSavingPerm) {
+                    <span class="spinner spinner-white"></span> Saving...
+                  } @else {
+                    💾 {{ editingPerm ? 'Update' : 'Add Permission' }}
+                  }
+                </button>
+                <button class="btn-cancel" (click)="isAddingPerm = false; editingPerm = null">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Permissions table -->
+          <div class="perm-manage-table">
+            @for (perm of allPermissions; track perm.id) {
+              <div class="perm-manage-row">
+                <span class="perm-group-icon">{{ getModuleIcon(perm.module) }}</span>
+                <div class="perm-info" style="flex: 1">
+                  <span class="perm-label">{{ perm.label }}</span>
+                  <span class="perm-code">{{ perm.code }} · {{ perm.module }}</span>
+                </div>
+                <button class="btn-group-toggle" (click)="startEditPerm(perm)">✏️ Edit</button>
+                <button
+                  class="btn-group-toggle btn-danger-subtle"
+                  (click)="deletePerm(perm.id)"
+                  [disabled]="deletingPermId === perm.id"
+                >
+                  @if (deletingPermId === perm.id) {
+                    ...
+                  } @else {
+                    🗑️
+                  }
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Roles CRUD -->
+        <div class="manage-section">
+          <div class="manage-section-header">
+            <div>
+              <h3 class="manage-title">Roles</h3>
+              <p class="manage-sub">Add or remove roles from the system</p>
+            </div>
+            <button class="btn-add" (click)="isAddingRole = !isAddingRole">+ New Role</button>
+          </div>
+
+          @if (isAddingRole) {
+            <div
+              class="perm-form-card"
+              style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"
+            >
+              <input
+                class="user-search-input"
+                [(ngModel)]="newRoleName"
+                placeholder="Role name e.g. SUPERVISOR"
+                style="text-transform: uppercase; flex: 1; min-width: 160px"
+                (keydown.enter)="saveNewRole()"
+              />
+              <button class="btn-save-perms" (click)="saveNewRole()">Add Role</button>
+              <button class="btn-cancel" (click)="isAddingRole = false; newRoleName = ''">
+                Cancel
+              </button>
+            </div>
+          }
+
+          <div class="perm-manage-table">
+            @for (role of allRoles; track role) {
+              <div class="perm-manage-row">
+                <span class="perm-group-icon">🏷️</span>
+                <div class="perm-info" style="flex: 1">
+                  <span class="perm-label">{{ role }}</span>
+                </div>
+                <button class="btn-group-toggle" (click)="selectedRole = role; activeTab = 'roles'">
+                  ⚙️ Edit Permissions
+                </button>
+                <button class="btn-group-toggle btn-danger-subtle" (click)="deleteRole(role)">
+                  🗑️ Delete
+                </button>
+              </div>
+            }
+          </div>
+        </div>
       </div>
     }
   }
