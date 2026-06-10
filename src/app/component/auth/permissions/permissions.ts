@@ -11,17 +11,18 @@ interface Permission {
   code: string;
   label: string;
   module: string;
+  description?: string;
 }
 
 interface PermissionItem extends Permission {
   granted: boolean;
-  isOverride?: boolean; // ← add
-  fromRole?: boolean; // ← add
+  isOverride?: boolean;
+  fromRole?: boolean;
 }
 
 interface PermissionGroup {
   module: string;
-  permissions: PermissionItem[]; // ← use PermissionItem instead of Permission & { granted: boolean }
+  permissions: PermissionItem[];
 }
 
 @Component({
@@ -36,34 +37,12 @@ export class Permissions {
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
-  // ── Modal state ───────────────────────────
-  showEditModal = false;
-  showDeleteModal = false;
-  deletingPerm: Permission | null = null;
-  isConfirmingDelete = false;
-  deleteError = '';
-
   // ── Tabs ──────────────────────────────
   activeTab: 'roles' | 'users' | 'manage' = 'roles';
 
   // ── All permissions ───────────────────
   allPermissions: Permission[] = [];
   isLoadingPerms = false;
-
-  // Manage Permissions tab
-  allRoles: string[] = [];
-  isAddingPerm = false;
-  isSavingPerm = false;
-  editingPerm: Permission | null = null;
-  deletingPermId: string | null = null;
-  newPerm = { code: '', label: '', module: '', description: '' };
-  permSaveError = '';
-  permSaveSuccess = '';
-
-  // Add Role modal
-  isAddingRole = false;
-  newRoleName = '';
-  addRoleError = '';
 
   // ── Role tab ──────────────────────────
   selectedRole = 'STUDENT';
@@ -82,7 +61,6 @@ export class Permissions {
 
   // ── User override tab ─────────────────
   userSearchQuery = '';
-  userSearchResults: any[] = [];
   selectedUser: any = null;
   selectedUserType = '';
   userGroups: PermissionGroup[] = [];
@@ -91,51 +69,69 @@ export class Permissions {
   userSaveSuccess = false;
   userSaveError = '';
 
+  // ── Manage tab ────────────────────────
+  allRoles: string[] = [];
+  newPerm = { code: '', label: '', module: '', description: '' };
+  isSavingPerm = false;
+  editingPerm: Permission | null = null;
+  permSaveError = '';
+
+  isAddingRole = false;
+  newRoleName = '';
+
   // ── Seed ──────────────────────────────
   isSeeding = false;
   seedSuccess = false;
   seedError = '';
 
-  ngOnInit(): void {
-    this.loadAllPermissions();
+  // ── Modal: Add Permission ─────────────
+  showAddPermModal = false;
+
+  openAddPermModal(): void {
+    this.editingPerm = null;
+    this.newPerm = { code: '', label: '', module: '', description: '' };
+    this.permSaveError = '';
+    this.showAddPermModal = true;
+    this.cdr.markForCheck();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  closeAddPermModal(): void {
+    this.showAddPermModal = false;
+    this.editingPerm = null;
+    this.newPerm = { code: '', label: '', module: '', description: '' };
+    this.permSaveError = '';
+    this.cdr.markForCheck();
   }
 
-  // ── Load permissions master list ──────
-  loadAllPermissions(): void {
-    this.isLoadingPerms = true;
-    forkJoin({
-      perms: this.permService.getAllPermissions(),
-      roles: this.permService.getAllRoles(),
-    })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: ({ perms, roles }: any) => {
-          this.allPermissions = perms.data || [];
-          // Merge DB roles with hardcoded ones
-          const dbRoles: string[] = roles.data || [];
-          const merged = [...new Set([...this.roles.map((r) => r.value), ...dbRoles])];
-          // Sync roles array
-          this.allRoles = merged;
-          this.isLoadingPerms = false;
-          if (this.allPermissions.length > 0) this.loadRolePermissions(this.selectedRole);
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.isLoadingPerms = false;
-          this.cdr.markForCheck();
-        },
-      });
+  // ── Modal: Edit Permission ────────────
+  showEditModal = false;
+
+  startEditPerm(perm: Permission): void {
+    this.editingPerm = perm;
+    this.newPerm = {
+      code: perm.code,
+      label: perm.label,
+      module: perm.module,
+      description: perm.description || '',
+    };
+    this.permSaveError = '';
+    this.showEditModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeEditModal(): void {
+    this.showEditModal = false;
+    this.editingPerm = null;
+    this.newPerm = { code: '', label: '', module: '', description: '' };
+    this.permSaveError = '';
+    this.cdr.markForCheck();
   }
 
   savePerm(): void {
     if (!this.newPerm.code || !this.newPerm.label || !this.newPerm.module) return;
     this.isSavingPerm = true;
     this.permSaveError = '';
+
     const obs = this.editingPerm
       ? this.permService.editPermission(this.editingPerm.id, this.newPerm)
       : this.permService.addPermission(this.newPerm);
@@ -143,10 +139,8 @@ export class Permissions {
     obs.pipe(takeUntil(this.destroy$)).subscribe({
       next: (res: any) => {
         if (res.success !== false) {
-          this.permSaveSuccess = this.editingPerm ? 'Permission updated!' : 'Permission added!';
-          this.isAddingPerm = false;
-          this.editingPerm = null;
-          this.newPerm = { code: '', label: '', module: '', description: '' };
+          this.closeEditModal();
+          this.closeAddPermModal();
           this.loadAllPermissions();
         } else {
           this.permSaveError = res.message || 'Failed.';
@@ -162,62 +156,134 @@ export class Permissions {
     });
   }
 
-  startEditPerm(perm: Permission): void {
-    this.editingPerm = perm;
-    this.newPerm = {
-      code: perm.code,
-      label: perm.label,
-      module: perm.module,
-      description: (perm as any).description || '',
-    };
-    this.permSaveError = '';
-    this.permSaveSuccess = '';
-    this.showEditModal = true;
+  // ── Modal: Delete Permission ──────────
+  showDeleteModal = false;
+  deletingPerm: Permission | null = null;
+  isConfirmingDelete = false;
+  deleteError = '';
+
+  confirmDeletePerm(perm: Permission): void {
+    this.deletingPerm = perm;
+    this.deleteError = '';
+    this.showDeleteModal = true;
     this.cdr.markForCheck();
   }
 
-  deletePerm(id: string): void {
-    this.deletingPermId = id;
+  closeDeleteModal(): void {
+    this.showDeleteModal = false;
+    this.deletingPerm = null;
+    this.deleteError = '';
+    this.isConfirmingDelete = false;
+    this.cdr.markForCheck();
+  }
+
+  deletePerm(): void {
+    if (!this.deletingPerm) return;
+    this.isConfirmingDelete = true;
     this.permService
-      .deletePermission(id)
+      .deletePermission(this.deletingPerm.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
-          this.deletingPermId = null;
-          this.loadAllPermissions();
+        next: (res: any) => {
+          if (res.success !== false) {
+            this.closeDeleteModal();
+            this.loadAllPermissions();
+          } else {
+            this.deleteError = res.message || 'Failed to delete.';
+          }
+          this.isConfirmingDelete = false;
           this.cdr.markForCheck();
         },
         error: () => {
-          this.deletingPermId = null;
+          this.deleteError = 'Something went wrong.';
+          this.isConfirmingDelete = false;
           this.cdr.markForCheck();
         },
       });
   }
 
-  saveNewRole(): void {
-    const role = this.newRoleName.trim().toUpperCase();
-    if (!role) return;
-    // Save with empty permission set — role becomes real when permissions assigned
+  // ── Modal: Delete Role ────────────────
+  showDeleteRoleModal = false;
+  deletingRole: string | null = null;
+  isDeletingRole = false;
+  deleteRoleError = '';
+
+  confirmDeleteRole(role: string): void {
+    this.deletingRole = role;
+    this.deleteRoleError = '';
+    this.showDeleteRoleModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeDeleteRoleModal(): void {
+    this.showDeleteRoleModal = false;
+    this.deletingRole = null;
+    this.deleteRoleError = '';
+    this.isDeletingRole = false;
+    this.cdr.markForCheck();
+  }
+
+  deleteRole(): void {
+    if (!this.deletingRole) return;
+    this.isDeletingRole = true;
     this.permService
-      .setRolePermissions(role, [], this.auth.getUserId())
+      .deleteRole(this.deletingRole)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
-          this.isAddingRole = false;
-          this.newRoleName = '';
-          this.loadAllPermissions();
+        next: (res: any) => {
+          if (res.success !== false) {
+            this.closeDeleteRoleModal();
+            this.loadAllPermissions();
+          } else {
+            this.deleteRoleError = res.message || 'Failed to delete role.';
+          }
+          this.isDeletingRole = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.deleteRoleError = 'Something went wrong.';
+          this.isDeletingRole = false;
           this.cdr.markForCheck();
         },
       });
   }
 
-  deleteRole(role: string): void {
-    this.permService
-      .deleteRole(role)
+  // ── Getter: merged role objects for templates ──
+  get allRoleObjects(): { value: string; label: string; icon: string }[] {
+    const hardcodedValues = this.roles.map((r) => r.value);
+    const extraRoles = this.allRoles.filter((r) => !hardcodedValues.includes(r));
+    return [...this.roles, ...extraRoles.map((r) => ({ value: r, label: r, icon: '🏷️' }))];
+  }
+
+  // ── Load all permissions + roles ──────
+  ngOnInit(): void {
+    this.loadAllPermissions();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadAllPermissions(): void {
+    this.isLoadingPerms = true;
+    forkJoin({
+      perms: this.permService.getAllPermissions(),
+      roles: this.permService.getAllRoles(),
+    })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
-          this.loadAllPermissions();
+        next: ({ perms, roles }: any) => {
+          this.allPermissions = perms.data || [];
+          const dbRoles: string[] = roles.data || [];
+          const merged = [...new Set([...this.roles.map((r) => r.value), ...dbRoles])];
+          this.allRoles = merged;
+          this.isLoadingPerms = false;
+          if (this.allPermissions.length > 0) this.loadRolePermissions(this.selectedRole);
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.isLoadingPerms = false;
           this.cdr.markForCheck();
         },
       });
@@ -291,20 +357,34 @@ export class Permissions {
       });
   }
 
+  // ── Manage tab: roles ─────────────────
+  saveNewRole(): void {
+    const role = this.newRoleName.trim().toUpperCase();
+    if (!role) return;
+    this.permService
+      .setRolePermissions(role, [], this.auth.getUserId())
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.isAddingRole = false;
+          this.newRoleName = '';
+          this.loadAllPermissions();
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
   // ── User override tab ─────────────────
   searchUser(): void {
     if (!this.userSearchQuery.trim()) return;
-    // Search across student/seller/staff — use your existing student/seller search
-    // For now we'll let superadmin type the user_id directly
     this.selectedUser = { user_id: this.userSearchQuery.trim() };
     this.selectedUserType = this.detectUserType(this.userSearchQuery.trim());
     this.loadUserPermissions(this.userSearchQuery.trim());
   }
 
   detectUserType(userId: string): string {
-    // Simple heuristic — adjust to match your ID formats
-    if (/^\d{10}$/.test(userId)) return 'STUDENT'; // 10-digit student ID
-    if (/^[a-zA-Z]/.test(userId)) return 'SELLER'; // starts with letter
+    if (/^\d{10}$/.test(userId)) return 'STUDENT';
+    if (/^[a-zA-Z]/.test(userId)) return 'SELLER';
     return 'FINANCE';
   }
 
@@ -316,7 +396,6 @@ export class Permissions {
       .subscribe({
         next: (res: any) => {
           const overrides: any[] = res.data || [];
-          // Start from role defaults
           this.permService
             .getRolePermissions(this.selectedUserType)
             .pipe(takeUntil(this.destroy$))
@@ -448,14 +527,6 @@ export class Permissions {
           };
         }),
     }));
-  }
-
-  isAllGroupGranted(group: PermissionGroup): boolean {
-    return group.permissions.every((p) => p.granted);
-  }
-
-  isSomeGroupGranted(group: PermissionGroup): boolean {
-    return group.permissions.some((p) => p.granted) && !this.isAllGroupGranted(group);
   }
 
   getModuleIcon(module: string): string {
