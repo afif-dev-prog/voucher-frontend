@@ -6,6 +6,7 @@ import { Seller } from '../../../services/seller';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Auth } from '../../../services/auth';
 
 @Component({
   selector: 'app-manageseller',
@@ -15,6 +16,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 })
 export class Manageseller {
   private sellerService = inject(Seller);
+  private auth = inject(Auth);
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
@@ -337,6 +339,10 @@ export class Manageseller {
 
   onTxBackdrop(e: MouseEvent): void {
     if ((e.target as HTMLElement).classList.contains('modal-backdrop')) this.closeTxModal();
+  }
+
+  canView(permission: string): boolean {
+    return this.auth.hasPermission(permission);
   }
 
   loadTx(): void {

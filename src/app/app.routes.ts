@@ -75,7 +75,7 @@ export const routes: Routes = [
   {
     path: 'floatmoneylist',
     canActivate: [authGuard],
-    data: { roles: ['FINANCE', 'SUPERADMIN', 'ADMIN', 'REVIEWER'] },
+    data: { roles: ['FINANCE', 'SUPERADMIN', 'ADMIN'] },
     loadComponent: () =>
       import('./component/staff/floatmoneylist/floatmoneylist').then((m) => m.Floatmoneylist),
   },
