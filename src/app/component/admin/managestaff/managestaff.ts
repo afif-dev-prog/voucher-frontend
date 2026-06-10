@@ -426,6 +426,10 @@ export class Managestaff {
     }
   }
 
+  canView(permission: string): boolean {
+    return this.auth.hasPermission(permission);
+  }
+
   confirmDelete(): void {
     if (!this.staffToDelete) return;
     this.isDeleting = true;
