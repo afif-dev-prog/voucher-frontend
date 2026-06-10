@@ -4,6 +4,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Float } from '../../../services/float';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { FormsModule } from '@angular/forms';
+import { Auth } from '../../../services/auth';
 
 interface FloatRow {
   h_id: number;
@@ -29,6 +30,7 @@ interface FloatRow {
 export class Floatmoneylist {
   private floatService = inject(Float); // adjust to your service
   private cdr = inject(ChangeDetectorRef);
+  private auth = inject(Auth);
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
 
@@ -90,6 +92,10 @@ export class Floatmoneylist {
   showDeleteModal = false;
   rowToDelete: FloatRow | null = null;
   isDeleting = false;
+
+  canView(permission: string): boolean {
+    return this.auth.hasPermission(permission);
+  }
 
   ngOnInit(): void {
     this.loadRows();

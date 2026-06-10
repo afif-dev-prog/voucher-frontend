@@ -37,6 +37,12 @@ export class Menubar implements OnInit {
       '/floatmoneylist': 2,
       '/creditvoucher': 3,
     },
+    REVIEWER: {
+      '/managestudent': 0,
+      '/managestaff': 1,
+      '/manageseller': 2,
+      '/floatmoneylist': 3,
+    },
     SUPERADMIN: {
       '/managestudent': 0,
       '/managestaff': 1,
@@ -64,6 +70,7 @@ export class Menubar implements OnInit {
     this.isFinance = this.role === 'FINANCE';
     this.isSuperAdmin = this.role === 'SUPERADMIN';
     this.isAdmin = this.role === 'ADMIN';
+    this.isReviewer = this.role === 'REVIEWER';
 
     // Set initial active index from current URL
     this.syncGliderFromUrl(this.router.url);
