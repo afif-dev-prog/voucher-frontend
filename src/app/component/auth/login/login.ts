@@ -67,6 +67,7 @@ export class Login {
                 this.router.navigate(['/floatmoneylist'], { replaceUrl: true });
                 break;
               case 'SUPERADMIN':
+              case 'REVIEWER':
               case 'ADMIN':
                 this.router.navigate(['/managestudent'], { replaceUrl: true });
                 break;
