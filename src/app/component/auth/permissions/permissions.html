@@ -58,7 +58,7 @@
       <div class="perm-content">
         <!-- Role tabs -->
         <div class="role-tabs">
-          @for (role of roles; track role.value) {
+          @for (role of allRoleObjects; track role.value) {
             <button
               class="role-tab-btn"
               [class.active]="selectedRole === role.value"
@@ -315,80 +315,9 @@
               <h3 class="manage-title">Permissions</h3>
               <p class="manage-sub">Add, edit, or remove individual permissions</p>
             </div>
-            <button
-              class="btn-add"
-              (click)="
-                isAddingPerm = !isAddingPerm;
-                editingPerm = null;
-                newPerm = { code: '', label: '', module: '', description: '' }
-              "
-            >
-              + New Permission
-            </button>
+            <button class="btn-add" (click)="openAddPermModal()">+ New Permission</button>
           </div>
 
-          @if (permSaveSuccess) {
-            <span class="save-success">✅ {{ permSaveSuccess }}</span>
-          }
-
-          @if (isAddingPerm) {
-            <div class="perm-form-card">
-              <div class="perm-form-grid">
-                <div class="form-field">
-                  <label>Code</label>
-                  <input
-                    class="user-search-input"
-                    [(ngModel)]="newPerm.code"
-                    [disabled]="!!editingPerm"
-                    placeholder="e.g. VIEW_REPORTS"
-                    style="text-transform: uppercase"
-                  />
-                </div>
-                <div class="form-field">
-                  <label>Label</label>
-                  <input
-                    class="user-search-input"
-                    [(ngModel)]="newPerm.label"
-                    placeholder="Display name"
-                  />
-                </div>
-                <div class="form-field">
-                  <label>Module</label>
-                  <input
-                    class="user-search-input"
-                    [(ngModel)]="newPerm.module"
-                    placeholder="e.g. REPORTS"
-                    style="text-transform: uppercase"
-                  />
-                </div>
-                <div class="form-field">
-                  <label>Description</label>
-                  <input
-                    class="user-search-input"
-                    [(ngModel)]="newPerm.description"
-                    placeholder="Optional"
-                  />
-                </div>
-              </div>
-              @if (permSaveError) {
-                <p class="save-error">⚠️ {{ permSaveError }}</p>
-              }
-              <div style="display: flex; gap: 8px; margin-top: 12px">
-                <button class="btn-save-perms" (click)="savePerm()" [disabled]="isSavingPerm">
-                  @if (isSavingPerm) {
-                    <span class="spinner spinner-white"></span> Saving...
-                  } @else {
-                    💾 {{ editingPerm ? 'Update' : 'Add Permission' }}
-                  }
-                </button>
-                <button class="btn-cancel" (click)="isAddingPerm = false; editingPerm = null">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          }
-
-          <!-- Permissions table -->
           <div class="perm-manage-table">
             @for (perm of allPermissions; track perm.id) {
               <div class="perm-manage-row">
@@ -400,14 +329,9 @@
                 <button class="btn-group-toggle" (click)="startEditPerm(perm)">✏️ Edit</button>
                 <button
                   class="btn-group-toggle btn-danger-subtle"
-                  (click)="deletePerm(perm.id)"
-                  [disabled]="deletingPermId === perm.id"
+                  (click)="confirmDeletePerm(perm)"
                 >
-                  @if (deletingPermId === perm.id) {
-                    ...
-                  } @else {
-                    🗑️
-                  }
+                  🗑️
                 </button>
               </div>
             }
@@ -444,17 +368,26 @@
           }
 
           <div class="perm-manage-table">
-            @for (role of allRoles; track role) {
+            @for (role of allRoleObjects; track role.value) {
               <div class="perm-manage-row">
-                <span class="perm-group-icon">🏷️</span>
+                <span class="perm-group-icon">{{ role.icon }}</span>
                 <div class="perm-info" style="flex: 1">
-                  <span class="perm-label">{{ role }}</span>
+                  <span class="perm-label">{{ role.label }}</span>
+                  <span class="perm-code">{{ role.value }}</span>
                 </div>
-                <button class="btn-group-toggle" (click)="selectedRole = role; activeTab = 'roles'">
+                <button
+                  class="btn-group-toggle"
+                  (click)="
+                    selectedRole = role.value; activeTab = 'roles'; loadRolePermissions(role.value)
+                  "
+                >
                   ⚙️ Edit Permissions
                 </button>
-                <button class="btn-group-toggle btn-danger-subtle" (click)="deleteRole(role)">
-                  🗑️ Delete
+                <button
+                  class="btn-group-toggle btn-danger-subtle"
+                  (click)="confirmDeleteRole(role.value)"
+                >
+                  🗑️
                 </button>
               </div>
             }
@@ -464,3 +397,191 @@
     }
   }
 </div>
+<!-- ══ EDIT PERMISSION MODAL ══ -->
+@if (showEditModal) {
+  <div class="modal-backdrop" (click)="closeEditModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Edit Permission</h3>
+          <p class="modal-sub">Update label, module or description</p>
+        </div>
+        <button class="modal-close" (click)="closeEditModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Code</label>
+          <input class="user-search-input modal-input" [value]="newPerm.code" disabled />
+        </div>
+        <div class="form-field">
+          <label>Label</label>
+          <input
+            class="user-search-input modal-input"
+            [(ngModel)]="newPerm.label"
+            placeholder="Display name"
+          />
+        </div>
+        <div class="form-field">
+          <label>Module</label>
+          <input
+            class="user-search-input modal-input"
+            [(ngModel)]="newPerm.module"
+            placeholder="e.g. REPORTS"
+            style="text-transform: uppercase"
+          />
+        </div>
+        <div class="form-field">
+          <label>Description</label>
+          <input
+            class="user-search-input modal-input"
+            [(ngModel)]="newPerm.description"
+            placeholder="Optional"
+          />
+        </div>
+        @if (permSaveError) {
+          <p class="save-error" style="margin-top: 8px">⚠️ {{ permSaveError }}</p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeEditModal()">Cancel</button>
+        <button class="btn-save-perms" (click)="savePerm()" [disabled]="isSavingPerm">
+          @if (isSavingPerm) {
+            <span class="spinner spinner-white"></span> Saving...
+          } @else {
+            💾 Update Permission
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ DELETE CONFIRM MODAL ══ -->
+@if (showDeleteModal && deletingPerm) {
+  <div class="modal-backdrop" (click)="closeDeleteModal()">
+    <div class="modal-card modal-card-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="delete-modal-icon">🗑️</div>
+        <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <h3 class="modal-title">Delete Permission?</h3>
+        <p class="modal-sub" style="margin-top: 6px">
+          This will permanently remove
+          <strong>{{ deletingPerm.label }}</strong>
+          (<code>{{ deletingPerm.code }}</code
+          >) and unassign it from all roles and users. This cannot be undone.
+        </p>
+        @if (deleteError) {
+          <p class="save-error" style="margin-top: 10px">⚠️ {{ deleteError }}</p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeDeleteModal()">Cancel</button>
+        <button class="btn-delete-confirm" (click)="deletePerm()" [disabled]="isConfirmingDelete">
+          @if (isConfirmingDelete) {
+            <span class="spinner spinner-white"></span> Deleting...
+          } @else {
+            🗑️ Yes, Delete
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+<!-- ══ ADD PERMISSION MODAL ══ -->
+@if (showAddPermModal) {
+  <div class="modal-backdrop" (click)="closeAddPermModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">New Permission</h3>
+          <p class="modal-sub">Add a new permission to the system</p>
+        </div>
+        <button class="modal-close" (click)="closeAddPermModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Code</label>
+          <input
+            class="user-search-input modal-input"
+            [(ngModel)]="newPerm.code"
+            placeholder="e.g. VIEW_REPORTS"
+            style="text-transform: uppercase"
+          />
+        </div>
+        <div class="form-field">
+          <label>Label</label>
+          <input
+            class="user-search-input modal-input"
+            [(ngModel)]="newPerm.label"
+            placeholder="Display name"
+          />
+        </div>
+        <div class="form-field">
+          <label>Module</label>
+          <input
+            class="user-search-input modal-input"
+            [(ngModel)]="newPerm.module"
+            placeholder="e.g. REPORTS"
+            style="text-transform: uppercase"
+          />
+        </div>
+        <div class="form-field">
+          <label>Description</label>
+          <input
+            class="user-search-input modal-input"
+            [(ngModel)]="newPerm.description"
+            placeholder="Optional"
+          />
+        </div>
+        @if (permSaveError) {
+          <p class="save-error" style="margin-top: 8px">⚠️ {{ permSaveError }}</p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeAddPermModal()">Cancel</button>
+        <button class="btn-save-perms" (click)="savePerm()" [disabled]="isSavingPerm">
+          @if (isSavingPerm) {
+            <span class="spinner spinner-white"></span> Saving...
+          } @else {
+            + Add Permission
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ DELETE ROLE MODAL ══ -->
+@if (showDeleteRoleModal && deletingRole) {
+  <div class="modal-backdrop" (click)="closeDeleteRoleModal()">
+    <div class="modal-card modal-card-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="delete-modal-icon">🏷️</div>
+        <button class="modal-close" (click)="closeDeleteRoleModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <h3 class="modal-title">Delete Role?</h3>
+        <p class="modal-sub" style="margin-top: 6px">
+          This will remove all permission assignments for the
+          <strong>{{ deletingRole }}</strong> role. Users with this role will lose their role-based
+          permissions. This cannot be undone.
+        </p>
+        @if (deleteRoleError) {
+          <p class="save-error" style="margin-top: 10px">⚠️ {{ deleteRoleError }}</p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeDeleteRoleModal()">Cancel</button>
+        <button class="btn-delete-confirm" (click)="deleteRole()" [disabled]="isDeletingRole">
+          @if (isDeletingRole) {
+            <span class="spinner spinner-white"></span> Deleting...
+          } @else {
+            🗑️ Yes, Delete Role
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
