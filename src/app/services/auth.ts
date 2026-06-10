@@ -154,6 +154,9 @@ export class Auth {
       case 'ADMIN':
         this.router.navigate(['/managestudent'], { replaceUrl: true });
         break;
+      case 'REVIEWER':
+        this.router.navigate(['/managestudent'], { replaceUrl: true });
+        break;
       default:
         this.router.navigate(['/login'], { replaceUrl: true });
     }

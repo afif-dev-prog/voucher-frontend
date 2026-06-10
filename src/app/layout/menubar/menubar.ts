@@ -24,6 +24,7 @@ export class Menubar implements OnInit {
   isFinance = false;
   isSuperAdmin = false;
   isAdmin = false;
+  isReviewer = false;
 
   // ── Route → index maps per role ───────
   private readonly routeIndexMap: Record<string, Record<string, number>> = {
