@@ -4,6 +4,7 @@ import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Seller } from '../../../services/seller';
+import { Auth } from '../../../services/auth';
 
 interface CorrectionRow {
   student_id: string;
@@ -15,6 +16,13 @@ interface CorrectionRow {
   difference: number | null;
 }
 
+interface ZeroliseRow {
+  student_id: string;
+  status: 'idle' | 'processing' | 'success' | 'failed';
+  message: string;
+  difference?: null; // kept so the generic progress template can read row.difference safely
+}
+
 @Component({
   selector: 'app-wrong-credit',
   imports: [CommonModule, FormsModule],
@@ -24,46 +32,59 @@ interface CorrectionRow {
 export class WrongCredit {
   private staffService = inject(Staff);
   private sellerService = inject(Seller);
+  private auth = inject(Auth);
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
-  // ── Shared fields ─────────────────────
+  // ── Shared fields (finance/seller tabs) ─────────────────────
   sharedWrongAmount: number | null = null;
   sharedExactAmount: number | null = null;
   sharedSellerName = '';
   useSharedValues = true;
 
-  // ── Bulk ID input ──────────────────────
+  // ── Bulk ID input (finance/seller tabs) ──────────────────────
   bulkIdInput = '';
   rows: CorrectionRow[] = [];
 
-  // ── Seller dropdown ────────────────────
+  // ── Seller dropdown (finance/seller tabs) ────────────────────
   sellerDropdownOpen = false;
   sellerSearch = '';
   sellerList: any[] = [];
   sellerLoading = false;
   selectedSellerDisplay = '';
   private sellerSearchSubject = new Subject<string>();
-  private sellerDropdownEl: any = null;
 
-  // ── Submission ─────────────────────────
+  // ── Zerolise tab state ────────────────────────────────────────
+  zeroliseBulkIdInput = '';
+  zeroliseRows: ZeroliseRow[] = [];
+
+  // ── Submission (shared across all tabs) ───────────────────────
   isProcessing = false;
   isComplete = false;
   successCount = 0;
   failCount = 0;
 
-  // ── Confirm modal ──────────────────────
+  // ── Confirm modal ──────────────────────────────────────────────
   showConfirmModal = false;
   globalError = '';
 
-  // ── Tabs ──────────────────────────────
-  activeTab: 'finance' | 'seller' = 'finance';
+  // ── Tabs ──────────────────────────────────────────────────────
+  activeTab: 'finance' | 'seller' | 'zerolise' = 'finance';
 
-  switchTab(tab: 'finance' | 'seller'): void {
+  switchTab(tab: 'finance' | 'seller' | 'zerolise'): void {
     this.activeTab = tab;
     this.reset();
     this.cdr.markForCheck();
   }
+
+  /** Returns whichever row array is relevant to the active tab — used by the shared progress UI. */
+  get activeRows(): (CorrectionRow | ZeroliseRow)[] {
+    return this.activeTab === 'zerolise' ? this.zeroliseRows : this.rows;
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // Finance / Seller wrong-credit logic
+  // ════════════════════════════════════════════════════════════
 
   get totalDifference(): number {
     if (this.sharedExactAmount == null || this.sharedWrongAmount == null) return 0;
@@ -77,7 +98,6 @@ export class WrongCredit {
   parseBulkIds(): void {
     this.globalError = '';
 
-    // Validate shared fields first if useSharedValues is on
     if (this.useSharedValues) {
       if (!this.sharedWrongAmount || this.sharedWrongAmount <= 0) {
         this.globalError = 'Please enter the wrong amount first.';
@@ -165,20 +185,6 @@ export class WrongCredit {
     );
   }
 
-  openConfirm(): void {
-    this.globalError = '';
-    if (!this.canSubmit) {
-      this.globalError = 'Please fill in all required fields for every row.';
-      return;
-    }
-    this.showConfirmModal = true;
-  }
-
-  closeConfirm(): void {
-    if (this.isProcessing) return;
-    this.showConfirmModal = false;
-  }
-
   async submitCorrections(): Promise<void> {
     this.showConfirmModal = false;
     this.isProcessing = true;
@@ -192,7 +198,6 @@ export class WrongCredit {
       this.cdr.markForCheck();
 
       await new Promise<void>((resolve) => {
-        // ← choose endpoint based on active tab
         const call =
           this.activeTab === 'finance'
             ? this.staffService.correctWrongCredit(
@@ -239,9 +244,117 @@ export class WrongCredit {
     this.isComplete = true;
     this.cdr.markForCheck();
   }
+
+  // ════════════════════════════════════════════════════════════
+  // Zerolise inactive account logic
+  // ════════════════════════════════════════════════════════════
+
+  get zeroliseCanSubmit(): boolean {
+    return this.zeroliseRows.length > 0;
+  }
+
+  parseZeroliseBulkIds(): void {
+    this.globalError = '';
+    const ids = this.zeroliseBulkIdInput
+      .split(/[\n,]+/)
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+
+    if (ids.length === 0) {
+      this.globalError = 'Please enter at least one student ID.';
+      return;
+    }
+
+    const unique = [...new Set(ids)];
+    this.zeroliseRows = unique.map((id) => ({
+      student_id: id,
+      status: 'idle',
+      message: '',
+    }));
+    this.cdr.markForCheck();
+  }
+
+  removeZeroliseRow(index: number): void {
+    this.zeroliseRows.splice(index, 1);
+    this.cdr.markForCheck();
+  }
+
+  async submitZerolise(): Promise<void> {
+    this.showConfirmModal = false;
+    this.isProcessing = true;
+    this.isComplete = false;
+    this.successCount = 0;
+    this.failCount = 0;
+
+    for (let i = 0; i < this.zeroliseRows.length; i++) {
+      const row = this.zeroliseRows[i];
+      row.status = 'processing';
+      this.cdr.markForCheck();
+
+      await new Promise<void>((resolve) => {
+        this.staffService
+          .zerolisevoucher(row.student_id, this.auth.getName())
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (res: any) => {
+              if (res?.success === true) {
+                row.status = 'success';
+                row.message = res.message || 'Balance zeroed successfully';
+                this.successCount++;
+              } else {
+                row.status = 'failed';
+                row.message = res?.message || 'Failed';
+                this.failCount++;
+              }
+              this.cdr.markForCheck();
+              resolve();
+            },
+            error: (err: any) => {
+              row.status = 'failed';
+              row.message = err?.error?.message || 'Server error';
+              this.failCount++;
+              this.cdr.markForCheck();
+              resolve();
+            },
+          });
+      });
+
+      await new Promise((r) => setTimeout(r, 150));
+    }
+
+    this.isProcessing = false;
+    this.isComplete = true;
+    this.cdr.markForCheck();
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // Shared: confirm modal, reset, seller dropdown, lifecycle
+  // ════════════════════════════════════════════════════════════
+
+  openConfirm(): void {
+    this.globalError = '';
+    if (this.activeTab === 'zerolise') {
+      if (!this.zeroliseCanSubmit) {
+        this.globalError = 'Please load at least one student ID.';
+        return;
+      }
+    } else if (!this.canSubmit) {
+      this.globalError = 'Please fill in all required fields for every row.';
+      return;
+    }
+    this.showConfirmModal = true;
+  }
+
+  closeConfirm(): void {
+    if (this.isProcessing) return;
+    this.showConfirmModal = false;
+  }
+
   reset(): void {
     this.bulkIdInput = '';
     this.rows = [];
+    this.zeroliseBulkIdInput = '';
+    this.zeroliseRows = [];
     this.sharedWrongAmount = null;
     this.sharedExactAmount = null;
     this.sharedSellerName = '';
@@ -250,23 +363,24 @@ export class WrongCredit {
     this.successCount = 0;
     this.failCount = 0;
     this.globalError = '';
-    this.cdr.markForCheck();
     this.selectedSellerDisplay = '';
     this.sellerDropdownOpen = false;
     this.sellerSearch = '';
     this.sellerList = [];
+    this.cdr.markForCheck();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
   ngOnInit(): void {
     this.sellerSearchSubject
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((search) => {
         this.fetchSellers(search);
       });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   openSellerDropdown(): void {

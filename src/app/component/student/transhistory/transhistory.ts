@@ -14,7 +14,7 @@ interface PaginationMetadata {
 }
 
 interface PayHistory {
-  pay_id: string;
+  transaction_id: string;
   student_id: string;
   seller: string;
   pay_date: number; // assuming this is a timestamp in seconds
@@ -195,7 +195,9 @@ export class Transhistory implements OnInit {
         : { value: tx.credit, type: 'credit' };
     }
     // double-entry: check which column has value
-    return tx.debit > 0 ? { value: tx.debit, type: 'debit' } : { value: tx.credit, type: 'credit' };
+    return tx.debit >= 0
+      ? { value: tx.debit, type: 'debit' }
+      : { value: tx.credit, type: 'credit' };
   }
 
   getStatusClass(status: string): string {
