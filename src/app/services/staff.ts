@@ -155,6 +155,14 @@ export class Staff {
       .pipe(catchError((err) => of(err.error)));
   }
 
+  zerolisevoucher(studentId: string, staffUpdate: string): Observable<any> {
+    const headers = { 'content-type': 'application/json' };
+    return this.http.post(
+      `${this.apiUrl}/student/zerolisevoucher?studentId=${studentId}&staffUpdate=${staffUpdate}`,
+      { headers: headers },
+    );
+  }
+
   //manage staff
 
   getStaffListPaginated(pageNumber: number, pageSize: number, search: string) {

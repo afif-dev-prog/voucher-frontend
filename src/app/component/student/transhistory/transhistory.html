@@ -95,7 +95,7 @@
   <!-- Transaction list -->
   @if (!isLoading && filteredTransactions.length > 0) {
     <div class="tx-list">
-      @for (tx of filteredTransactions; track tx.pay_id; let i = $index) {
+      @for (tx of filteredTransactions; track tx.transaction_id; let i = $index) {
         <div
           class="tx-card"
           (click)="openDetail(tx)"
@@ -267,7 +267,7 @@
         }
         <div class="sheet-row">
           <span class="sheet-label">Transaction ID</span>
-          <span class="sheet-value sheet-mono">{{ selectedTx.pay_id }}</span>
+          <span class="sheet-value sheet-mono">{{ selectedTx.transaction_id }}</span>
         </div>
         <div class="sheet-row">
           <span class="sheet-label">Type</span>
