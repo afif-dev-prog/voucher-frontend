@@ -195,9 +195,7 @@ export class Transhistory implements OnInit {
         : { value: tx.credit, type: 'credit' };
     }
     // double-entry: check which column has value
-    return tx.debit >= 0
-      ? { value: tx.debit, type: 'debit' }
-      : { value: tx.credit, type: 'credit' };
+    return tx.debit > 0 ? { value: tx.debit, type: 'debit' } : { value: tx.credit, type: 'credit' };
   }
 
   getStatusClass(status: string): string {
