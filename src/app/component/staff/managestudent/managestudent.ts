@@ -446,6 +446,7 @@ export class Managestudent {
 
     this.isUpdating = true;
     this.editErrorMessage = '';
+    this.editStudentForm.must;
 
     const payload = {
       ...this.editStudentForm,
