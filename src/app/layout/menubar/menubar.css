@@ -92,7 +92,7 @@
   position: absolute;
   left: 8px;
   right: 8px;
-  height: 52px; /* matches nav-item height */
+  height: 54px; /* matches nav-item height */
   background: #e8f0fe;
   border-radius: 18px;
   z-index: 1;
