@@ -16,6 +16,7 @@ export interface StudentModel {
   intake: string;
   course_code: string;
   campus: string;
+  must_change_password: boolean;
 }
 
 export interface AddStudent {
