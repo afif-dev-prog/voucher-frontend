@@ -11,11 +11,16 @@ export class Seller {
   readonly apiUrl = 'https://glossary.sarawakskills.edu.my/gateway/fvs/seller';
   // readonly apiUrl = 'http://localhost:5094/api/voucher/seller';
 
-  scantoPay(studentId: string, seller: number, amount: number) {
+  scantoPay(
+    studentId: string,
+    seller: number,
+    amount: number,
+    paymentSource: 'manual' | 'scan' = 'manual',
+  ) {
     const headers = { 'content-type': 'application/json' };
     return this.http
       .post<any>(
-        `${this.apiUrl}/scantopay?studentId=${studentId}&sellerId=${seller}&price=${amount}`,
+        `${this.apiUrl}/scantopay?studentId=${studentId}&sellerId=${seller}&price=${amount}&paymentSource=${paymentSource}`,
         {
           headers: headers,
         },
