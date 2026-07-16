@@ -79,8 +79,6 @@ export class Scantopay implements OnInit, OnDestroy {
   paymentSuccess = false;
   paymentResult: any = null;
   // Scanner detection
-  private scanBuffer = '';
-  private scanBufferTimer: any = null;
   readonly SCAN_THRESHOLD_MS = 100; // chars arriving faster than this = scanner
   isFromScanner = false;
   // QR modal
@@ -386,9 +384,9 @@ export class Scantopay implements OnInit, OnDestroy {
     }
     const span = this.keystrokeTimestamps.at(-1)! - this.keystrokeTimestamps[0];
     const avgInterval = span / (this.keystrokeTimestamps.length - 1);
+    console.log('avg interval:', avgInterval.toFixed(1), 'ms'); // ← temporary
     this.isFromScanner = avgInterval < this.SCAN_AVG_THRESHOLD_MS;
   }
-
   onManualKeydown(event: KeyboardEvent): void {
     const input = event.target as HTMLInputElement;
 
@@ -662,6 +660,7 @@ export class Scantopay implements OnInit, OnDestroy {
     // console.log('✅ Proceeding to payment modal...');
     this.stopCamera();
     this.scannedStudentId = value;
+    this.cameraTriggeredThisPayment = true;
     this.openPaymentModal(value);
   }
 
@@ -672,6 +671,9 @@ export class Scantopay implements OnInit, OnDestroy {
       this.cameraError = 'Please enter a Student ID first.';
       return;
     }
+
+    if (this.cameraTriggeredThisPayment === undefined) this.cameraTriggeredThisPayment = false;
+    // ... existing reset logic ...
     this.scannedStudentId = studentId;
     this.paymentAmount = null;
     this.amountCents = 0;
@@ -709,6 +711,7 @@ export class Scantopay implements OnInit, OnDestroy {
     this.studentLookupError = ''; // ✅ reset
     this.cdr.markForCheck();
     this.focusManualInput();
+    this.cameraTriggeredThisPayment = false;
   }
   // setQuickAmount(amt: number): void {
   //   this.amountCents = amt * 100;
@@ -735,9 +738,10 @@ export class Scantopay implements OnInit, OnDestroy {
     this.isProcessing = true;
     this.paymentError = '';
     this.cdr.markForCheck();
+    const source = this.toPaymentSource(this.resolveInputMethod(this.cameraTriggeredThisPayment));
 
     this.sellerService
-      .scantoPay(this.scannedStudentId, this.sellerId, this.paymentAmount)
+      .scantoPay(this.scannedStudentId, this.sellerId, this.paymentAmount, source)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         // next: (res: any) => {
