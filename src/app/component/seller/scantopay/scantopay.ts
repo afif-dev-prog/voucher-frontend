@@ -17,6 +17,7 @@ import { PaymentService } from '../../../services/payment-service';
 import { SharedService } from '../../../services/shared-service';
 import { Student } from '../../../services/student';
 
+type PaymentInputMethod = 'camera_scan' | 'scanner_keyin' | 'manual_keyin';
 @Component({
   selector: 'app-scantopay',
   imports: [CommonModule, FormsModule],
@@ -88,7 +89,12 @@ export class Scantopay implements OnInit, OnDestroy {
   isGeneratingQr = false;
 
   sellerName = '';
+  private cameraTriggeredThisPayment = false;
 
+  private resolveInputMethod(cameraTriggered: boolean): PaymentInputMethod {
+    if (cameraTriggered) return 'camera_scan';
+    return this.isFromScanner ? 'scanner_keyin' : 'manual_keyin';
+  }
   quickAmounts = [
     { label: '10¢', value: 0.1 },
     { label: '20¢', value: 0.2 },
@@ -122,7 +128,9 @@ export class Scantopay implements OnInit, OnDestroy {
       this.focusManualInput();
     }
   }
-
+  private toPaymentSource(method: PaymentInputMethod): 'manual' | 'scan' {
+    return method === 'manual_keyin' ? 'manual' : 'scan';
+  }
   ngOnDestroy(): void {
     this.stopCamera();
     this.destroy$.next();
@@ -292,6 +300,11 @@ export class Scantopay implements OnInit, OnDestroy {
   //   this.cdr.markForCheck();
   // }
 
+  private getDescriptionPrefix(cameraTriggered: boolean): string {
+    const isScanBased = cameraTriggered || this.isFromScanner;
+    return isScanBased ? 'QRS-' : 'MKI-';
+  }
+
   submitInlinePayment(): void {
     if (!this.inlineAmount || this.inlineAmount <= 0) {
       this.inlineError = 'Enter a valid amount.';
@@ -300,9 +313,10 @@ export class Scantopay implements OnInit, OnDestroy {
     this.isInlineProcessing = true;
     this.inlineError = '';
     this.cdr.markForCheck();
+    const source = this.toPaymentSource(this.resolveInputMethod(this.cameraTriggeredThisPayment));
 
     this.sellerService
-      .scantoPay(this.scannedStudentId, this.sellerId, this.inlineAmount)
+      .scantoPay(this.scannedStudentId, this.sellerId, this.inlineAmount, source)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
@@ -348,20 +362,31 @@ export class Scantopay implements OnInit, OnDestroy {
 
   lastScanSuccess = '';
 
+  private keystrokeTimestamps: number[] = [];
+  readonly SCAN_AVG_THRESHOLD_MS = 40; // tune this against your actual scanner
+  readonly MIN_CHARS_FOR_DETECTION = 4;
+
   onManualInputChange(value: string): void {
     const now = Date.now();
 
-    // Clear previous timer
-    if (this.scanBufferTimer) {
-      clearTimeout(this.scanBufferTimer);
+    if (value.length === 0) {
+      this.keystrokeTimestamps = [];
+    } else {
+      this.keystrokeTimestamps.push(now);
     }
 
     this.scannedStudentId = value;
+    this.classifyInputSource(value.length);
+  }
 
-    // If characters arrive very fast, it's a scanner
-    this.scanBufferTimer = setTimeout(() => {
-      this.isFromScanner = false; // reset after human typing pause
-    }, this.SCAN_THRESHOLD_MS);
+  private classifyInputSource(length: number): void {
+    if (length < this.MIN_CHARS_FOR_DETECTION || this.keystrokeTimestamps.length < 2) {
+      this.isFromScanner = false;
+      return;
+    }
+    const span = this.keystrokeTimestamps.at(-1)! - this.keystrokeTimestamps[0];
+    const avgInterval = span / (this.keystrokeTimestamps.length - 1);
+    this.isFromScanner = avgInterval < this.SCAN_AVG_THRESHOLD_MS;
   }
 
   onManualKeydown(event: KeyboardEvent): void {
