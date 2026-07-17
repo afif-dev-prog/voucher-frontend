@@ -78,8 +78,7 @@ export class Scantopay implements OnInit, OnDestroy {
   paymentError = '';
   paymentSuccess = false;
   paymentResult: any = null;
-  // Scanner detection
-  readonly SCAN_THRESHOLD_MS = 100; // chars arriving faster than this = scanner
+  // Scanner detection= // chars arriving faster than this = scanner
   isFromScanner = false;
   // QR modal
   showQrModal = false;
@@ -298,11 +297,6 @@ export class Scantopay implements OnInit, OnDestroy {
   //   this.cdr.markForCheck();
   // }
 
-  private getDescriptionPrefix(cameraTriggered: boolean): string {
-    const isScanBased = cameraTriggered || this.isFromScanner;
-    return isScanBased ? 'QRS-' : 'MKI-';
-  }
-
   submitInlinePayment(): void {
     if (!this.inlineAmount || this.inlineAmount <= 0) {
       this.inlineError = 'Enter a valid amount.';
@@ -354,6 +348,8 @@ export class Scantopay implements OnInit, OnDestroy {
     this.inlineAmount = null;
     this.inlineAmountCents = 0; // ← reset
     this.inlineError = '';
+    this.keystrokeTimestamps = []; // ← add
+    this.isFromScanner = false;
     this.focusManualInput();
     this.cdr.markForCheck();
   }
@@ -388,45 +384,14 @@ export class Scantopay implements OnInit, OnDestroy {
     this.isFromScanner = avgInterval < this.SCAN_AVG_THRESHOLD_MS;
   }
   onManualKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Enter') return;
+
     const input = event.target as HTMLInputElement;
+    const id = input.value.trim();
+    if (!id) return;
 
-    if (event.key === 'Enter') {
-      const id = input.value.trim();
-      if (!id) return;
-
-      if (this.isFromScanner) {
-        // Scanner hit Enter — go straight to payment, skip amount step
-        this.scannedStudentId = id;
-        this.submitPaymentDirect(id);
-      } else {
-        // Human pressed Enter — open modal to enter amount
-        this.openPaymentModal(id);
-      }
-      return;
-    }
-
-    // Detect scanner: keystrokes arriving very rapidly
-    const timeSinceLastKey = Date.now();
-    if (this.lastKeyTime && timeSinceLastKey - this.lastKeyTime < this.SCAN_THRESHOLD_MS) {
-      this.isFromScanner = true;
-    }
-    this.lastKeyTime = timeSinceLastKey;
+    this.openPaymentModal(id);
   }
-
-  submitPaymentDirect(studentId: string): void {
-    // Open modal normally — scanner flow still needs an amount
-    // But if your use case is fixed amount, replace with direct API call
-    this.openPaymentModal(studentId);
-    // Wherever you trigger showInlineAmount
-
-    // If you want FULLY automatic with a preset amount (e.g. RM 1.00):
-    // this.scannedStudentId = studentId;
-    // this.paymentAmount = 1.00;
-    // this.isProcessing = true;
-    // this.sellerService.scantoPay(...).subscribe(...)
-  }
-
-  private lastKeyTime = 0;
 
   getSellerId(): number {
     this.sellerService.getSellerList(1, 10, this.sellerName).subscribe((res) => {
@@ -699,6 +664,9 @@ export class Scantopay implements OnInit, OnDestroy {
     if (this.paymentSuccess) {
       this.scannedStudentId = '';
       this.showInlineAmount = false;
+      this.keystrokeTimestamps = []; // ← add
+      this.isFromScanner = false;
+      this.cameraTriggeredThisPayment = false;
     }
     this.showPaymentModal = false;
     this.paymentAmount = null;
@@ -711,7 +679,6 @@ export class Scantopay implements OnInit, OnDestroy {
     this.studentLookupError = ''; // ✅ reset
     this.cdr.markForCheck();
     this.focusManualInput();
-    this.cameraTriggeredThisPayment = false;
   }
   // setQuickAmount(amt: number): void {
   //   this.amountCents = amt * 100;
@@ -739,7 +706,14 @@ export class Scantopay implements OnInit, OnDestroy {
     this.paymentError = '';
     this.cdr.markForCheck();
     const source = this.toPaymentSource(this.resolveInputMethod(this.cameraTriggeredThisPayment));
-
+    console.log(
+      '🔍 cameraTriggeredThisPayment:',
+      this.cameraTriggeredThisPayment,
+      '| isFromScanner:',
+      this.isFromScanner,
+      '| source:',
+      source,
+    );
     this.sellerService
       .scantoPay(this.scannedStudentId, this.sellerId, this.paymentAmount, source)
       .pipe(takeUntil(this.destroy$))
