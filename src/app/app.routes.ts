@@ -130,7 +130,7 @@ export const routes: Routes = [
   {
     path: 'wrong-credit',
     canActivate: [authGuard],
-    data: { roles: ['SUPERADMIN'] },
+    data: { roles: ['SUPERADMIN', 'FINANCE'] },
     loadComponent: () =>
       import('./component/staff/wrong-credit/wrong-credit').then((m) => m.WrongCredit),
   },

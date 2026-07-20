@@ -163,6 +163,16 @@ export class Staff {
     );
   }
 
+  getCreditationHistory(studentId: string, pageNumber: number, pageSize: number) {
+    const params = new HttpParams()
+      .set('studentId', studentId)
+      .set('PageNumber', pageNumber)
+      .set('PageSize', pageSize);
+
+    return this.http.get<any>(`${this.apiUrl}/payhistory/finance/creditationhistory`, { params });
+    // adjust apiUrl/base path to match your existing service's convention
+  }
+
   //manage staff
 
   getStaffListPaginated(pageNumber: number, pageSize: number, search: string) {

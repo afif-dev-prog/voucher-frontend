@@ -1,61 +1,88 @@
 <div class="wc-wrapper">
   <!-- ── Tab bar ── -->
   <div class="wc-tabs">
-    <button
-      class="wc-tab"
-      [class.wc-tab-active]="activeTab === 'finance'"
-      (click)="switchTab('finance')"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="15"
-        height="15"
-        fill="currentColor"
-        viewBox="0 0 16 16"
+    @if (canView('VIEW_WRONG_FINANCE_CREDIT')) {
+      <button
+        class="wc-tab"
+        [class.wc-tab-active]="activeTab === 'finance'"
+        (click)="switchTab('finance')"
       >
-        <path
-          d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1H0zm0 3v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7zm3 2h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1"
-        />
-      </svg>
-      Finance Wrong Credit
-    </button>
-    <button
-      class="wc-tab"
-      [class.wc-tab-active]="activeTab === 'seller'"
-      (click)="switchTab('seller')"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="15"
-        height="15"
-        fill="currentColor"
-        viewBox="0 0 16 16"
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="15"
+          height="15"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1H0zm0 3v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7zm3 2h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1"
+          />
+        </svg>
+        Finance Wrong Credit
+      </button>
+    }
+    @if (canView('VIEW_WRONG_SELLER_CREDIT')) {
+      <button
+        class="wc-tab"
+        [class.wc-tab-active]="activeTab === 'seller'"
+        (click)="switchTab('seller')"
       >
-        <path d="M10 9.05a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
-        <path
-          d="M2 1a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zM1 3a1 1 0 0 1 1-1h2v2H1zm4 10V2h9a1 1 0 0 1 1 1v9c0 .285-.12.543-.31.725C14.15 11.494 12.822 10 10 10c-3.037 0-4.345 1.73-4.798 3zm-4-2h3v2H2a1 1 0 0 1-1-1zm3-1H1V8h3zm0-3H1V5h3z"
-        />
-      </svg>
-      Seller Wrong Charge
-    </button>
-    <button
-      class="wc-tab"
-      [class.wc-tab-active]="activeTab === 'zerolise'"
-      (click)="switchTab('zerolise')"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="15"
-        height="15"
-        fill="currentColor"
-        viewBox="0 0 16 16"
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="15"
+          height="15"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path d="M10 9.05a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
+          <path
+            d="M2 1a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zM1 3a1 1 0 0 1 1-1h2v2H1zm4 10V2h9a1 1 0 0 1 1 1v9c0 .285-.12.543-.31.725C14.15 11.494 12.822 10 10 10c-3.037 0-4.345 1.73-4.798 3zm-4-2h3v2H2a1 1 0 0 1-1-1zm3-1H1V8h3zm0-3H1V5h3z"
+          />
+        </svg>
+        Seller Wrong Charge
+      </button>
+    }
+    @if (canView('VIEW_ZEROLISE')) {
+      <button
+        class="wc-tab"
+        [class.wc-tab-active]="activeTab === 'zerolise'"
+        (click)="switchTab('zerolise')"
       >
-        <path
-          d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
-        />
-      </svg>
-      Zerolise Inactive
-    </button>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="15"
+          height="15"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
+          />
+        </svg>
+        Zerolise Inactive
+      </button>
+    }
+    @if (canView('VIEW_CREDIT_HISTORY')) {
+      <button
+        class="wc-tab"
+        [class.wc-tab-active]="activeTab === 'history'"
+        (click)="switchTab('history')"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="15"
+          height="15"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"
+          />
+          <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m0-1A7 7 0 1 1 8 1a7 7 0 0 1 0 14" />
+        </svg>
+        Credit History
+      </button>
+    }
   </div>
 
   <!-- Header -->
@@ -64,6 +91,9 @@
       @if (activeTab === 'zerolise') {
         <h2 class="wc-title">Zerolise Inactive Account Balance</h2>
         <p class="wc-sub">Set voucher balance to RM 0.00 for inactive/suspended students</p>
+      } @else if (activeTab === 'history') {
+        <h2 class="wc-title">Voucher Credit History</h2>
+        <p class="wc-sub">Track how often and how much has been credited to a student</p>
       } @else {
         <h2 class="wc-title">Wrong Credit Correction</h2>
         <p class="wc-sub">Correct incorrectly credited amounts for students</p>
@@ -79,8 +109,182 @@
   <!-- ── SETUP PANEL ── -->
   @if (!isProcessing && !isComplete) {
     <div class="wc-setup">
+      @if (activeTab === 'history') {
+        <div class="wc-card">
+          <div class="wc-card-header">
+            <h3 class="wc-card-title">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="15"
+                height="15"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"
+                />
+              </svg>
+              Search Student
+            </h3>
+          </div>
+          <div class="wc-card-body">
+            <div class="wc-fields" style="grid-template-columns: 2fr auto auto">
+              <div class="wc-field">
+                <label class="wc-label">Student ID</label>
+                <input
+                  class="wc-input"
+                  style="padding-left: 10px"
+                  type="text"
+                  placeholder="e.g. 2601010101"
+                  [(ngModel)]="historyStudentIdInput"
+                  (keydown.enter)="searchCreditHistory()"
+                />
+              </div>
+              <div class="wc-field" style="justify-content: flex-end">
+                <label class="wc-label">&nbsp;</label>
+                <button
+                  class="btn-parse"
+                  (click)="searchCreditHistory()"
+                  [disabled]="historyLoading"
+                >
+                  @if (historyLoading) {
+                    <span class="spinner spinner-sm"></span> Searching...
+                  } @else {
+                    Search
+                  }
+                </button>
+              </div>
+              @if (historySearchedStudentId) {
+                <div class="wc-field" style="justify-content: flex-end">
+                  <label class="wc-label">&nbsp;</label>
+                  <button class="btn-cancel" (click)="clearHistorySearch()">Clear</button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (historyError) {
+          <div class="alert alert-error">⚠️ {{ historyError }}</div>
+        }
+
+        @if (historySearchedStudentId && historyPagination && !historyLoading) {
+          <div class="wc-fields" style="grid-template-columns: 1fr 1fr 1fr; margin-top: 4px">
+            <div
+              class="wc-diff-preview positive"
+              style="flex-direction: column; align-items: flex-start"
+            >
+              <span class="diff-hint">Total Credited (this page)</span>
+              <span class="diff-value">RM {{ historyTotalCredited | number: '1.2-2' }}</span>
+            </div>
+            <div
+              class="wc-diff-preview"
+              style="
+                flex-direction: column;
+                align-items: flex-start;
+                background: #eff6ff;
+                border-color: #bfdbfe;
+                color: #1d4ed8;
+              "
+            >
+              <span class="diff-hint">Total Transactions</span>
+              <span class="diff-value">{{ historyPagination.totalCount }}</span>
+            </div>
+            <div
+              class="wc-diff-preview"
+              style="
+                flex-direction: column;
+                align-items: flex-start;
+                background: #f8fafc;
+                border-color: #e5e7eb;
+                color: #374151;
+              "
+            >
+              <span class="diff-hint">Student ID</span>
+              <span class="diff-value" style="font-family: monospace">{{
+                historySearchedStudentId
+              }}</span>
+            </div>
+          </div>
+        }
+
+        @if (historySearchedStudentId) {
+          <div class="wc-card preview">
+            <div class="wc-card-header">
+              <h3 class="wc-card-title">
+                Credit Records
+                @if (historyPagination) {
+                  <span class="wc-count-badge">{{ historyPagination.totalCount }} total</span>
+                }
+              </h3>
+            </div>
+            <div class="wc-table-wrapper" style="max-height: 400px">
+              @if (historyLoading) {
+                <div class="seller-empty" style="padding: 30px">
+                  <span class="spinner spinner-sm spinner-blue"></span> Loading history...
+                </div>
+              } @else if (historyRows.length === 0) {
+                <div class="seller-empty" style="padding: 30px">
+                  No credit history found for this student.
+                </div>
+              } @else {
+                <table class="wc-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Date</th>
+                      <th>Remark</th>
+                      <th>Credited By</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of historyRows; track row.id) {
+                      <tr>
+                        <td class="wc-row-num">{{ row.id }}</td>
+                        <td>{{ formatPayDate(row.payDate) }}</td>
+                        <td>{{ row.remark || '—' }}</td>
+                        <td>{{ row.userUpdate || '—' }}</td>
+                        <td>
+                          <span class="wc-diff-chip positive"
+                            >+ RM {{ row.credit | number: '1.2-2' }}</span
+                          >
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+
+            @if (historyPagination && historyPagination.totalPages > 1) {
+              <div class="wc-submit-bar">
+                <p class="wc-submit-info">
+                  Page {{ historyPagination.currentPage }} of {{ historyPagination.totalPages }}
+                </p>
+                <div style="display: flex; gap: 8px">
+                  <button
+                    class="btn-cancel"
+                    [disabled]="!historyPagination.hasPrevious"
+                    (click)="goToHistoryPage(historyPagination.currentPage - 1)"
+                  >
+                    ← Previous
+                  </button>
+                  <button
+                    class="btn-cancel"
+                    [disabled]="!historyPagination.hasNext"
+                    (click)="goToHistoryPage(historyPagination.currentPage + 1)"
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
       <!-- ═══ Finance / Seller setup card ═══ -->
-      @if (activeTab !== 'zerolise') {
+      @if (activeTab === 'finance' || activeTab === 'seller') {
         <div class="wc-card">
           <div class="wc-card-header">
             <h3 class="wc-card-title">

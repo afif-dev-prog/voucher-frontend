@@ -22,15 +22,6 @@ export class PermissionsService {
       .pipe(catchError(() => of({ success: false, data: [] })));
   }
 
-  setRolePermissions(role: string, permissionIds: string[], grantedBy: string): Observable<any> {
-    return this.http
-      .put<any>(`${this.apiUrl}/role/${role}`, {
-        permissionIds,
-        grantedBy,
-      })
-      .pipe(catchError((err) => of({ success: false, message: err?.error?.message })));
-  }
-
   getUserPermissions(userId: string): Observable<any> {
     return this.http
       .get<any>(`${this.apiUrl}/user/${userId}`)
@@ -64,32 +55,37 @@ export class PermissionsService {
       .pipe(catchError(() => of({ success: false, data: [] })));
   }
 
-  addPermission(data: {
-    code: string;
-    label: string;
-    module: string;
-    description: string;
-  }): Observable<any> {
-    return this.http
-      .post<any>(`${this.apiUrl}`, data)
-      .pipe(catchError((err) => of({ success: false, message: err?.error?.message })));
+  addPermission(payload: { code: string; label: string; module: string; description: string }) {
+    return this.http.post<any>(`${this.apiUrl}/permission/add`, payload);
   }
 
   editPermission(
     id: string,
-    data: { label: string; module: string; description: string },
-  ): Observable<any> {
-    return this.http
-      .put<any>(`${this.apiUrl}/${id}`, data)
-      .pipe(catchError((err) => of({ success: false, message: err?.error?.message })));
+    payload: { code: string; label: string; module: string; description: string },
+  ) {
+    return this.http.put<any>(`${this.apiUrl}/permission/update/${id}`, payload);
   }
 
-  deletePermission(id: string): Observable<any> {
-    return this.http
-      .delete<any>(`${this.apiUrl}/${id}`)
-      .pipe(catchError((err) => of({ success: false, message: err?.error?.message })));
+  deletePermission(id: string) {
+    return this.http.delete<any>(`${this.apiUrl}/delete/${id}`);
   }
 
+  addRolePermissions(
+    dto: { role: string; granted_by: string; granted_at: number },
+    permissionIds: string[],
+  ) {
+    return this.http.post<any>(`${this.apiUrl}/rolepermission/add`, {
+      RolePermission: dto,
+      PermissionIds: permissionIds,
+    });
+  }
+
+  updateRolePermissions(
+    role: string,
+    payload: { role: string; granted_by: string; granted_at: number; permIds: string[] },
+  ) {
+    return this.http.put<any>(`${this.apiUrl}/rolepermission/update/${role}`, payload);
+  }
   deleteRole(role: string): Observable<any> {
     return this.http
       .delete<any>(`${this.apiUrl}/role/${role}`)
