@@ -326,6 +326,7 @@
                   <span class="perm-label">{{ perm.label }}</span>
                   <span class="perm-code">{{ perm.code }} · {{ perm.module }}</span>
                 </div>
+                <button class="btn-group-toggle" (click)="startViewPerm(perm)">👁️ View</button>
                 <button class="btn-group-toggle" (click)="startEditPerm(perm)">✏️ Edit</button>
                 <button
                   class="btn-group-toggle btn-danger-subtle"
@@ -345,27 +346,8 @@
               <h3 class="manage-title">Roles</h3>
               <p class="manage-sub">Add or remove roles from the system</p>
             </div>
-            <button class="btn-add" (click)="isAddingRole = !isAddingRole">+ New Role</button>
+            <button class="btn-add" (click)="openAddRoleModal()">+ New Role</button>
           </div>
-
-          @if (isAddingRole) {
-            <div
-              class="perm-form-card"
-              style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"
-            >
-              <input
-                class="user-search-input"
-                [(ngModel)]="newRoleName"
-                placeholder="Role name e.g. SUPERVISOR"
-                style="text-transform: uppercase; flex: 1; min-width: 160px"
-                (keydown.enter)="saveNewRole()"
-              />
-              <button class="btn-save-perms" (click)="saveNewRole()">Add Role</button>
-              <button class="btn-cancel" (click)="isAddingRole = false; newRoleName = ''">
-                Cancel
-              </button>
-            </div>
-          }
 
           <div class="perm-manage-table">
             @for (role of allRoleObjects; track role.value) {
@@ -397,6 +379,109 @@
     }
   }
 </div>
+<!-- ══ ADD ROLE MODAL ══ -->
+@if (showAddRoleModal) {
+  <div class="modal-backdrop" (click)="closeAddRoleModal()">
+    <div class="modal-card" style="max-width: 600px" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">New Role</h3>
+          <p class="modal-sub">Name the role and select its initial permissions</p>
+        </div>
+        <button class="modal-close" (click)="closeAddRoleModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Role Name</label>
+          <input
+            class="user-search-input modal-input"
+            [(ngModel)]="newRoleName"
+            placeholder="e.g. SUPERVISOR"
+            style="text-transform: uppercase"
+          />
+        </div>
+
+        <div class="form-field">
+          <label>Permissions ({{ newRoleGrantedIds.length }} selected)</label>
+          <div class="perm-groups-scroll-container" style="height: 320px">
+            <div class="perm-groups">
+              @for (group of newRoleGroups; track group.module) {
+                <div class="perm-group">
+                  <div class="perm-group-header">
+                    <div class="perm-group-title">
+                      <span class="perm-group-icon">{{ getModuleIcon(group.module) }}</span>
+                      {{ group.module }}
+                      <span class="perm-group-count">
+                        {{ group.permissions | countGranted }} / {{ group.permissions.length }}
+                      </span>
+                    </div>
+                    <div class="perm-group-actions">
+                      <button
+                        class="btn-group-toggle"
+                        (click)="selectAllInNewRoleGroup(group, true)"
+                      >
+                        All
+                      </button>
+                      <button
+                        class="btn-group-toggle"
+                        (click)="selectAllInNewRoleGroup(group, false)"
+                      >
+                        None
+                      </button>
+                    </div>
+                  </div>
+                  <div class="perm-items">
+                    @for (perm of group.permissions; track perm.id) {
+                      <div
+                        class="perm-item"
+                        [class.granted]="perm.granted"
+                        (click)="toggleNewRolePerm(perm)"
+                      >
+                        <div class="perm-checkbox" [class.checked]="perm.granted">
+                          @if (perm.granted) {
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="11"
+                              height="11"
+                              fill="currentColor"
+                              viewBox="0 0 16 16"
+                            >
+                              <path
+                                d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"
+                              />
+                            </svg>
+                          }
+                        </div>
+                        <div class="perm-info">
+                          <span class="perm-label">{{ perm.label }}</span>
+                          <span class="perm-code">{{ perm.code }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (addRoleError) {
+          <p class="save-error" style="margin-top: 8px">⚠️ {{ addRoleError }}</p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeAddRoleModal()">Cancel</button>
+        <button class="btn-save-perms" (click)="saveNewRole()" [disabled]="isSavingNewRole">
+          @if (isSavingNewRole) {
+            <span class="spinner spinner-white"></span> Creating...
+          } @else {
+            + Create Role
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
 <!-- ══ EDIT PERMISSION MODAL ══ -->
 @if (showEditModal) {
   <div class="modal-backdrop" (click)="closeEditModal()">
@@ -450,6 +535,47 @@
           } @else {
             💾 Update Permission
           }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+@if (showViewModal && viewingPerm) {
+  <div class="modal-backdrop" (click)="closeViewModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Permission Details</h3>
+          <p class="modal-sub">Read-only view</p>
+        </div>
+        <button class="modal-close" (click)="closeViewModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Code</label>
+          <input class="user-search-input modal-input" [value]="viewingPerm.code" disabled />
+        </div>
+        <div class="form-field">
+          <label>Label</label>
+          <input class="user-search-input modal-input" [value]="viewingPerm.label" disabled />
+        </div>
+        <div class="form-field">
+          <label>Module</label>
+          <input class="user-search-input modal-input" [value]="viewingPerm.module" disabled />
+        </div>
+        <div class="form-field">
+          <label>Description</label>
+          <input
+            class="user-search-input modal-input"
+            [value]="viewingPerm.description || '—'"
+            disabled
+          />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeViewModal()">Close</button>
+        <button class="btn-save-perms" (click)="closeViewModal(); startEditPerm(viewingPerm!)">
+          ✏️ Edit Instead
         </button>
       </div>
     </div>

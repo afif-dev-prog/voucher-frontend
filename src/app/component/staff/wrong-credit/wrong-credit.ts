@@ -23,6 +23,27 @@ interface ZeroliseRow {
   difference?: null; // kept so the generic progress template can read row.difference safely
 }
 
+interface PayHistoryDto {
+  id: number;
+  studentId: string;
+  seller: string;
+  debit: number;
+  credit: number;
+  remark: string;
+  payDate: number; // unix timestamp
+  userUpdate: string;
+  monthCredit: string;
+}
+
+interface PaginationMetadata {
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  totalCount: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}
+
 @Component({
   selector: 'app-wrong-credit',
   imports: [CommonModule, FormsModule],
@@ -69,9 +90,86 @@ export class WrongCredit {
   globalError = '';
 
   // ── Tabs ──────────────────────────────────────────────────────
-  activeTab: 'finance' | 'seller' | 'zerolise' = 'finance';
+  activeTab: 'finance' | 'seller' | 'zerolise' | 'history' = 'finance';
 
-  switchTab(tab: 'finance' | 'seller' | 'zerolise'): void {
+  historyStudentIdInput = '';
+  historySearchedStudentId = '';
+  historyRows: PayHistoryDto[] = [];
+  historyPagination: PaginationMetadata | null = null;
+  historyLoading = false;
+  historyError = '';
+  historyPageSize = 10;
+  get historyTotalCredited(): number {
+    return this.historyRows.reduce((sum, r) => sum + (r.credit || 0), 0);
+  }
+
+  searchCreditHistory(page: number = 1): void {
+    const id = this.historyStudentIdInput.trim();
+    if (!id) {
+      this.historyError = 'Please enter a student ID.';
+      return;
+    }
+
+    this.historyError = '';
+    this.historyLoading = true;
+    this.historySearchedStudentId = id;
+    this.cdr.markForCheck();
+
+    this.staffService
+      .getCreditationHistory(id, page, this.historyPageSize)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          if (res?.success) {
+            this.historyRows = res.data ?? [];
+            this.historyPagination = res.pagination ?? null;
+          } else {
+            this.historyRows = [];
+            this.historyPagination = null;
+            this.historyError = res?.message || 'No records found.';
+          }
+          this.historyLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          this.historyRows = [];
+          this.historyPagination = null;
+          this.historyError = err?.error?.message || 'Failed to load history.';
+          this.historyLoading = false;
+          this.cdr.markForCheck();
+        },
+      });
+  }
+  canView(permission: string): boolean {
+    return this.auth.hasPermission(permission);
+  }
+  goToHistoryPage(page: number): void {
+    if (!this.historyPagination) return;
+    if (page < 1 || page > this.historyPagination.totalPages) return;
+    this.searchCreditHistory(page);
+  }
+
+  clearHistorySearch(): void {
+    this.historyStudentIdInput = '';
+    this.historySearchedStudentId = '';
+    this.historyRows = [];
+    this.historyPagination = null;
+    this.historyError = '';
+    this.cdr.markForCheck();
+  }
+
+  formatPayDate(unixSeconds: number): string {
+    if (!unixSeconds) return '—';
+    return new Date(unixSeconds * 1000).toLocaleString('en-MY', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  switchTab(tab: 'finance' | 'seller' | 'zerolise' | 'history'): void {
     this.activeTab = tab;
     this.reset();
     this.cdr.markForCheck();
@@ -367,6 +465,12 @@ export class WrongCredit {
     this.sellerDropdownOpen = false;
     this.sellerSearch = '';
     this.sellerList = [];
+    this.historyStudentIdInput = '';
+    this.historySearchedStudentId = '';
+    this.historyRows = [];
+    this.historyPagination = null;
+    this.historyError = '';
+    this.historyLoading = false;
     this.cdr.markForCheck();
   }
 

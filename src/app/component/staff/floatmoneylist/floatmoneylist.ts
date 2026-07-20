@@ -34,7 +34,7 @@ export class Floatmoneylist {
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
 
-  currentUser = 'admin'; // replace with auth
+  currentUser = this.auth.getName(); // replace with auth
 
   // ── List state ────────────────────────
   rows: FloatRow[] = [];
