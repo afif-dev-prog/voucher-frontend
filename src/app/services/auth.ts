@@ -33,7 +33,7 @@ export class Auth {
           localStorage.setItem('userInfo', JSON.stringify(res.user));
         }
       }),
-      catchError(() => of({ success: false, message: 'Unable to connect.' })),
+      catchError((res: any) => of({ success: false, message: res.message })),
     );
   }
 
