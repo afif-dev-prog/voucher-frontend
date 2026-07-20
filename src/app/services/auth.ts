@@ -125,7 +125,7 @@ export class Auth {
 
   // ── Permission checks ──────────────────
   hasPermission(code: string): boolean {
-    if (this.getRole() === 'SUPERADMIN') return true;
+    if (this.getRole() === 'SUPERADMIN') return true; //by pass regsrdless of no permission are park to superadmin
     return this.getPermissions().includes(code);
   }
 

@@ -44,6 +44,9 @@ export class Permissions {
   allPermissions: Permission[] = [];
   isLoadingPerms = false;
 
+  showViewModal = false;
+  viewingPerm: Permission | null = null;
+
   // ── Role tab ──────────────────────────
   selectedRole = 'STUDENT';
   roleGroups: PermissionGroup[] = [];
@@ -76,9 +79,6 @@ export class Permissions {
   editingPerm: Permission | null = null;
   permSaveError = '';
 
-  isAddingRole = false;
-  newRoleName = '';
-
   // ── Seed ──────────────────────────────
   isSeeding = false;
   seedSuccess = false;
@@ -86,6 +86,11 @@ export class Permissions {
 
   // ── Modal: Add Permission ─────────────
   showAddPermModal = false;
+  showAddRoleModal = false;
+  newRoleGroups: PermissionGroup[] = [];
+  isSavingNewRole = false;
+  newRoleName = '';
+  addRoleError = '';
 
   openAddPermModal(): void {
     this.editingPerm = null;
@@ -161,6 +166,18 @@ export class Permissions {
   deletingPerm: Permission | null = null;
   isConfirmingDelete = false;
   deleteError = '';
+
+  startViewPerm(perm: Permission): void {
+    this.viewingPerm = perm;
+    this.showViewModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeViewModal(): void {
+    this.showViewModal = false;
+    this.viewingPerm = null;
+    this.cdr.markForCheck();
+  }
 
   confirmDeletePerm(perm: Permission): void {
     this.deletingPerm = perm;
@@ -339,8 +356,15 @@ export class Permissions {
     this.roleSaveSuccess = false;
     this.roleSaveError = '';
 
+    const payload = {
+      role: this.selectedRole,
+      granted_by: this.auth.getUserId(),
+      granted_at: Math.floor(Date.now() / 1000),
+      permIds: this.roleGrantedIds,
+    };
+
     this.permService
-      .setRolePermissions(this.selectedRole, this.roleGrantedIds, this.auth.getUserId())
+      .updateRolePermissions(this.selectedRole, payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
@@ -357,21 +381,78 @@ export class Permissions {
       });
   }
 
-  // ── Manage tab: roles ─────────────────
+  openAddRoleModal(): void {
+    this.newRoleName = '';
+    this.addRoleError = '';
+    this.newRoleGroups = this.buildGroups([]); // all unchecked
+    this.showAddRoleModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeAddRoleModal(): void {
+    this.showAddRoleModal = false;
+    this.newRoleName = '';
+    this.newRoleGroups = [];
+    this.addRoleError = '';
+    this.cdr.markForCheck();
+  }
   saveNewRole(): void {
     const role = this.newRoleName.trim().toUpperCase();
-    if (!role) return;
+    if (!role) {
+      this.addRoleError = 'Please enter a role name.';
+      return;
+    }
+    if (this.allRoleObjects.some((r) => r.value === role)) {
+      this.addRoleError = 'This role already exists.';
+      return;
+    }
+
+    this.isSavingNewRole = true;
+    this.addRoleError = '';
+
+    const dto = {
+      role,
+      granted_by: this.auth.getUserId(),
+      granted_at: Math.floor(Date.now() / 1000),
+    };
+
     this.permService
-      .setRolePermissions(role, [], this.auth.getUserId())
+      .addRolePermissions(dto, this.newRoleGrantedIds)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
-          this.isAddingRole = false;
-          this.newRoleName = '';
-          this.loadAllPermissions();
+        next: (res: any) => {
+          if (res.success !== false) {
+            this.closeAddRoleModal();
+            this.loadAllPermissions();
+          } else {
+            this.addRoleError = res.message || 'Failed to create role.';
+          }
+          this.isSavingNewRole = false;
+          this.cdr.markForCheck();
+        },
+        error: (res: any) => {
+          this.addRoleError = res.message;
+          this.isSavingNewRole = false;
           this.cdr.markForCheck();
         },
       });
+  }
+
+  toggleNewRolePerm(perm: PermissionItem): void {
+    perm.granted = !perm.granted;
+    this.cdr.markForCheck();
+  }
+
+  selectAllInNewRoleGroup(group: PermissionGroup, val: boolean): void {
+    group.permissions.forEach((p) => (p.granted = val));
+    this.cdr.markForCheck();
+  }
+
+  get newRoleGrantedIds(): string[] {
+    return this.newRoleGroups
+      .flatMap((g) => g.permissions)
+      .filter((p) => p.granted)
+      .map((p) => p.id);
   }
 
   // ── User override tab ─────────────────
